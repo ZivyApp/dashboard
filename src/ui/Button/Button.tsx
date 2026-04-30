@@ -22,9 +22,15 @@ const sizeClass: Record<Size, string> = {
   lg: styles.lg ?? "",
 };
 
-export function Button({ variant = "primary", size = "md", className, ...rest }: ButtonProps) {
+export function Button({
+  variant = "primary",
+  size = "md",
+  type = "button",
+  className,
+  ...rest
+}: ButtonProps) {
   const cls = [styles.button, variantClass[variant], sizeClass[size], className]
     .filter(Boolean)
     .join(" ");
-  return <button className={cls} {...rest} />;
+  return <button type={type} className={cls} {...rest} />;
 }

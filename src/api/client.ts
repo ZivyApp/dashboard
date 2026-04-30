@@ -1,16 +1,15 @@
 import createClient from "openapi-fetch";
 import type { paths } from "./types";
 import { env } from "@/lib/env";
+import { applyAuthHeaders, type AuthGetters } from "./auth";
 
-let getAccessToken: () => Promise<string | undefined> = () => Promise.resolve(undefined);
-let getActiveCondoId: () => string | undefined = () => undefined;
+let auth: AuthGetters = {
+  getAccessToken: () => Promise.resolve(undefined),
+  getActiveCondoId: () => undefined,
+};
 
-export function configureApiAuth(opts: {
-  getAccessToken: () => Promise<string | undefined>;
-  getActiveCondoId: () => string | undefined;
-}) {
-  getAccessToken = opts.getAccessToken;
-  getActiveCondoId = opts.getActiveCondoId;
+export function configureApiAuth(opts: AuthGetters) {
+  auth = opts;
 }
 
 export const api = createClient<paths>({
@@ -18,11 +17,5 @@ export const api = createClient<paths>({
 });
 
 api.use({
-  async onRequest({ request }) {
-    const token = await getAccessToken();
-    if (token) request.headers.set("Authorization", `Bearer ${token}`);
-    const condoId = getActiveCondoId();
-    if (condoId) request.headers.set("X-Condo-ID", condoId);
-    return request;
-  },
+  onRequest: ({ request }) => applyAuthHeaders(request, auth),
 });

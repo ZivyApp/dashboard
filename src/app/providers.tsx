@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { initTheme } from "@/stores/theme";
 import { configureApiAuth } from "@/api/client";
 import { supabase } from "@/lib/supabase";
 
@@ -20,16 +19,12 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    initTheme();
     configureApiAuth({
       getAccessToken: async () => {
         const { data } = await supabase.auth.getSession();
         return data.session?.access_token;
       },
-      getActiveCondoId: () => {
-        // Placeholder: será conectado ao store de condo no Plano 3.
-        return undefined;
-      },
+      getActiveCondoId: () => undefined,
     });
   }, []);
 
