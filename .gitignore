@@ -8,7 +8,6 @@ dist-ssr
 .vite
 storybook-static
 coverage
-src/app/routeTree.gen.ts
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
