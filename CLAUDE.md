@@ -90,6 +90,26 @@ O repositório é **público**. Qualquer dado sensível commitado fica exposto p
 2. Usar `git filter-repo` ou contatar o GitHub Support para purgar o histórico
 3. Avisar o time
 
+## Deploy
+
+Projeto Vercel: `zivy-dashboard` (org `adams-alves-projects`)
+
+- **Production alias:** https://zivy-dashboard.vercel.app
+- Preview automático por PR via integração GitHub
+- Env vars gerenciadas no Vercel (não commitadas); para desenvolvimento local usar `.env.local`
+
+## Estado atual do projeto
+
+Scaffold completo (Plan 2) entregue na branch `feature/scaffold`:
+
+- Design tokens, theme store (light/dark/system), componente `ui/Button`
+- API client `openapi-fetch` + tipos gerados do Core staging
+- Supabase singleton + bridge de auth no header da API
+- TanStack Router + Query providers
+- Storybook, PWA, CI GitHub Actions, deploy Vercel
+
+Próximo: **Plan 3** — login screen, layout shell (header/sidebar), condo switcher, guards de role.
+
 ## Code review graph (MCP)
 
 Este projeto tem grafo de conhecimento (ver instrução global). Antes de Grep/Glob/Read amplos, prefira `semantic_search_nodes`, `query_graph`, `detect_changes`, `get_impact_radius`. O grafo atualiza via hooks.
