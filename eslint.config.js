@@ -16,6 +16,8 @@ export default tseslint.config(
       "vite.config.d.ts",
       "vitest.config.js",
       "vitest.config.d.ts",
+      ".storybook/*.js",
+      ".storybook/*.d.ts",
     ],
   },
   js.configs.recommended,
