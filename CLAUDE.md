@@ -110,6 +110,56 @@ Scaffold completo (Plan 2) entregue na branch `feature/scaffold`:
 
 Próximo: **Plan 3** — login screen, layout shell (header/sidebar), condo switcher, guards de role.
 
+## Padrões e convenções (lições de code review)
+
+Convenções fixadas a partir de revisões anteriores. Seguir antes de propor alternativas — se algo for desviar, justificar explicitamente.
+
+### Inicialização do app
+
+- `initTheme()` e qualquer aplicação inicial de `data-theme` **roda síncrono no `main.tsx` antes do `createRoot`**, nunca em `useEffect`. Em `useEffect`, o tema só aplica após o primeiro paint, causando flash of wrong theme (FOWT) para usuários com `dark` persistido.
+- `document.getElementById('root')` deve usar checagem explícita com erro descritivo (`if (!el) throw new Error("...")`), não non-null assertion (`!`). A mensagem ajuda a diagnosticar `index.html` quebrado em dev.
+
+### Listeners globais
+
+- `matchMedia`, listeners de `window`, observers etc. devem ser **idempotentes** — flag de módulo evita acúmulo em StrictMode dev e HMR. Padrão:
+
+  ```ts
+  let attached = false;
+  function handler() { /* ... */ }
+  export function init() {
+    if (typeof window === "undefined" || attached) return;
+    window.matchMedia(...).addEventListener("change", handler);
+    attached = true;
+  }
+  ```
+
+### Storage e env
+
+- Acesso a `localStorage` em caminhos críticos deve estar protegido por try/catch — Safari Private Browsing lança `SecurityError` em `setItem`. Ver `safeStorage()` em `src/stores/theme.ts`.
+- `src/lib/env.ts` é avaliado **eagerly** no import e lança se vars faltarem. Qualquer arquivo que o importe transitivamente quebra em testes sem env setada. **Padrão:** extrair lógica pura para arquivo irmão sem import de env. Exemplo no repo: `src/api/auth.ts` (testável, sem env) é separado de `src/api/client.ts` (importa env e instancia o `api`).
+
+### Componentes UI
+
+- Botões default `type="button"` — evita submit acidental quando aninhados em `<form>`.
+- CSS Modules: classes acessadas via `Record<Variant, string>` com fallback `?? ""` para satisfazer `noUncheckedIndexedAccess`.
+
+### Bundle hygiene
+
+- Imports de `@fontsource/*` usam **subset específico** (ex.: `@fontsource/ibm-plex-sans/latin-400.css`). O import default (`400.css` sem subset) carrega vietnamese/greek/cyrillic/latin-ext desnecessariamente — projeto é pt-BR e só precisa de `latin`.
+- **Não instalar deps "para depois"**. Instalar quando for usar. Versões envelhecem e nomes mudam (ex.: `lucide-react@^1.14.0` é um pacote legado, atual é `^0.4xx.x`).
+
+### Testes
+
+- Mocks globais usam `vi.spyOn(...)` + `vi.restoreAllMocks()` em `afterEach`. **Nunca** `Object.defineProperty` direto — vaza entre testes.
+- Testes de setters/actions verificam **side-effects**, não só state. Ex.: `setMode("dark")` deve assertar tanto `getState().mode === "dark"` quanto `document.documentElement.dataset.theme === "dark"`.
+- Para módulos que dependem de env (`client.ts`, `supabase.ts`): extrair lógica pura para sibling sem env, testar lá.
+
+### Tooling
+
+- `.nvmrc` (`20`) + `engines.node` (`>=20`) fixados — evita drift entre dev local, CI e Vercel.
+- PWA: `sw.js` e `manifest.webmanifest` têm `Cache-Control: public, max-age=0, must-revalidate` no `vercel.json`. Sem isso, mobile não recebe updates do service worker.
+- `routeTree.gen.ts` (TanStack Router) é **commitado intencionalmente** — aceita custo de conflito de merge em troca de CI sem step de geração.
+
 ## Code review graph (MCP)
 
 Este projeto tem grafo de conhecimento (ver instrução global). Antes de Grep/Glob/Read amplos, prefira `semantic_search_nodes`, `query_graph`, `detect_changes`, `get_impact_radius`. O grafo atualiza via hooks.
