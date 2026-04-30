@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { required } from "./env";
+import { required } from "./assert-env";
 
 describe("required", () => {
   it("retorna o valor quando definido", () => {

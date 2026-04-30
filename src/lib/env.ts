@@ -1,7 +1,6 @@
-export const required = (name: string, value: string | undefined): string => {
-  if (!value) throw new Error(`Missing env var: ${name}`);
-  return value;
-};
+import { required } from "./assert-env";
+
+export { required };
 
 export const env = {
   SUPABASE_URL: required("VITE_SUPABASE_URL", import.meta.env.VITE_SUPABASE_URL),
