@@ -1,0 +1,19 @@
+:root {
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 320ms;
+  --duration-theme: 300ms;
+  --easing-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.3, 0, 0.1, 1);
+  --easing-decelerated: cubic-bezier(0, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

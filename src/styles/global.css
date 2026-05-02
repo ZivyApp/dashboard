@@ -1,0 +1,58 @@
+@import url("@fontsource/ibm-plex-sans/latin-400.css");
+@import url("@fontsource/ibm-plex-sans/latin-500.css");
+@import url("@fontsource/ibm-plex-sans/latin-600.css");
+@import url("@fontsource/ibm-plex-sans/latin-700.css");
+@import url("@/design-tokens/index.css");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--fg-primary);
+  background: var(--bg-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+tbody,
+.stat,
+.mono {
+  font-feature-settings: "tnum" 1;
+}
+
+html.theme-transitioning,
+html.theme-transitioning * {
+  transition:
+    background-color var(--duration-theme) var(--easing-standard),
+    color var(--duration-theme) var(--easing-standard),
+    border-color var(--duration-theme) var(--easing-standard) !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
