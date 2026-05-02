@@ -90,17 +90,26 @@ O repositório é **público**. Qualquer dado sensível commitado fica exposto p
 2. Usar `git filter-repo` ou contatar o GitHub Support para purgar o histórico
 3. Avisar o time
 
+## Branching e fluxo de PRs
+
+- **`develop`** é a branch padrão do repositório e a base de todo trabalho de feature. Abrir PRs contra `develop`, não contra `main`.
+- **`main`** é a branch de release/produção — recebe merges de `develop` em janelas de release (PR `develop → main`).
+- Features saem de `develop`: `git checkout develop && git pull && git checkout -b feature/<nome>`.
+- Hotfix de produção é a exceção: pode sair de `main` direto, e depois precisa ser portado para `develop` (merge ou cherry-pick).
+
 ## Deploy
 
 Projeto Vercel: `zivy-dashboard` (org `adams-alves-projects`)
 
-- **Production alias:** https://zivy-dashboard.vercel.app
-- Preview automático por PR via integração GitHub
+- **Production alias:** https://zivy-dashboard.vercel.app (deploys de `main`)
+- Preview automático por PR via integração GitHub (incluindo PRs contra `develop`)
 - Env vars gerenciadas no Vercel (não commitadas); para desenvolvimento local usar `.env.local`
 
 ## Estado atual do projeto
 
-Scaffold completo (Plan 2) entregue na branch `feature/scaffold`:
+Scaffold completo (Plan 2) mergeado em `main` (PR #1, squash → `78fe26e`). `develop` sincronizada com `main` em 2026-05-02.
+
+Conteúdo entregue:
 
 - Design tokens, theme store (light/dark/system), componente `ui/Button`
 - API client `openapi-fetch` + tipos gerados do Core staging
