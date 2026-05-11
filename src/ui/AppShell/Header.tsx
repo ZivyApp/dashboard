@@ -34,7 +34,7 @@ export function Header({ isMobileMenuOpen, onMenuToggle }: HeaderProps) {
       <button
         type="button"
         className={styles.hamburger}
-        aria-label="Abrir menu"
+        aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
         aria-expanded={isMobileMenuOpen}
         onClick={onMenuToggle}
       >

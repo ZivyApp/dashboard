@@ -107,6 +107,8 @@ describe("AppShell", () => {
     // Dialog should appear (name comes from Dialog.Title "Navegação")
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(hamburger).toHaveAttribute("aria-expanded", "true");
+    // aria-label should change to reflect that clicking will close the menu
+    expect(hamburger).toHaveAttribute("aria-label", "Fechar menu");
   });
 
   it("clicking a sidebar link in the drawer closes it", async () => {

@@ -29,8 +29,11 @@ export function UserMenu() {
   const initial = email.charAt(0).toUpperCase();
 
   async function handleSignOut() {
-    await useSessionStore.getState().signOut();
-    void navigate({ to: "/login" });
+    try {
+      await useSessionStore.getState().signOut();
+    } finally {
+      void navigate({ to: "/login" });
+    }
   }
 
   return (

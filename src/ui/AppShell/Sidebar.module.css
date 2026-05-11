@@ -109,6 +109,11 @@
   }
 }
 
+/*
+ * Screen reader only — visually hides while keeping in accessibility tree.
+ * Pattern requires exact 1px values to remain non-zero size (some screen readers
+ * skip 0-sized elements), so raw values bypass the strict-value rule.
+ */
 .srOnly {
   position: absolute;
 
