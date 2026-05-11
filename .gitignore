@@ -16,3 +16,4 @@ vitest.config.d.ts
 .storybook/*.js
 .storybook/*.d.ts
 .vercel
+.worktrees
