@@ -4,9 +4,11 @@ import { RouterProvider } from "@tanstack/react-router";
 import { router } from "@/app/router";
 import { Providers } from "@/app/providers";
 import { initTheme } from "@/stores/theme";
+import { initSession } from "@/stores/session";
 import "@/styles/global.css";
 
 initTheme();
+initSession();
 
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error('Root element "#root" not found in index.html');
