@@ -9,9 +9,8 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const { signIn, isPending, error } = useSignIn();
   const navigate = useNavigate();
-  const search = useSearch({ strict: false });
-  const redirectValue = (search as Record<string, unknown>)["redirect"];
-  const rawRedirect = typeof redirectValue === "string" ? redirectValue : "/";
+  const search = useSearch({ from: "/login" });
+  const rawRedirect = search.redirect ?? "/";
   const redirectTo =
     rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
