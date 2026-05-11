@@ -9,9 +9,9 @@ const nextMode: Record<ThemeMode, ThemeMode> = {
 };
 
 const ariaLabel: Record<ThemeMode, string> = {
-  light: "Tema atual: claro. Clique para alterar.",
-  dark: "Tema atual: escuro. Clique para alterar.",
-  system: "Tema atual: sistema. Clique para alterar.",
+  light: "Tema atual: claro. Trocar para escuro.",
+  dark: "Tema atual: escuro. Trocar para sistema.",
+  system: "Tema atual: sistema. Trocar para claro.",
 };
 
 function SunIcon() {

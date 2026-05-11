@@ -180,7 +180,7 @@ describe("ThemeToggle", () => {
     render(<ThemeToggle />);
     expect(screen.getByRole("button")).toHaveAttribute(
       "aria-label",
-      "Tema atual: escuro. Clique para alterar.",
+      "Tema atual: escuro. Trocar para sistema.",
     );
   });
 });
