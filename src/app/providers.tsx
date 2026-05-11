@@ -4,6 +4,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { configureApiAuth } from "@/api/client";
 import { getAccessToken } from "@/stores/session";
 
+configureApiAuth({
+  getAccessToken: () => Promise.resolve(getAccessToken()),
+  getActiveCondoId: () => undefined,
+});
+
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
     () =>
@@ -17,11 +22,6 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }),
   );
-
-  configureApiAuth({
-    getAccessToken: () => Promise.resolve(getAccessToken()),
-    getActiveCondoId: () => undefined,
-  });
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
