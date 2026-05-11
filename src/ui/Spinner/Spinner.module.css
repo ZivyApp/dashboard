@@ -20,5 +20,5 @@
   display: grid;
   place-items: center;
   background-color: var(--bg-canvas);
-  z-index: var(--z-modal);
+  z-index: var(--z-splash);
 }
