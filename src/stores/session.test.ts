@@ -72,6 +72,20 @@ describe("useSessionStore", () => {
       expect(useSessionStore.getState().session).toBeNull();
       expect(useSessionStore.getState().status).toBe("loading");
     });
+
+    it("lança 'Email not confirmed' quando Supabase retorna session null sem erro", async () => {
+      mockSignInWithPassword.mockResolvedValueOnce({
+        data: { session: null, user: null },
+        error: null,
+      });
+
+      await expect(
+        useSessionStore.getState().signIn("unconfirmed@example.com", "password123"),
+      ).rejects.toThrow("Email not confirmed");
+
+      expect(useSessionStore.getState().session).toBeNull();
+      expect(useSessionStore.getState().status).toBe("loading");
+    });
   });
 
   describe("signOut", () => {
@@ -155,6 +169,18 @@ describe("initSession", () => {
 
     expect(useSessionStore.getState().session).toEqual(mockSession);
     expect(useSessionStore.getState().status).toBe("authenticated");
+  });
+
+  it("resolve para anonymous quando getSession rejeita (rede offline etc.)", async () => {
+    mockGetSession.mockRejectedValueOnce(new Error("Network error"));
+
+    initSession();
+
+    await vi.waitFor(() => {
+      expect(useSessionStore.getState().status).toBe("anonymous");
+    });
+
+    expect(useSessionStore.getState().session).toBeNull();
   });
 
   it("é idempotente — onAuthStateChange registrado apenas uma vez mesmo com múltiplos initSession", () => {
