@@ -10,8 +10,10 @@ export function LoginForm() {
   const { signIn, isPending, error } = useSignIn();
   const navigate = useNavigate();
   const search = useSearch({ strict: false });
-  const redirect = (search as Record<string, unknown>)["redirect"];
-  const redirectTo = typeof redirect === "string" ? redirect : "/";
+  const redirectValue = (search as Record<string, unknown>)["redirect"];
+  const rawRedirect = typeof redirectValue === "string" ? redirectValue : "/";
+  const redirectTo =
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,6 +42,7 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
+              aria-invalid={error !== null ? "true" : undefined}
             />
           </div>
           <div className={styles.field}>
