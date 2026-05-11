@@ -27,7 +27,7 @@ export function LoginForm() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Entrar</h1>
-        <form className={styles.form} onSubmit={(e) => void handleSubmit(e)} noValidate={false}>
+        <form className={styles.form} onSubmit={(e) => void handleSubmit(e)}>
           <div className={styles.field}>
             <label htmlFor="login-email" className={styles.label}>
               Email
@@ -40,8 +40,6 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
-              aria-invalid={error !== null ? "true" : undefined}
-              aria-describedby={error !== null ? errorId : undefined}
             />
           </div>
           <div className={styles.field}>

@@ -75,12 +75,11 @@ describe("LoginForm", () => {
     expect(alert).toHaveTextContent("Email ou senha inválidos");
   });
 
-  it("define aria-invalid nos inputs quando há erro", () => {
+  it("define aria-invalid no input de senha quando há erro", () => {
     mockError = "Email ou senha inválidos";
 
     render(<LoginForm />);
 
-    expect(screen.getByLabelText(/email/i)).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByLabelText(/senha/i)).toHaveAttribute("aria-invalid", "true");
   });
 
