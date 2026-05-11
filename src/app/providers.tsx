@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { configureApiAuth } from "@/api/client";
-import { supabase } from "@/lib/supabase";
+import { getAccessToken } from "@/stores/session";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -18,15 +18,10 @@ export function Providers({ children }: { children: ReactNode }) {
       }),
   );
 
-  useEffect(() => {
-    configureApiAuth({
-      getAccessToken: async () => {
-        const { data } = await supabase.auth.getSession();
-        return data.session?.access_token;
-      },
-      getActiveCondoId: () => undefined,
-    });
-  }, []);
+  configureApiAuth({
+    getAccessToken: () => Promise.resolve(getAccessToken()),
+    getActiveCondoId: () => undefined,
+  });
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
