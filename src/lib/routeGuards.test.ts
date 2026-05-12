@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { redirect } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import type { CondoMembership } from "@/features/condo/useMyCondos";
 
 vi.mock("@tanstack/react-router", () => ({
   redirect: vi.fn((args: unknown): unknown => args),
@@ -35,7 +37,14 @@ vi.mock("@/stores/session", () => ({
   useSessionStore: mockStore,
 }));
 
-const { requireAuth } = await import("./routeGuards");
+// Mock for requireRole dependencies
+const mockEnsureQueryData = vi.fn();
+
+vi.mock("@/features/condo/useMyCondos", () => ({
+  myCondosQueryOptions: vi.fn(() => ({ queryKey: ["condos", "me"] })),
+}));
+
+const { requireAuth, requireRole } = await import("./routeGuards");
 
 describe("requireAuth", () => {
   afterEach(() => {
@@ -90,6 +99,101 @@ describe("requireAuth", () => {
     expect(redirect).toHaveBeenCalledWith({
       to: "/login",
       search: { redirect: location.href },
+    });
+  });
+});
+
+describe("requireRole", () => {
+  function makeQueryClient(condos: CondoMembership[]): QueryClient {
+    return {
+      ensureQueryData: mockEnsureQueryData.mockResolvedValue(condos),
+    } as unknown as QueryClient;
+  }
+
+  const condoId = "condo-abc";
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("passes (no throw) when user has exact required role (manager)", async () => {
+    const condos: CondoMembership[] = [
+      { condoId, condoName: "Test", condoSlug: "test", role: "manager" },
+    ];
+    const guard = requireRole("manager");
+    await expect(
+      guard({ params: { condoId }, context: { queryClient: makeQueryClient(condos) } }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("passes when user has higher role (super_admin ≥ manager)", async () => {
+    const condos: CondoMembership[] = [
+      { condoId, condoName: "Test", condoSlug: "test", role: "super_admin" },
+    ];
+    const guard = requireRole("manager");
+    await expect(
+      guard({ params: { condoId }, context: { queryClient: makeQueryClient(condos) } }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("throws redirect when user role is below required (viewer → manager)", async () => {
+    const condos: CondoMembership[] = [
+      { condoId, condoName: "Test", condoSlug: "test", role: "viewer" },
+    ];
+    const guard = requireRole("manager");
+
+    await expect(
+      guard({ params: { condoId }, context: { queryClient: makeQueryClient(condos) } }),
+    ).rejects.toThrow();
+
+    expect(redirect).toHaveBeenCalledWith({
+      to: "/c/$condoId/inbox",
+      params: { condoId },
+    });
+  });
+
+  it("throws redirect when user role is below required (staff → manager)", async () => {
+    const condos: CondoMembership[] = [
+      { condoId, condoName: "Test", condoSlug: "test", role: "staff" },
+    ];
+    const guard = requireRole("manager");
+
+    await expect(
+      guard({ params: { condoId }, context: { queryClient: makeQueryClient(condos) } }),
+    ).rejects.toThrow();
+
+    expect(redirect).toHaveBeenCalledWith({
+      to: "/c/$condoId/inbox",
+      params: { condoId },
+    });
+  });
+
+  it("throws redirect when condoId not found in user's condos", async () => {
+    const condos: CondoMembership[] = [
+      { condoId: "other-condo", condoName: "Other", condoSlug: "other", role: "manager" },
+    ];
+    const guard = requireRole("viewer");
+
+    await expect(
+      guard({ params: { condoId }, context: { queryClient: makeQueryClient(condos) } }),
+    ).rejects.toThrow();
+
+    expect(redirect).toHaveBeenCalledWith({
+      to: "/c/$condoId/inbox",
+      params: { condoId },
+    });
+  });
+
+  it("throws redirect when condos list is empty", async () => {
+    const guard = requireRole("viewer");
+
+    await expect(
+      guard({ params: { condoId }, context: { queryClient: makeQueryClient([]) } }),
+    ).rejects.toThrow();
+
+    expect(redirect).toHaveBeenCalledWith({
+      to: "/c/$condoId/inbox",
+      params: { condoId },
     });
   });
 });
