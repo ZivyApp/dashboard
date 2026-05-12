@@ -13,9 +13,8 @@ export const Route = createFileRoute("/_app/")({
 
     const lastId = getLastSelected();
     const target = condos.find((c) => c.condoId === lastId) ?? condos[0];
-    const first = target ?? condos[0];
 
-    if (!first) {
+    if (!target) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw redirect({ to: "/no-access" });
     }
@@ -23,7 +22,7 @@ export const Route = createFileRoute("/_app/")({
     // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw redirect({
       to: "/c/$condoId/inbox",
-      params: { condoId: first.condoId },
+      params: { condoId: target.condoId },
     });
   },
 });
