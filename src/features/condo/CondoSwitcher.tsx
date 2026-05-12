@@ -1,49 +1,43 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
+import { useMatches, useNavigate, useParams } from "@tanstack/react-router";
 import { Check, ChevronDown } from "lucide-react";
 import { useMyCondos } from "./useMyCondos";
 import styles from "./CondoSwitcher.module.css";
 
-const SUB_ROUTES = ["inbox", "tickets", "approvals", "settings"] as const;
-type SubRoute = (typeof SUB_ROUTES)[number];
-
-function getCurrentSubRoute(pathname: string): SubRoute {
-  const lastSegment = pathname.split("/").filter(Boolean).pop();
-  return (SUB_ROUTES as readonly string[]).includes(lastSegment ?? "")
-    ? (lastSegment as SubRoute)
-    : "inbox";
-}
-
-function navigateToCondoSubRoute(
-  navigate: ReturnType<typeof useNavigate>,
-  condoId: string,
-  subRoute: SubRoute,
-): void {
-  const params = { condoId };
-  switch (subRoute) {
-    case "inbox":
-      void navigate({ to: "/c/$condoId/inbox", params });
-      break;
-    case "tickets":
-      void navigate({ to: "/c/$condoId/tickets", params });
-      break;
-    case "approvals":
-      void navigate({ to: "/c/$condoId/approvals", params });
-      break;
-    case "settings":
-      void navigate({ to: "/c/$condoId/settings", params });
-      break;
-  }
-}
-
 export function CondoSwitcher() {
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const matches = useMatches();
   const params = useParams({ strict: false });
   const { data, isPending, error } = useMyCondos();
 
-  const subRoute = getCurrentSubRoute(pathname);
+  const leafRouteId = matches.at(-1)?.routeId ?? "";
+  // Extract the last path segment from routeId.
+  // e.g. "/_app/c/$condoId/inbox" → "inbox"
+  // Deep nested routes like "/_app/c/$condoId/inbox/thread/$threadId" → "$threadId"
+  // which falls through to the default "inbox" — acceptable behavior.
+  const subPath = leafRouteId.split("/").pop() ?? "inbox";
   const activeCondoId = params.condoId;
+
+  function handleSelect(newId: string) {
+    const p = { condoId: newId };
+    switch (subPath) {
+      case "inbox":
+        void navigate({ to: "/c/$condoId/inbox", params: p });
+        break;
+      case "tickets":
+        void navigate({ to: "/c/$condoId/tickets", params: p });
+        break;
+      case "approvals":
+        void navigate({ to: "/c/$condoId/approvals", params: p });
+        break;
+      case "settings":
+        void navigate({ to: "/c/$condoId/settings", params: p });
+        break;
+      default:
+        void navigate({ to: "/c/$condoId/inbox", params: p });
+        break;
+    }
+  }
 
   if (isPending) {
     return (
@@ -67,10 +61,6 @@ export function CondoSwitcher() {
 
   const activeCondo = data.find((c) => c.condoId === activeCondoId);
   const triggerLabel = activeCondo?.condoName ?? "Selecione condomínio";
-
-  function handleSelect(newId: string) {
-    navigateToCondoSubRoute(navigate, newId, subRoute);
-  }
 
   return (
     <DropdownMenu.Root>

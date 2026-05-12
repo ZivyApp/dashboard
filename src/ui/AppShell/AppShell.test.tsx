@@ -30,6 +30,7 @@ vi.mock("@tanstack/react-router", async () => {
     ),
     useNavigate: () => mockNavigate,
     useParams: () => ({ condoId: "condo-test" }),
+    useMatches: () => [{ routeId: "/_app/c/$condoId/inbox" }],
     useRouterState: ({ select }: { select: (s: { location: { pathname: string } }) => unknown }) =>
       select({ location: { pathname: "/c/condo-test/inbox" } }),
   };

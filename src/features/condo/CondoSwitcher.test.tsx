@@ -8,15 +8,13 @@ const mockNavigate = vi.fn();
 
 type ParamsResult = { condoId?: string | undefined };
 const mockUseParams = vi.fn<() => ParamsResult>();
-const mockUseRouterState = vi.fn<() => string>();
+const mockUseMatches = vi.fn<() => Array<{ routeId: string }>>();
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
-   
+
   useParams: (): ParamsResult => mockUseParams(),
-  useRouterState: ({ select }: { select: (s: { location: { pathname: string } }) => string }) =>
-     
-    select({ location: { pathname: mockUseRouterState() } }),
+  useMatches: (): Array<{ routeId: string }> => mockUseMatches(),
 }));
 
 type MockCondoResult = {
@@ -27,7 +25,6 @@ type MockCondoResult = {
 const mockUseMyCondos = vi.fn<() => MockCondoResult>();
 
 vi.mock("./useMyCondos", () => ({
-   
   useMyCondos: (): MockCondoResult => mockUseMyCondos(),
 }));
 
@@ -41,12 +38,13 @@ const CONDOS: CondoMembership[] = [
 describe("CondoSwitcher", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("shows loading placeholder while isPending", () => {
     mockUseMyCondos.mockReturnValue({ data: undefined, isPending: true, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     render(<CondoSwitcher />);
 
@@ -60,7 +58,7 @@ describe("CondoSwitcher", () => {
       error: new Error("API failed"),
     });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     render(<CondoSwitcher />);
 
@@ -70,7 +68,7 @@ describe("CondoSwitcher", () => {
   it("renders nothing when data is an empty array", () => {
     mockUseMyCondos.mockReturnValue({ data: [], isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     const { container } = render(<CondoSwitcher />);
 
@@ -80,7 +78,7 @@ describe("CondoSwitcher", () => {
   it("renders trigger button with active condo name", () => {
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     render(<CondoSwitcher />);
 
@@ -90,7 +88,7 @@ describe("CondoSwitcher", () => {
   it("shows 'Selecione condomínio' when no matching condoId in URL", () => {
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: undefined });
-    mockUseRouterState.mockReturnValue("/some/other/path");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/some/other/path" }]);
 
     render(<CondoSwitcher />);
 
@@ -101,7 +99,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     render(<CondoSwitcher />);
 
@@ -118,7 +116,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     render(<CondoSwitcher />);
 
@@ -136,7 +134,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/inbox");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
 
     render(<CondoSwitcher />);
 
@@ -159,7 +157,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/tickets");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/tickets" }]);
 
     render(<CondoSwitcher />);
 
@@ -182,7 +180,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/approvals");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/approvals" }]);
 
     render(<CondoSwitcher />);
 
@@ -205,7 +203,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/settings");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/settings" }]);
 
     render(<CondoSwitcher />);
 
@@ -228,7 +226,7 @@ describe("CondoSwitcher", () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseRouterState.mockReturnValue("/c/condo-1/unknown-page");
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/unknown-page" }]);
 
     render(<CondoSwitcher />);
 
