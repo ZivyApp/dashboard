@@ -1,21 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "@/ui/Button/Button";
-import { useSessionStore } from "@/stores/session";
-import { requireAuth } from "@/lib/routeGuards";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: requireAuth,
-  component: HomePage,
+  beforeLoad: () => {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw redirect({ to: "/inbox" });
+  },
 });
-
-function HomePage() {
-  const { session, signOut } = useSessionStore();
-  const email = session?.user.email ?? "";
-  return (
-    <main style={{ padding: 24 }}>
-      <p>
-        Logado como {email} <Button onClick={() => void signOut()}>Sair</Button>
-      </p>
-    </main>
-  );
-}

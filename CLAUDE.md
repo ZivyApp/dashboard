@@ -155,7 +155,7 @@ Convenções fixadas a partir de revisões anteriores. Seguir antes de propor al
 ### Bundle hygiene
 
 - Imports de `@fontsource/*` usam **subset específico** (ex.: `@fontsource/ibm-plex-sans/latin-400.css`). O import default (`400.css` sem subset) carrega vietnamese/greek/cyrillic/latin-ext desnecessariamente — projeto é pt-BR e só precisa de `latin`.
-- **Não instalar deps "para depois"**. Instalar quando for usar. Versões envelhecem e nomes mudam (ex.: `lucide-react@^1.14.0` é um pacote legado, atual é `^0.4xx.x`).
+- **Não instalar deps "para depois"**. Instalar quando for usar — versões envelhecem e nomes mudam. Sempre confirmar a versão atual com `npm view <pkg> version` antes de fixar no `package.json` (ex.: `lucide-react` saiu de `0.577.0` direto para `1.0.0` em março/2026; em maio/2026 está em `^1.14.0`).
 
 ### Testes
 

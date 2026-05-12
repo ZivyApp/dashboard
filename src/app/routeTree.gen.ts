@@ -10,11 +10,20 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as LoginRouteImport } from "./routes/login";
+import { Route as AppRouteImport } from "./routes/_app";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AppTicketsRouteImport } from "./routes/_app/tickets";
+import { Route as AppSettingsRouteImport } from "./routes/_app/settings";
+import { Route as AppInboxRouteImport } from "./routes/_app/inbox";
+import { Route as AppApprovalsRouteImport } from "./routes/_app/approvals";
 
 const LoginRoute = LoginRouteImport.update({
   id: "/login",
   path: "/login",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AppRoute = AppRouteImport.update({
+  id: "/_app",
   getParentRoute: () => rootRouteImport,
 } as any);
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +31,72 @@ const IndexRoute = IndexRouteImport.update({
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
+const AppTicketsRoute = AppTicketsRouteImport.update({
+  id: "/tickets",
+  path: "/tickets",
+  getParentRoute: () => AppRoute,
+} as any);
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: "/settings",
+  path: "/settings",
+  getParentRoute: () => AppRoute,
+} as any);
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: "/inbox",
+  path: "/inbox",
+  getParentRoute: () => AppRoute,
+} as any);
+const AppApprovalsRoute = AppApprovalsRouteImport.update({
+  id: "/approvals",
+  path: "/approvals",
+  getParentRoute: () => AppRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
+  "/approvals": typeof AppApprovalsRoute;
+  "/inbox": typeof AppInboxRoute;
+  "/settings": typeof AppSettingsRoute;
+  "/tickets": typeof AppTicketsRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
+  "/approvals": typeof AppApprovalsRoute;
+  "/inbox": typeof AppInboxRoute;
+  "/settings": typeof AppSettingsRoute;
+  "/tickets": typeof AppTicketsRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/_app": typeof AppRouteWithChildren;
   "/login": typeof LoginRoute;
+  "/_app/approvals": typeof AppApprovalsRoute;
+  "/_app/inbox": typeof AppInboxRoute;
+  "/_app/settings": typeof AppSettingsRoute;
+  "/_app/tickets": typeof AppTicketsRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/login";
+  fullPaths: "/" | "/login" | "/approvals" | "/inbox" | "/settings" | "/tickets";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/login";
-  id: "__root__" | "/" | "/login";
+  to: "/" | "/login" | "/approvals" | "/inbox" | "/settings" | "/tickets";
+  id:
+    | "__root__"
+    | "/"
+    | "/_app"
+    | "/login"
+    | "/_app/approvals"
+    | "/_app/inbox"
+    | "/_app/settings"
+    | "/_app/tickets";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  AppRoute: typeof AppRouteWithChildren;
   LoginRoute: typeof LoginRoute;
 }
 
@@ -58,6 +109,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof LoginRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/_app": {
+      id: "/_app";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof AppRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/": {
       id: "/";
       path: "/";
@@ -65,11 +123,56 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/_app/tickets": {
+      id: "/_app/tickets";
+      path: "/tickets";
+      fullPath: "/tickets";
+      preLoaderRoute: typeof AppTicketsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/settings": {
+      id: "/_app/settings";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof AppSettingsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/inbox": {
+      id: "/_app/inbox";
+      path: "/inbox";
+      fullPath: "/inbox";
+      preLoaderRoute: typeof AppInboxRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/approvals": {
+      id: "/_app/approvals";
+      path: "/approvals";
+      fullPath: "/approvals";
+      preLoaderRoute: typeof AppApprovalsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
   }
 }
 
+interface AppRouteChildren {
+  AppApprovalsRoute: typeof AppApprovalsRoute;
+  AppInboxRoute: typeof AppInboxRoute;
+  AppSettingsRoute: typeof AppSettingsRoute;
+  AppTicketsRoute: typeof AppTicketsRoute;
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppApprovalsRoute: AppApprovalsRoute,
+  AppInboxRoute: AppInboxRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTicketsRoute: AppTicketsRoute,
+};
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
 };
 export const routeTree = rootRouteImport
