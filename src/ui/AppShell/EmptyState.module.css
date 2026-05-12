@@ -12,6 +12,7 @@
 .title {
   font-size: var(--fs-xl);
   font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tighter);
   color: var(--fg-primary);
   margin: 0;
 }
