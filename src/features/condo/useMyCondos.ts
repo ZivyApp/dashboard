@@ -11,6 +11,10 @@ export interface CondoMembership {
 
 const ROLES: readonly Role[] = ["viewer", "staff", "manager", "super_admin"];
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
 function isRole(value: unknown): value is Role {
   return typeof value === "string" && (ROLES as readonly string[]).includes(value);
 }
@@ -24,9 +28,9 @@ type RawCondo = {
 
 export function toCondoMembership(c: RawCondo): CondoMembership | null {
   if (
-    typeof c.condo_id !== "string" ||
-    typeof c.condo_name !== "string" ||
-    typeof c.condo_slug !== "string" ||
+    !isNonEmptyString(c.condo_id) ||
+    !isNonEmptyString(c.condo_name) ||
+    !isNonEmptyString(c.condo_slug) ||
     !isRole(c.role)
   ) {
     return null;

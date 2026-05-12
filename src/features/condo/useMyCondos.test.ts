@@ -59,4 +59,37 @@ describe("toCondoMembership", () => {
       expect(result?.role).toBe(role);
     }
   });
+
+  it("retorna null quando condo_id é string vazia", () => {
+    expect(
+      toCondoMembership({
+        condo_id: "",
+        condo_name: "Alfa",
+        condo_slug: "alfa",
+        role: "staff",
+      }),
+    ).toBeNull();
+  });
+
+  it("retorna null quando condo_name é string vazia", () => {
+    expect(
+      toCondoMembership({
+        condo_id: "id-1",
+        condo_name: "",
+        condo_slug: "alfa",
+        role: "staff",
+      }),
+    ).toBeNull();
+  });
+
+  it("retorna null quando condo_slug é string vazia", () => {
+    expect(
+      toCondoMembership({
+        condo_id: "id-1",
+        condo_name: "Alfa",
+        condo_slug: "",
+        role: "staff",
+      }),
+    ).toBeNull();
+  });
 });
