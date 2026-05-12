@@ -129,12 +129,11 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
       <Dialog.Root open={isMobileOpen} onOpenChange={(open) => !open && onMobileClose()}>
         <Dialog.Portal>
           <Dialog.Overlay className={styles.overlay} />
-          <Dialog.Content
-            className={styles.drawer}
-            aria-label="Menu de navegação"
-            aria-describedby={undefined}
-          >
+          <Dialog.Content className={styles.drawer} aria-label="Menu de navegação">
             <Dialog.Title className={styles.srOnly}>Navegação</Dialog.Title>
+            <Dialog.Description className={styles.srOnly}>
+              Lista de links para as seções do sistema.
+            </Dialog.Description>
             <NavContent onLinkClick={onMobileClose} />
           </Dialog.Content>
         </Dialog.Portal>
