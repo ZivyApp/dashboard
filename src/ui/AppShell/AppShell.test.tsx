@@ -29,9 +29,35 @@ vi.mock("@tanstack/react-router", async () => {
       </a>
     ),
     useNavigate: () => mockNavigate,
-    useRouterState: () => ({ location: { pathname: "/inbox" } }),
+    useParams: () => ({ condoId: "condo-test" }),
+    useRouterState: ({ select }: { select: (s: { location: { pathname: string } }) => unknown }) =>
+      select({ location: { pathname: "/c/condo-test/inbox" } }),
   };
 });
+
+// Mock useMyCondos so Sidebar's useRoleGuard doesn't hit the API.
+// mockUseMyCondos is mutable so individual tests can override with mockUseMyCondos.mockReturnValue(...)
+import type { Role } from "@/features/condo/roleHierarchy";
+
+type MockCondoResult = {
+  data: Array<{ condoId: string; condoName: string; condoSlug: string; role: Role }>;
+  isPending: boolean;
+  error: null;
+};
+
+function defaultCondoResult(): MockCondoResult {
+  return {
+    data: [{ condoId: "condo-test", condoName: "Test Condo", condoSlug: "test", role: "manager" }],
+    isPending: false,
+    error: null,
+  };
+}
+
+const mockUseMyCondos = vi.fn(defaultCondoResult);
+
+vi.mock("@/features/condo/useMyCondos", () => ({
+  useMyCondos: () => mockUseMyCondos(),
+}));
 
 // Mock supabase to prevent env var errors
 vi.mock("@/lib/supabase", () => ({
@@ -49,6 +75,7 @@ vi.mock("@/lib/supabase", () => ({
 const { AppShell } = await import("./AppShell");
 const { ThemeToggle } = await import("./ThemeToggle");
 const { UserMenu } = await import("./UserMenu");
+const { Sidebar } = await import("./Sidebar");
 
 type StoreSession = ReturnType<typeof useSessionStore.getState>["session"];
 
@@ -256,5 +283,81 @@ describe("UserMenu", () => {
     await vi.waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ to: "/login" });
     });
+  });
+});
+
+describe("Sidebar — role gating", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    // Reset to default manager role after each test
+    mockUseMyCondos.mockReturnValue({
+      data: [
+        { condoId: "condo-test", condoName: "Test Condo", condoSlug: "test", role: "manager" },
+      ],
+      isPending: false,
+      error: null,
+    });
+  });
+
+  it("manager sees Aprovações sidebar item", () => {
+    mockUseMyCondos.mockReturnValue({
+      data: [
+        { condoId: "condo-test", condoName: "Test Condo", condoSlug: "test", role: "manager" },
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    const { container } = render(<Sidebar isMobileOpen={false} onMobileClose={vi.fn()} />);
+
+    // Sidebar aside is display:none in jsdom — query DOM directly
+    expect(container.querySelector("a[href='/c/$condoId/approvals']")).not.toBeNull();
+  });
+
+  it("viewer does not see Aprovações sidebar item", () => {
+    mockUseMyCondos.mockReturnValue({
+      data: [{ condoId: "condo-test", condoName: "Test Condo", condoSlug: "test", role: "viewer" }],
+      isPending: false,
+      error: null,
+    });
+
+    const { container } = render(<Sidebar isMobileOpen={false} onMobileClose={vi.fn()} />);
+
+    expect(container.querySelector("a[href='/c/$condoId/approvals']")).toBeNull();
+  });
+
+  it("staff does not see Aprovações sidebar item", () => {
+    mockUseMyCondos.mockReturnValue({
+      data: [{ condoId: "condo-test", condoName: "Test Condo", condoSlug: "test", role: "staff" }],
+      isPending: false,
+      error: null,
+    });
+
+    const { container } = render(<Sidebar isMobileOpen={false} onMobileClose={vi.fn()} />);
+
+    expect(container.querySelector("a[href='/c/$condoId/approvals']")).toBeNull();
+  });
+
+  it("super_admin sees Aprovações sidebar item", () => {
+    mockUseMyCondos.mockReturnValue({
+      data: [
+        { condoId: "condo-test", condoName: "Test Condo", condoSlug: "test", role: "super_admin" },
+      ],
+      isPending: false,
+      error: null,
+    });
+
+    const { container } = render(<Sidebar isMobileOpen={false} onMobileClose={vi.fn()} />);
+
+    expect(container.querySelector("a[href='/c/$condoId/approvals']")).not.toBeNull();
+  });
+
+  it("nav links use /c/$condoId/... pattern", () => {
+    const { container } = render(<Sidebar isMobileOpen={false} onMobileClose={vi.fn()} />);
+
+    // The aside sidebar is display:none in jsdom, so query directly in the DOM
+    const inboxLink = container.querySelector("a[href='/c/$condoId/inbox']");
+    expect(inboxLink).not.toBeNull();
   });
 });
