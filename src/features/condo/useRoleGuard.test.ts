@@ -8,12 +8,10 @@ const mockUseMyCondos = vi.fn<() => { data: CondoMembership[] | undefined }>();
 const mockUseParams = vi.fn<() => ParamsResult>();
 
 vi.mock("@tanstack/react-router", () => ({
-   
   useParams: (): ParamsResult => mockUseParams(),
 }));
 
 vi.mock("./useMyCondos", () => ({
-   
   useMyCondos: (): { data: CondoMembership[] | undefined } => mockUseMyCondos(),
 }));
 
@@ -26,6 +24,7 @@ function makeCondos(condoId: string, role: Role): CondoMembership[] {
 describe("useRoleGuard", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("returns allowed=false when data is undefined (loading)", () => {
