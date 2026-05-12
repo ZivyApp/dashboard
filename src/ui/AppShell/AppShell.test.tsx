@@ -50,6 +50,15 @@ const { AppShell } = await import("./AppShell");
 const { ThemeToggle } = await import("./ThemeToggle");
 const { UserMenu } = await import("./UserMenu");
 
+type StoreSession = ReturnType<typeof useSessionStore.getState>["session"];
+
+function mockSession(email: string): StoreSession {
+  return {
+    user: { email },
+    access_token: "fake-token",
+  } as StoreSession;
+}
+
 describe("AppShell", () => {
   beforeEach(() => {
     useThemeStore.setState({ mode: "light" });
@@ -131,6 +140,27 @@ describe("AppShell", () => {
     // Dialog should be gone
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+
+  it("pressing Escape closes the mobile drawer", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AppShell>
+        <div>children</div>
+      </AppShell>,
+    );
+
+    // Open drawer via hamburger
+    await user.click(screen.getByRole("button", { name: "Abrir menu" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Press Escape — Radix Dialog handles this natively
+    await user.keyboard("{Escape}");
+
+    // Drawer should be closed
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Abrir menu" })).toBeInTheDocument();
+  });
 });
 
 describe("ThemeToggle", () => {
@@ -193,9 +223,7 @@ describe("UserMenu", () => {
 
   it("shows user initial when session email is present", () => {
     useSessionStore.setState({
-      session: { user: { email: "user@example.com" } } as ReturnType<
-        typeof useSessionStore.getState
-      >["session"],
+      session: mockSession("user@example.com"),
       status: "authenticated",
     });
 
@@ -209,9 +237,7 @@ describe("UserMenu", () => {
     const user = userEvent.setup();
     const mockSignOut = vi.fn().mockResolvedValue(undefined);
     useSessionStore.setState({
-      session: { user: { email: "user@example.com" } } as ReturnType<
-        typeof useSessionStore.getState
-      >["session"],
+      session: mockSession("user@example.com"),
       status: "authenticated",
       signOut: mockSignOut,
     });
