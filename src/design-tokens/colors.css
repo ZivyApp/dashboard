@@ -32,6 +32,8 @@
   --accent-amber: #e8b14a;
   --info-bg: #e0ecf5;
   --info-fg: #4a7a9e;
+  /* stylelint-disable-next-line declaration-strict-value */
+  --overlay-bg: rgb(0 0 0 / 40%);
 }
 
 :root[data-theme="dark"] {
@@ -68,4 +70,6 @@
   --accent-amber: #f5c66a;
   --info-bg: #2a4050;
   --info-fg: #a8c8e0;
+  /* stylelint-disable-next-line declaration-strict-value */
+  --overlay-bg: rgb(0 0 0 / 60%);
 }
