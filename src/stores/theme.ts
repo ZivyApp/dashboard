@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { safeStorage } from "@/lib/safeStorage";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -7,14 +8,6 @@ interface ThemeState {
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
 }
-
-const safeStorage = () => {
-  try {
-    return localStorage;
-  } catch {
-    return { getItem: () => null, setItem: () => {}, removeItem: () => {} };
-  }
-};
 
 export const useThemeStore = create<ThemeState>()(
   persist(
@@ -25,7 +18,7 @@ export const useThemeStore = create<ThemeState>()(
         applyTheme(mode);
       },
     }),
-    { name: "zivy-theme", storage: createJSONStorage(safeStorage) },
+    { name: "zivy-theme", storage: createJSONStorage(() => safeStorage) },
   ),
 );
 
