@@ -31,6 +31,8 @@ export function UserMenu() {
   async function handleSignOut() {
     try {
       await useSessionStore.getState().signOut();
+    } catch (err) {
+      console.error("signOut failed:", err);
     } finally {
       void navigate({ to: "/login" });
     }
