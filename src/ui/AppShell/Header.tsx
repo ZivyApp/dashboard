@@ -43,7 +43,7 @@ export function Header({ isMobileMenuOpen, onMenuToggle }: HeaderProps) {
 
       <span className={styles.logo}>Zivy</span>
 
-      {/* CondoSwitcher slot — will be filled in slice 3.3 */}
+      {/* TODO(Plan 3.3): mount CondoSwitcher here */}
       <div className={styles.condoSlot} />
 
       <div className={styles.spacer} />

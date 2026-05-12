@@ -47,6 +47,7 @@
   user-select: none;
 }
 
+/* TODO(Plan 3.3): CondoSwitcher will be mounted here */
 .condoSlot {
   flex-shrink: 0;
 }
