@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toCondoMembership } from "./useMyCondos";
+import { toCondoMembership } from "./condoMembership";
 
 describe("toCondoMembership", () => {
   it("mapeia item válido corretamente", () => {
