@@ -9,14 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
+import { Route as NoAccessRouteImport } from "./routes/no-access";
 import { Route as LoginRouteImport } from "./routes/login";
 import { Route as AppRouteImport } from "./routes/_app";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as AppTicketsRouteImport } from "./routes/_app/tickets";
-import { Route as AppSettingsRouteImport } from "./routes/_app/settings";
-import { Route as AppInboxRouteImport } from "./routes/_app/inbox";
-import { Route as AppApprovalsRouteImport } from "./routes/_app/approvals";
+import { Route as AppIndexRouteImport } from "./routes/_app/index";
+import { Route as AppCCondoIdRouteImport } from "./routes/_app/c/$condoId";
+import { Route as AppCCondoIdTicketsRouteImport } from "./routes/_app/c/$condoId/tickets";
+import { Route as AppCCondoIdSettingsRouteImport } from "./routes/_app/c/$condoId/settings";
+import { Route as AppCCondoIdInboxRouteImport } from "./routes/_app/c/$condoId/inbox";
+import { Route as AppCCondoIdApprovalsRouteImport } from "./routes/_app/c/$condoId/approvals";
 
+const NoAccessRoute = NoAccessRouteImport.update({
+  id: "/no-access",
+  path: "/no-access",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const LoginRoute = LoginRouteImport.update({
   id: "/login",
   path: "/login",
@@ -26,82 +33,118 @@ const AppRoute = AppRouteImport.update({
   id: "/_app",
   getParentRoute: () => rootRouteImport,
 } as any);
-const IndexRoute = IndexRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: "/",
   path: "/",
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any);
-const AppTicketsRoute = AppTicketsRouteImport.update({
+const AppCCondoIdRoute = AppCCondoIdRouteImport.update({
+  id: "/c/$condoId",
+  path: "/c/$condoId",
+  getParentRoute: () => AppRoute,
+} as any);
+const AppCCondoIdTicketsRoute = AppCCondoIdTicketsRouteImport.update({
   id: "/tickets",
   path: "/tickets",
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AppCCondoIdRoute,
 } as any);
-const AppSettingsRoute = AppSettingsRouteImport.update({
+const AppCCondoIdSettingsRoute = AppCCondoIdSettingsRouteImport.update({
   id: "/settings",
   path: "/settings",
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AppCCondoIdRoute,
 } as any);
-const AppInboxRoute = AppInboxRouteImport.update({
+const AppCCondoIdInboxRoute = AppCCondoIdInboxRouteImport.update({
   id: "/inbox",
   path: "/inbox",
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AppCCondoIdRoute,
 } as any);
-const AppApprovalsRoute = AppApprovalsRouteImport.update({
+const AppCCondoIdApprovalsRoute = AppCCondoIdApprovalsRouteImport.update({
   id: "/approvals",
   path: "/approvals",
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AppCCondoIdRoute,
 } as any);
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
+  "/": typeof AppIndexRoute;
   "/login": typeof LoginRoute;
-  "/approvals": typeof AppApprovalsRoute;
-  "/inbox": typeof AppInboxRoute;
-  "/settings": typeof AppSettingsRoute;
-  "/tickets": typeof AppTicketsRoute;
+  "/no-access": typeof NoAccessRoute;
+  "/c/$condoId": typeof AppCCondoIdRouteWithChildren;
+  "/c/$condoId/approvals": typeof AppCCondoIdApprovalsRoute;
+  "/c/$condoId/inbox": typeof AppCCondoIdInboxRoute;
+  "/c/$condoId/settings": typeof AppCCondoIdSettingsRoute;
+  "/c/$condoId/tickets": typeof AppCCondoIdTicketsRoute;
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
-  "/approvals": typeof AppApprovalsRoute;
-  "/inbox": typeof AppInboxRoute;
-  "/settings": typeof AppSettingsRoute;
-  "/tickets": typeof AppTicketsRoute;
+  "/no-access": typeof NoAccessRoute;
+  "/": typeof AppIndexRoute;
+  "/c/$condoId": typeof AppCCondoIdRouteWithChildren;
+  "/c/$condoId/approvals": typeof AppCCondoIdApprovalsRoute;
+  "/c/$condoId/inbox": typeof AppCCondoIdInboxRoute;
+  "/c/$condoId/settings": typeof AppCCondoIdSettingsRoute;
+  "/c/$condoId/tickets": typeof AppCCondoIdTicketsRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
   "/_app": typeof AppRouteWithChildren;
   "/login": typeof LoginRoute;
-  "/_app/approvals": typeof AppApprovalsRoute;
-  "/_app/inbox": typeof AppInboxRoute;
-  "/_app/settings": typeof AppSettingsRoute;
-  "/_app/tickets": typeof AppTicketsRoute;
+  "/no-access": typeof NoAccessRoute;
+  "/_app/": typeof AppIndexRoute;
+  "/_app/c/$condoId": typeof AppCCondoIdRouteWithChildren;
+  "/_app/c/$condoId/approvals": typeof AppCCondoIdApprovalsRoute;
+  "/_app/c/$condoId/inbox": typeof AppCCondoIdInboxRoute;
+  "/_app/c/$condoId/settings": typeof AppCCondoIdSettingsRoute;
+  "/_app/c/$condoId/tickets": typeof AppCCondoIdTicketsRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/login" | "/approvals" | "/inbox" | "/settings" | "/tickets";
+  fullPaths:
+    | "/"
+    | "/login"
+    | "/no-access"
+    | "/c/$condoId"
+    | "/c/$condoId/approvals"
+    | "/c/$condoId/inbox"
+    | "/c/$condoId/settings"
+    | "/c/$condoId/tickets";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/login" | "/approvals" | "/inbox" | "/settings" | "/tickets";
+  to:
+    | "/login"
+    | "/no-access"
+    | "/"
+    | "/c/$condoId"
+    | "/c/$condoId/approvals"
+    | "/c/$condoId/inbox"
+    | "/c/$condoId/settings"
+    | "/c/$condoId/tickets";
   id:
     | "__root__"
-    | "/"
     | "/_app"
     | "/login"
-    | "/_app/approvals"
-    | "/_app/inbox"
-    | "/_app/settings"
-    | "/_app/tickets";
+    | "/no-access"
+    | "/_app/"
+    | "/_app/c/$condoId"
+    | "/_app/c/$condoId/approvals"
+    | "/_app/c/$condoId/inbox"
+    | "/_app/c/$condoId/settings"
+    | "/_app/c/$condoId/tickets";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
   AppRoute: typeof AppRouteWithChildren;
   LoginRoute: typeof LoginRoute;
+  NoAccessRoute: typeof NoAccessRoute;
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
+    "/no-access": {
+      id: "/no-access";
+      path: "/no-access";
+      fullPath: "/no-access";
+      preLoaderRoute: typeof NoAccessRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/login": {
       id: "/login";
       path: "/login";
@@ -116,64 +159,83 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/": {
-      id: "/";
+    "/_app/": {
+      id: "/_app/";
       path: "/";
       fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
+      preLoaderRoute: typeof AppIndexRouteImport;
+      parentRoute: typeof AppRoute;
     };
-    "/_app/tickets": {
-      id: "/_app/tickets";
+    "/_app/c/$condoId": {
+      id: "/_app/c/$condoId";
+      path: "/c/$condoId";
+      fullPath: "/c/$condoId";
+      preLoaderRoute: typeof AppCCondoIdRouteImport;
+      parentRoute: typeof AppRoute;
+    };
+    "/_app/c/$condoId/tickets": {
+      id: "/_app/c/$condoId/tickets";
       path: "/tickets";
-      fullPath: "/tickets";
-      preLoaderRoute: typeof AppTicketsRouteImport;
-      parentRoute: typeof AppRoute;
+      fullPath: "/c/$condoId/tickets";
+      preLoaderRoute: typeof AppCCondoIdTicketsRouteImport;
+      parentRoute: typeof AppCCondoIdRoute;
     };
-    "/_app/settings": {
-      id: "/_app/settings";
+    "/_app/c/$condoId/settings": {
+      id: "/_app/c/$condoId/settings";
       path: "/settings";
-      fullPath: "/settings";
-      preLoaderRoute: typeof AppSettingsRouteImport;
-      parentRoute: typeof AppRoute;
+      fullPath: "/c/$condoId/settings";
+      preLoaderRoute: typeof AppCCondoIdSettingsRouteImport;
+      parentRoute: typeof AppCCondoIdRoute;
     };
-    "/_app/inbox": {
-      id: "/_app/inbox";
+    "/_app/c/$condoId/inbox": {
+      id: "/_app/c/$condoId/inbox";
       path: "/inbox";
-      fullPath: "/inbox";
-      preLoaderRoute: typeof AppInboxRouteImport;
-      parentRoute: typeof AppRoute;
+      fullPath: "/c/$condoId/inbox";
+      preLoaderRoute: typeof AppCCondoIdInboxRouteImport;
+      parentRoute: typeof AppCCondoIdRoute;
     };
-    "/_app/approvals": {
-      id: "/_app/approvals";
+    "/_app/c/$condoId/approvals": {
+      id: "/_app/c/$condoId/approvals";
       path: "/approvals";
-      fullPath: "/approvals";
-      preLoaderRoute: typeof AppApprovalsRouteImport;
-      parentRoute: typeof AppRoute;
+      fullPath: "/c/$condoId/approvals";
+      preLoaderRoute: typeof AppCCondoIdApprovalsRouteImport;
+      parentRoute: typeof AppCCondoIdRoute;
     };
   }
 }
 
+interface AppCCondoIdRouteChildren {
+  AppCCondoIdApprovalsRoute: typeof AppCCondoIdApprovalsRoute;
+  AppCCondoIdInboxRoute: typeof AppCCondoIdInboxRoute;
+  AppCCondoIdSettingsRoute: typeof AppCCondoIdSettingsRoute;
+  AppCCondoIdTicketsRoute: typeof AppCCondoIdTicketsRoute;
+}
+
+const AppCCondoIdRouteChildren: AppCCondoIdRouteChildren = {
+  AppCCondoIdApprovalsRoute: AppCCondoIdApprovalsRoute,
+  AppCCondoIdInboxRoute: AppCCondoIdInboxRoute,
+  AppCCondoIdSettingsRoute: AppCCondoIdSettingsRoute,
+  AppCCondoIdTicketsRoute: AppCCondoIdTicketsRoute,
+};
+
+const AppCCondoIdRouteWithChildren = AppCCondoIdRoute._addFileChildren(AppCCondoIdRouteChildren);
+
 interface AppRouteChildren {
-  AppApprovalsRoute: typeof AppApprovalsRoute;
-  AppInboxRoute: typeof AppInboxRoute;
-  AppSettingsRoute: typeof AppSettingsRoute;
-  AppTicketsRoute: typeof AppTicketsRoute;
+  AppIndexRoute: typeof AppIndexRoute;
+  AppCCondoIdRoute: typeof AppCCondoIdRouteWithChildren;
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppApprovalsRoute: AppApprovalsRoute,
-  AppInboxRoute: AppInboxRoute,
-  AppSettingsRoute: AppSettingsRoute,
-  AppTicketsRoute: AppTicketsRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppCCondoIdRoute: AppCCondoIdRouteWithChildren,
 };
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  NoAccessRoute: NoAccessRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

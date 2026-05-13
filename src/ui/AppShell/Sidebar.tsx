@@ -1,20 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { Inbox, Ticket, ShieldCheck, Settings } from "lucide-react";
+import { useRoleGuard } from "@/features/condo/useRoleGuard";
 import styles from "./Sidebar.module.css";
-
-interface NavItem {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const navItems: NavItem[] = [
-  { to: "/inbox", label: "Inbox", icon: <Inbox size={18} aria-hidden="true" /> },
-  { to: "/tickets", label: "Tickets", icon: <Ticket size={18} aria-hidden="true" /> },
-  { to: "/approvals", label: "Aprovações", icon: <ShieldCheck size={18} aria-hidden="true" /> },
-  { to: "/settings", label: "Configurações", icon: <Settings size={18} aria-hidden="true" /> },
-];
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -22,6 +10,49 @@ interface SidebarProps {
 }
 
 function NavContent({ onLinkClick }: { onLinkClick?: () => void }) {
+  const params = useParams({ strict: false });
+  const condoId = params.condoId ?? "";
+
+  const approvalsGuard = useRoleGuard("manager");
+
+  interface NavItem {
+    to: string;
+    label: string;
+    icon: React.ReactNode;
+    params: { condoId: string };
+  }
+
+  const navItems: NavItem[] = [
+    {
+      to: "/c/$condoId/inbox",
+      label: "Inbox",
+      icon: <Inbox size={18} aria-hidden="true" />,
+      params: { condoId },
+    },
+    {
+      to: "/c/$condoId/tickets",
+      label: "Tickets",
+      icon: <Ticket size={18} aria-hidden="true" />,
+      params: { condoId },
+    },
+    ...(approvalsGuard.allowed
+      ? [
+          {
+            to: "/c/$condoId/approvals",
+            label: "Aprovações",
+            icon: <ShieldCheck size={18} aria-hidden="true" />,
+            params: { condoId },
+          },
+        ]
+      : []),
+    {
+      to: "/c/$condoId/settings",
+      label: "Configurações",
+      icon: <Settings size={18} aria-hidden="true" />,
+      params: { condoId },
+    },
+  ];
+
   return (
     <nav className={styles.nav} aria-label="Navegação principal">
       <ul className={styles.list}>
@@ -29,6 +60,7 @@ function NavContent({ onLinkClick }: { onLinkClick?: () => void }) {
           <li key={item.to}>
             <Link
               to={item.to}
+              params={item.params}
               className={styles.link}
               activeProps={{ className: `${styles.link} ${styles.active}` }}
               onClick={onLinkClick}

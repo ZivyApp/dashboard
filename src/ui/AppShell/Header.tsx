@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import { CondoSwitcher } from "@/features/condo/CondoSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 import styles from "./Header.module.css";
@@ -24,8 +25,9 @@ export function Header({ isMobileMenuOpen, onMenuToggle }: HeaderProps) {
 
       <span className={styles.logo}>Zivy</span>
 
-      {/* TODO(Plan 3.3): mount CondoSwitcher here */}
-      <div className={styles.condoSlot} />
+      <div className={styles.condoSlot}>
+        <CondoSwitcher />
+      </div>
 
       <div className={styles.spacer} />
 
