@@ -21,21 +21,17 @@ export function CondoSwitcher() {
   function handleSelect(newId: string) {
     const p = { condoId: newId };
     switch (subPath) {
-      case "inbox":
-        void navigate({ to: "/c/$condoId/inbox", params: p });
-        break;
       case "tickets":
         void navigate({ to: "/c/$condoId/tickets", params: p });
-        break;
+        return;
       case "approvals":
         void navigate({ to: "/c/$condoId/approvals", params: p });
-        break;
+        return;
       case "settings":
         void navigate({ to: "/c/$condoId/settings", params: p });
-        break;
+        return;
       default:
         void navigate({ to: "/c/$condoId/inbox", params: p });
-        break;
     }
   }
 

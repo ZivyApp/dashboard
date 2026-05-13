@@ -12,11 +12,16 @@ import "@/styles/global.css";
 initTheme();
 initSession();
 
+function hasCondoId(params: Record<string, unknown>): params is { condoId: string } {
+  return typeof params["condoId"] === "string";
+}
+
 function getActiveCondoIdFromUrl(): string | undefined {
-  const match = router.state.matches.find((m) => "condoId" in (m.params ?? {}));
-  if (!match) return undefined;
-  const params = match.params as { condoId?: string };
-  return params.condoId;
+  for (const match of router.state.matches) {
+    const params = match.params ?? {};
+    if (hasCondoId(params)) return params.condoId;
+  }
+  return undefined;
 }
 
 configureApiAuth({

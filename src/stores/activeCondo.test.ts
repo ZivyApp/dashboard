@@ -17,14 +17,14 @@ describe("activeCondo", () => {
   });
 
   it("setLastSelected não lança quando setItem dispara erro (Safari Private mode)", () => {
-    vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new Error("SecurityError");
     });
     expect(() => setLastSelected("condo-99")).not.toThrow();
   });
 
   it("getLastSelected retorna undefined quando getItem lança (Safari Private mode)", () => {
-    vi.spyOn(localStorage, "getItem").mockImplementation(() => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("SecurityError");
     });
     expect(getLastSelected()).toBeUndefined();
