@@ -1,0 +1,26 @@
+.shell {
+  display: grid;
+  height: 100%;
+
+  /* Mobile: header + main stacked */
+  grid-template:
+    "header" var(--size-header-h)
+    "main" 1fr
+    / 1fr;
+}
+
+@media (width >= 768px) {
+  .shell {
+    /* Desktop: header spans full width; sidebar + main below */
+    grid-template:
+      "header header" var(--size-header-h)
+      "sidebar main" 1fr
+      / var(--size-sidebar-w) 1fr;
+  }
+}
+
+.main {
+  grid-area: main;
+  overflow-y: auto;
+  min-width: 0;
+}

@@ -10,6 +10,32 @@
 
 ---
 
+## Handoff (ground truth)
+
+O design oficial está vendorado em `docs/handoff/zivy-wa-green/`. Antes de cada task que toca em visual, **abrir o arquivo correspondente do handoff e usar como referência canônica**:
+
+| Pergunta                                                          | Onde olhar                                                                                                                         |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Paleta de cores (WhatsApp Green)                                  | `docs/handoff/zivy-wa-green/project/theme-wa-green.css` (33 linhas — overrides brand + neutros)                                    |
+| Tokens base (status, info, danger, fs, space, radius, size)       | `docs/handoff/zivy-wa-green/project/styles.css:1–105` (`:root` block)                                                              |
+| Anatomia da Topbar (logo, condo-switcher, search, persona-badge)  | `chrome.jsx` + classes `.header`, `.logo`, `.condo-switcher`, `.search-bar`, `.persona-badge` em `styles.css:188–270`              |
+| Anatomia da Sidebar (scope header, nav-section, nav-item, footer) | `chrome.jsx` + classes `.scope`, `.nav-section`, `.nav-item`, `.nav-count`, `.nav-dot`, `.sidebar .footer` em `styles.css:272–326` |
+| Inbox/feed item (`.inbox-item`) + tabs (`.seg`)                   | `src/page-inbox.jsx` + `styles.css:706–720` (item) e bloco `.seg`                                                                  |
+| Shape de dados (eventos do feed)                                  | `data.jsx` + `KIND_ICON` em `page-inbox.jsx:15–20`                                                                                 |
+
+**Princípio:** o handoff é HTML/CSS/JSX puro; nosso job é portar para o stack real (TanStack Router + CSS Modules + R19) preservando o **resultado visual e o vocabulário de tokens**, não a estrutura interna do protótipo.
+
+### Deltas críticos vs o screenshot original (que motivou este plano)
+
+1. **Tokens reais:** o handoff usa `--brand: #25D366` + neutros tinta verde. Status tokens (`--status-urgent-*`, `--info-*`, `--danger-*`) já existem em `src/design-tokens/colors.css` com os mesmos valores. **Não criar tokens `--activity-bar-*` novos** — Task 1 vira "atualizar brand/neutros para WA Green".
+2. **`ActivityKind` real:** handoff usa `ticket_new | ticket_comment | approval | status_change`. Urgência é `priority` no ticket. Plano original tinha `ticket_new` como kind — **descartado**. Refletido nas Tasks 16, 17, 22.
+3. **`ActivityEvent` shape:** mantemos `readAt: string | null` (mais expressivo que `unread: boolean`), mas adicionamos `avatar?: string` (iniciais 2 chars usadas em `.ii-icon`) e `ticketId?: string` opcional para display do protocolo no `.ii-sub`. Detalhado em Task 16.
+4. **Classes CSS:** o handoff define classes globais (`.inbox-item`, `.scope`, `.nav-item`, `.seg`). Nossos componentes em CSS Modules **escopam** o mesmo visual (cada `.module.css` recria os estilos). Tasks de componente apontam para a classe-fonte.
+5. **SidebarFooter:** handoff tem versão **e** ícone de settings + tema toggle no footer. Task 6 ajustada para incluir.
+6. **SearchBox:** handoff inclui kbd hint `⌘K` à direita do input. Task 9 ajustada.
+
+---
+
 ## Convenções (lembretes obrigatórios — todas as tasks)
 
 - **Branches:** sair sempre de `develop` atualizada. `feature/plan-5-1-shell`, `feature/plan-5-2-activity-feed`, `feature/plan-5-3-role-guards`, `feature/plan-5-4-http-adapter`.
@@ -111,48 +137,88 @@ src/
 
 ---
 
-### Task 1: Tokens semânticos para activity (preparação)
+### Task 1: Atualizar paleta de cores para WhatsApp Green (theme do handoff)
 
 **Files:**
 
-- Modify: `src/design-tokens/semantic.css`
+- Modify: `src/design-tokens/colors.css`
 
-Adicionar tokens que vão ser usados pela sidebar agrupada (cores de grupo) e mais tarde pelo activity feed. Adicionamos aqui para não voltar atrás no 5.2.
+Sobrescrever brand + neutros para os valores do handoff (`docs/handoff/zivy-wa-green/project/theme-wa-green.css`). Os tokens de **status, danger, info, warning** já estão alinhados (mesmos hex em ambos). Não criar tokens `--activity-bar-*` — o feed consome `--info-*`, `--status-*`, `--brand-soft` diretamente.
 
-- [ ] **Step 1: Adicionar bloco no fim de `src/design-tokens/semantic.css`**
+- [ ] **Step 1: Editar `src/design-tokens/colors.css` no bloco `:root`**
+
+Trocar os valores das chaves abaixo (manter o resto intacto):
 
 ```css
-/* Sidebar agrupada (Plan 5.1) */
 :root {
-  --sidebar-group-label: var(--fg-tertiary);
-  --sidebar-item-bg-hover: var(--bg-muted);
-  --sidebar-item-bg-active: var(--brand-soft, color-mix(in oklab, var(--brand) 12%, transparent));
-  --sidebar-item-fg-active: var(--brand);
-  --sidebar-badge-bg: var(--bg-muted);
-  --sidebar-badge-fg: var(--fg-secondary);
-}
-
-/* Activity feed (Plan 5.2) */
-:root {
-  --activity-bar-priority-high: var(--danger, #dc2626);
-  --activity-bar-priority-medium: var(--info, #2563eb);
-  --activity-bar-priority-low: var(--fg-tertiary);
-  --activity-bar-approval: var(--warning, #d97706);
-  --activity-bar-comment: var(--fg-tertiary);
-  --activity-unread-bg: color-mix(in oklab, var(--brand) 6%, transparent);
+  --brand: #25d366;
+  --brand-hover: #1db954;
+  --brand-soft: #e8faf0;
+  --brand-muted: #a7f3c8;
+  --bg-canvas: #f4f6f4;
+  --bg-surface: #ffffff;
+  --bg-sidebar: #f7f9f8;
+  --bg-muted: #edf2ee;
+  --bg-elevated: #ffffff;
+  --border: #dde8de;
+  --border-strong: #c5d3c6;
+  --fg-primary: #0a1f10;
+  --fg-secondary: #3d6147;
+  --fg-tertiary: #7ea688;
+  --fg-disabled: #b8d4bc;
+  --success: #25d366;
+  /* status-*, danger-*, info-*, warning-*, ticket-*, fg-inverse, overlay-bg → SEM alteração */
 }
 ```
 
-- [ ] **Step 2: Verificar fallbacks**
+- [ ] **Step 2: Adicionar `--shadow-focus` no fim do bloco `:root`**
 
-Se `--danger`, `--info`, `--warning`, `--brand-soft` não existirem em `semantic.css`, os valores literais (`#dc2626`, etc.) servem como fallback do `var(...)`. Isso é intencional.
+```css
+/* stylelint-disable-next-line declaration-strict-value */
+--shadow-focus: 0 0 0 3px rgb(37 211 102 / 28%);
+```
 
-- [ ] **Step 3: Typecheck + commit**
+- [ ] **Step 3: Atualizar bloco `[data-theme="dark"]` com forest night**
+
+Trocar os mesmos campos para os valores do handoff:
+
+```css
+--brand: #4ade80;
+--brand-hover: #86efac;
+--brand-soft: #14532d;
+--brand-muted: #166534;
+--bg-canvas: #0a1410;
+--bg-surface: #111a13;
+--bg-sidebar: #0a1410;
+--bg-muted: #152018;
+--bg-elevated: #1a2a1c;
+--border: #1e3322;
+--border-strong: #264d2c;
+--fg-primary: #f0faf2;
+--fg-secondary: #8fb89a;
+--fg-tertiary: #5a7a62;
+--fg-disabled: #2a4530;
+--fg-inverse: #0a1410;
+--success: #4ade80;
+```
+
+E adicionar:
+
+```css
+/* stylelint-disable-next-line declaration-strict-value */
+--shadow-focus: 0 0 0 3px rgb(74 222 128 / 40%);
+```
+
+- [ ] **Step 4: Typecheck + smoke visual**
+
+Run: `npm run typecheck`
+Run: `npm run dev` — abrir a tela de login (que já existe) e validar visualmente que a cor do botão "Entrar" mudou do teal antigo para o WA Green. Parar.
+
+- [ ] **Step 5: Commit**
 
 ```bash
-npm run typecheck
-git add src/design-tokens/semantic.css
-git commit -m "feat(tokens): adiciona tokens de sidebar agrupada e activity"
+git add src/design-tokens/colors.css
+git commit -m "feat(tokens): adota paleta WhatsApp Green do handoff"
 ```
 
 ---
@@ -1727,17 +1793,18 @@ Slice 5.1 do Plan 5. Sem mudanças de dados — Plan 4 continua funcionando. Pr�
 ```ts
 import type { Scope } from "@/features/scope/useScope";
 
+// Alinhado com KIND_ICON em docs/handoff/.../page-inbox.jsx:15–20.
+// Urgência NÃO é kind separado — vem em `priority`.
 export const ACTIVITY_KINDS = [
-  "ticket_created",
-  "ticket_urgent",
-  "ticket_commented",
-  "ticket_status_changed",
-  "approval_pending",
+  "ticket_new",
+  "ticket_comment",
+  "approval",
+  "status_change",
 ] as const;
 
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
-export type ActivityPriority = "low" | "medium" | "high";
+export type ActivityPriority = "low" | "medium" | "high" | "urgent";
 
 export type ResourceRef =
   | { type: "ticket"; ticketId: string }
@@ -1749,11 +1816,12 @@ export interface ActivityEvent {
   condoId: string;
   condoName: string;
   title: string;
-  subtitle?: string;
+  subtitle?: string; // ".ii-sub" no handoff (texto livre com separadores ·)
   resourceRef: ResourceRef;
-  priority?: ActivityPriority;
-  occurredAt: string;
-  readAt: string | null;
+  priority?: ActivityPriority; // só faz sentido para kind=ticket_new (urgent → faixa lateral vermelha)
+  occurredAt: string; // ISO 8601 — formatado por formatRelTime para ".ii-time"
+  readAt: string | null; // null = unread (gera .inbox-item.unread no handoff)
+  avatar?: string; // 2 chars maiúsculos (ex.: "PO") — opcional, fallback para ícone do kind
 }
 
 export type ActivityTab = "all" | "unread" | "approvals";
@@ -1809,19 +1877,19 @@ function ago(minutes: number): string {
 export const FIXTURES: ActivityEvent[] = [
   {
     id: "ev-1",
-    kind: "ticket_urgent",
+    kind: "ticket_new",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "Novo chamado urgente: Câmera de entrada offline",
-    subtitle: "Residencial Jardins",
+    subtitle: "Residencial Jardins · TKT-2026-101 · Portaria",
     resourceRef: { type: "ticket", ticketId: "tk-101" },
-    priority: "high",
+    priority: "urgent",
     occurredAt: ago(15),
     readAt: null,
   },
   {
     id: "ev-2",
-    kind: "ticket_created",
+    kind: "ticket_new",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "Novo chamado: Elevador parado no 8º andar",
@@ -1833,7 +1901,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-3",
-    kind: "approval_pending",
+    kind: "approval",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "Aprovação pendente: Lucas Ferreira (Bloco B, 203)",
@@ -1844,7 +1912,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-4",
-    kind: "ticket_commented",
+    kind: "ticket_comment",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "Novo comentário em TKT-2026-041",
@@ -1855,7 +1923,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-5",
-    kind: "ticket_created",
+    kind: "ticket_new",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "Novo chamado: Vazamento na 2ª garagem G1",
@@ -1867,7 +1935,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-6",
-    kind: "ticket_status_changed",
+    kind: "status_change",
     condoId: "c-vilamar",
     condoName: "Vila Mar",
     title: "TKT-2026-038 → Em andamento",
@@ -1878,7 +1946,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-7",
-    kind: "approval_pending",
+    kind: "approval",
     condoId: "c-vilamar",
     condoName: "Vila Mar",
     title: "Aprovação pendente: Maria Souza (Bloco A, 12)",
@@ -1889,7 +1957,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-8",
-    kind: "ticket_created",
+    kind: "ticket_new",
     condoId: "c-vilamar",
     condoName: "Vila Mar",
     title: "Novo chamado: Portão da garagem com ruído",
@@ -1901,7 +1969,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-9",
-    kind: "ticket_commented",
+    kind: "ticket_comment",
     condoId: "c-vilamar",
     condoName: "Vila Mar",
     title: "Novo comentário em TKT-2026-032",
@@ -1912,19 +1980,19 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-10",
-    kind: "ticket_urgent",
+    kind: "ticket_new",
     condoId: "c-vilamar",
     condoName: "Vila Mar",
     title: "Chamado urgente: Falta d'água no bloco C",
-    subtitle: "Vila Mar",
+    subtitle: "Vila Mar · TKT-2026-105 · Hidráulica",
     resourceRef: { type: "ticket", ticketId: "tk-105" },
-    priority: "high",
+    priority: "urgent",
     occurredAt: ago(720),
     readAt: ago(360),
   },
   {
     id: "ev-11",
-    kind: "ticket_status_changed",
+    kind: "status_change",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "TKT-2026-030 → Resolvido",
@@ -1935,7 +2003,7 @@ export const FIXTURES: ActivityEvent[] = [
   },
   {
     id: "ev-12",
-    kind: "ticket_created",
+    kind: "ticket_new",
     condoId: "c-jardins",
     condoName: "Residencial Jardins",
     title: "Novo chamado: Lâmpada queimada na escada",
@@ -2002,7 +2070,7 @@ describe("LocalActivityRepository", () => {
   it("filtra por tab=approvals", async () => {
     const repo = createLocalActivityRepository({ events: FIXTURES });
     const res = await repo.list({ tab: "approvals" });
-    expect(res.items.every((e) => e.kind === "approval_pending")).toBe(true);
+    expect(res.items.every((e) => e.kind === "approval")).toBe(true);
   });
 
   it("counts reflete totais por tab respeitando scope", async () => {
@@ -2110,7 +2178,7 @@ function applyReads(events: ActivityEvent[], reads: Record<string, string>): Act
 function matchTab(event: ActivityEvent, tab: ActivityTab): boolean {
   if (tab === "all") return true;
   if (tab === "unread") return event.readAt === null;
-  if (tab === "approvals") return event.kind === "approval_pending";
+  if (tab === "approvals") return event.kind === "approval";
   return true;
 }
 
@@ -2128,7 +2196,7 @@ export function createLocalActivityRepository(opts: {
     const counts: Record<ActivityTab, number> = {
       all: scoped.length,
       unread: scoped.filter((e) => e.readAt === null).length,
-      approvals: scoped.filter((e) => e.kind === "approval_pending").length,
+      approvals: scoped.filter((e) => e.kind === "approval").length,
     };
 
     const tab: ActivityTab = input.tab ?? "all";
@@ -2418,40 +2486,48 @@ git commit -m "feat(activity): hook useMarkRead (mutation + invalidação)"
 - Create: `src/features/activity/activityIcon.ts`
 - Create: `src/features/activity/activityPalette.ts`
 
-- [ ] **Step 1: `activityIcon.ts`**
+**Referência:** `docs/handoff/zivy-wa-green/project/src/page-inbox.jsx:15–20` (`KIND_ICON`).
+
+- [ ] **Step 1: `activityIcon.ts` — mapping completo (ícone + bg + fg por kind)**
 
 ```ts
-import { AlertCircle, MessageCircle, CheckCircle2, RefreshCw, FileText } from "lucide-react";
+import { Bell, Send, Shield, Check } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ActivityKind } from "./repository/types";
 
-const MAP: Record<ActivityKind, LucideIcon> = {
-  ticket_urgent: AlertCircle,
-  ticket_created: FileText,
-  ticket_commented: MessageCircle,
-  ticket_status_changed: RefreshCw,
-  approval_pending: CheckCircle2,
+export interface KindVisual {
+  icon: LucideIcon;
+  bg: string; // var(--token)
+  fg: string; // var(--token)
+}
+
+const MAP: Record<ActivityKind, KindVisual> = {
+  ticket_new: { icon: Bell, bg: "var(--info-bg)", fg: "var(--info-fg)" },
+  ticket_comment: { icon: Send, bg: "var(--brand-soft)", fg: "var(--brand)" },
+  approval: { icon: Shield, bg: "var(--status-onhold-bg)", fg: "var(--status-onhold-fg)" },
+  status_change: { icon: Check, bg: "var(--status-media-bg)", fg: "var(--status-media-fg)" },
 };
 
-export function iconFor(kind: ActivityKind): LucideIcon {
+export function visualFor(kind: ActivityKind): KindVisual {
   return MAP[kind];
 }
 ```
 
-- [ ] **Step 2: `activityPalette.ts`**
+- [ ] **Step 2: `activityPalette.ts` — flag de "urgent" e helper de unread**
 
 ```ts
 import type { ActivityEvent } from "./repository/types";
 
-export function barColorFor(event: ActivityEvent): string {
-  if (event.kind === "approval_pending") return "var(--activity-bar-approval)";
-  if (event.kind === "ticket_commented") return "var(--activity-bar-comment)";
-  if (event.priority === "high") return "var(--activity-bar-priority-high)";
-  if (event.priority === "medium") return "var(--activity-bar-priority-medium)";
-  if (event.priority === "low") return "var(--activity-bar-priority-low)";
-  return "var(--activity-bar-priority-low)";
+export function isUrgent(event: ActivityEvent): boolean {
+  return event.kind === "ticket_new" && event.priority === "urgent";
+}
+
+export function isUnread(event: ActivityEvent): boolean {
+  return event.readAt === null;
 }
 ```
+
+> No handoff a "barra lateral colorida" do `.inbox-item.unread` é fixa em `var(--brand)` (border-left 3px). Priority/urgency aparece como **badge** no header do item ("Novo", "Urgente"), não na barra. Ver `page-inbox.jsx` e `styles.css:706–720`.
 
 - [ ] **Step 3: Commit**
 
@@ -2483,7 +2559,7 @@ import type { ActivityEvent } from "./repository/types";
 
 const ev: ActivityEvent = {
   id: "ev-1",
-  kind: "ticket_urgent",
+  kind: "ticket_new",
   condoId: "c-1",
   condoName: "Cond Y",
   title: "Câmera offline",
@@ -2525,22 +2601,29 @@ describe("ActivityItem", () => {
 
 - [ ] **Step 2: Run, verificar falha**
 
-- [ ] **Step 3: CSS**
+**Anatomia (handoff `styles.css:706–720` + `page-inbox.jsx`):** `.inbox-item` é uma linha clickável com 36×36 `.ii-icon` (cor por kind via `KIND_ICON`), `.ii-body` (head + sub), `.ii-time` à direita, e `border-left: 3px var(--brand)` quando `unread`. Badge "Novo" / "Urgente" aparece dentro do `.ii-head` (não na barra).
+
+- [ ] **Step 3: CSS (escopado em CSS Modules — mesma visual de `.inbox-item`)**
 
 ```css
 .row {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
+  padding: var(--space-4);
   cursor: pointer;
   background: transparent;
-  border: 1px solid transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--border);
   width: 100%;
   text-align: left;
   font: inherit;
   position: relative;
+}
+
+.row:last-child {
+  border-bottom: none;
 }
 
 .row:hover {
@@ -2548,26 +2631,16 @@ describe("ActivityItem", () => {
 }
 
 .unread {
-  background-color: var(--activity-unread-bg);
+  border-left-color: var(--brand);
 }
 
-.bar {
-  width: 4px;
-  border-radius: 2px;
+.iconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  align-self: stretch;
-}
-
-.read .bar {
-  opacity: 0.3;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-  color: var(--fg-secondary);
-  flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .body {
@@ -2575,34 +2648,60 @@ describe("ActivityItem", () => {
   min-width: 0;
 }
 
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-1);
+}
+
 .title {
   color: var(--fg-primary);
   font-size: var(--fs-sm);
-  margin: 0 0 var(--space-1);
+  font-weight: var(--fw-medium);
+  margin: 0;
 }
 
 .unread .title {
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
 }
 
-.subtitle {
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  background-color: var(--brand-soft);
+  color: var(--brand);
+}
+
+.badgeUrgent {
+  background-color: var(--status-urgent-bg);
+  color: var(--status-urgent-fg);
+}
+
+.time {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+  white-space: nowrap;
+}
+
+.sub {
   font-size: var(--fs-xs);
   color: var(--fg-tertiary);
   margin: 0;
 }
 
-.time {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--fg-tertiary);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
 .markBtn {
   display: none;
   position: absolute;
-  right: 40px;
+  right: var(--space-4);
   top: 50%;
   transform: translateY(-50%);
   width: 28px;
@@ -2626,8 +2725,8 @@ describe("ActivityItem", () => {
 ```tsx
 import { Check } from "lucide-react";
 import type { ActivityEvent } from "./repository/types";
-import { iconFor } from "./activityIcon";
-import { barColorFor } from "./activityPalette";
+import { visualFor } from "./activityIcon";
+import { isUnread, isUrgent } from "./activityPalette";
 import { formatRelTime } from "@/features/inbox/formatRelTime";
 import styles from "./ActivityItem.module.css";
 
@@ -2638,20 +2737,31 @@ interface Props {
 }
 
 export function ActivityItem({ event, onPick, onMarkRead }: Props) {
-  const Icon = iconFor(event.kind);
-  const isUnread = event.readAt === null;
-  const cls = [styles.row, isUnread ? styles.unread : styles.read].filter(Boolean).join(" ");
+  const visual = visualFor(event.kind);
+  const Icon = visual.icon;
+  const unread = isUnread(event);
+  const urgent = isUrgent(event);
+  const cls = [styles.row, unread ? styles.unread : ""].filter(Boolean).join(" ");
 
   return (
     <button type="button" className={cls} onClick={() => onPick(event)} aria-label={event.title}>
-      <span className={styles.bar} style={{ backgroundColor: barColorFor(event) }} />
-      <Icon className={styles.icon} aria-hidden="true" />
+      <span
+        className={styles.iconBox}
+        style={{ backgroundColor: visual.bg, color: visual.fg }}
+        aria-hidden="true"
+      >
+        <Icon size={18} />
+      </span>
       <div className={styles.body}>
-        <p className={styles.title}>{event.title}</p>
-        {event.subtitle ? <p className={styles.subtitle}>{event.subtitle}</p> : null}
+        <div className={styles.head}>
+          <p className={styles.title}>{event.title}</p>
+          {urgent ? <span className={`${styles.badge} ${styles.badgeUrgent}`}>Urgente</span> : null}
+          {unread && !urgent ? <span className={styles.badge}>Novo</span> : null}
+          <span className={styles.time}>{formatRelTime(event.occurredAt)}</span>
+        </div>
+        {event.subtitle ? <p className={styles.sub}>{event.subtitle}</p> : null}
       </div>
-      <span className={styles.time}>{formatRelTime(event.occurredAt)}</span>
-      {isUnread ? (
+      {unread ? (
         <span
           role="button"
           tabIndex={0}
@@ -2676,7 +2786,7 @@ export function ActivityItem({ event, onPick, onMarkRead }: Props) {
 }
 ```
 
-> O botão "Marcar como lido" usa `<span role="button">` em vez de `<button>` aninhado (HTML não permite `<button>` dentro de `<button>`).
+> O botão "Marcar como lido" usa `<span role="button">` porque HTML não permite `<button>` aninhado.
 
 - [ ] **Step 5: Pass + commit**
 

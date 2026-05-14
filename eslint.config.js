@@ -18,6 +18,7 @@ export default tseslint.config(
       "vitest.config.d.ts",
       ".storybook/*.js",
       ".storybook/*.d.ts",
+      "docs/handoff/**",
     ],
   },
   js.configs.recommended,

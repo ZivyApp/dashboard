@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<title>Zivy — Exploração de Logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f2f2f6; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const PL = '#37003c';
+const PLmid = '#6b1a73';
+const PLlight = '#b76dbf';
+const accent = '#e90052';
+const ink = '#14141c';
+const white = '#ffffff';
+
+/* ─── Logo helpers ─────────────────────────────────────────── */
+
+/* Shared preview wrapper: shows logo on light + dark bg */
+function LogoPreview({ bg = '#fff', children, style }) {
+  return (
+    <div style={{
+      width: '100%', height: '100%', background: bg,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 40, ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Row({ children, gap = 40 }) {
+  return <div style={{ display: 'flex', alignItems: 'center', gap }}>{children}</div>;
+}
+
+/* ─── LOGO 01: Z geométrico bold + wordmark ─────────────── */
+function Logo01({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(14) }}>
+      {/* Z mark — bold geometric, 2 diagonais */}
+      <svg width={s(42)} height={s(42)} viewBox="0 0 42 42" fill="none">
+        <rect width="42" height="42" rx="10" fill={PL}/>
+        {/* Z: top bar, diagonal, bottom bar */}
+        <path d="M11 12 H31 L11 30 H31" stroke={white} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{
+        fontFamily: "'Space Grotesk', sans-serif",
+        fontWeight: 700, fontSize: s(26), color: fg,
+        letterSpacing: '-0.03em', lineHeight: 1,
+      }}>Zivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 02: Z em círculo com gradiente ────────────────── */
+function Logo02({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(14) }}>
+      <svg width={s(44)} height={s(44)} viewBox="0 0 44 44" fill="none">
+        <defs>
+          <linearGradient id="g02" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#6b1a73"/>
+            <stop offset="1" stopColor="#37003c"/>
+          </linearGradient>
+        </defs>
+        <circle cx="22" cy="22" r="22" fill="url(#g02)"/>
+        <path d="M13 14 H31 L13 30 H31" stroke={white} strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: 800, fontSize: s(24), color: fg,
+        letterSpacing: '-0.04em',
+      }}>zivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 03: wordmark elegante, Z estilizado inline ────── */
+function Logo03({ scale = 1, dark = false }) {
+  const fg = dark ? white : ink;
+  const accent2 = PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+      <span style={{
+        fontFamily: "'Sora', sans-serif",
+        fontWeight: 800, fontSize: s(30), color: accent2,
+        letterSpacing: '-0.04em',
+      }}>Z</span>
+      <span style={{
+        fontFamily: "'Sora', sans-serif",
+        fontWeight: 300, fontSize: s(30), color: fg,
+        letterSpacing: '-0.03em',
+      }}>ivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 04: ícone edifício/Z negativo ─────────────────── */
+function Logo04({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(13) }}>
+      <svg width={s(40)} height={s(44)} viewBox="0 0 40 44" fill="none">
+        {/* Prédio estilizado com Z no espaço negativo */}
+        <rect x="2" y="8" width="36" height="34" rx="4" fill={PL}/>
+        <rect x="2" y="2" width="22" height="10" rx="3" fill={PL}/>
+        {/* Z em negativo */}
+        <path d="M10 17 H30 L10 27 H30" stroke={white} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+        {/* janelas */}
+        <rect x="8" y="32" width="7" height="7" rx="1.5" fill={white} opacity="0.3"/>
+        <rect x="17" y="32" width="7" height="7" rx="1.5" fill={white} opacity="0.3"/>
+        <rect x="26" y="32" width="7" height="7" rx="1.5" fill={white} opacity="0.3"/>
+      </svg>
+      <span style={{
+        fontFamily: "'Space Grotesk', sans-serif",
+        fontWeight: 600, fontSize: s(25), color: fg,
+        letterSpacing: '-0.02em',
+      }}>Zivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 05: Z como raio/seta descendente ──────────────── */
+function Logo05({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(12) }}>
+      <svg width={s(36)} height={s(44)} viewBox="0 0 36 44" fill="none">
+        <defs>
+          <linearGradient id="g05" x1="0" y1="0" x2="36" y2="44" gradientUnits="userSpaceOnUse">
+            <stop stopColor={accent}/>
+            <stop offset="1" stopColor={PL}/>
+          </linearGradient>
+        </defs>
+        {/* Z ultra-condensado, estilo ligature/raio */}
+        <path d="M4 4 L32 4 L4 40 L32 40" stroke="url(#g05)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{
+        fontFamily: "'DM Sans', sans-serif",
+        fontWeight: 700, fontSize: s(26), color: fg,
+        letterSpacing: '-0.025em',
+      }}>Zivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 06: monograma Z só, premium flat ──────────────── */
+function Logo06({ scale = 1 }) {
+  const s = (n) => n * scale;
+  return (
+    <svg width={s(64)} height={s(64)} viewBox="0 0 64 64" fill="none">
+      <rect width="64" height="64" rx="16" fill={PL}/>
+      <path d="M14 17 H50 L14 47 H50" stroke={white} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* dot — referência ao ponto de notificação */}
+      <circle cx="50" cy="14" r="6" fill={accent}/>
+    </svg>
+  );
+}
+
+/* ─── LOGO 07: wordmark tipográfico puro ─────────────────── */
+function Logo07({ scale = 1, dark = false }) {
+  const fg = dark ? white : ink;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+      <span style={{
+        fontFamily: "'Sora', sans-serif",
+        fontWeight: 800, fontSize: s(36),
+        background: `linear-gradient(135deg, ${PL} 0%, ${accent} 100%)`,
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        letterSpacing: '-0.04em', lineHeight: 1,
+      }}>Zivy</span>
+      <span style={{
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: 400, fontSize: s(10), color: dark ? 'rgba(255,255,255,0.55)' : '#6b6b7d',
+        letterSpacing: '0.18em', textTransform: 'uppercase',
+      }}>gestão condominial</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 08: Z hexagonal/badge ────────────────────────── */
+function Logo08({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  const hw = s(24); // half-width
+  const hh = s(28); // half-height
+  const hex = `${s(24)},${s(0)} ${s(48)},${s(14)} ${s(48)},${s(42)} ${s(24)},${s(56)} ${s(0)},${s(42)} ${s(0)},${s(14)}`;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(14) }}>
+      <svg width={s(48)} height={s(56)} viewBox={`0 0 ${s(48)} ${s(56)}`} fill="none">
+        <polygon points={hex} fill={PL}/>
+        <path d={`M${s(13)} ${s(19)} H${s(35)} L${s(13)} ${s(37)} H${s(35)}`}
+              stroke={white} strokeWidth={s(3.5)} strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{
+        fontFamily: "'Space Grotesk', sans-serif",
+        fontWeight: 700, fontSize: s(26), color: fg,
+        letterSpacing: '-0.025em',
+      }}>Zivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 09: Z minimalista outline ────────────────────── */
+function Logo09({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(10) }}>
+      <svg width={s(34)} height={s(38)} viewBox="0 0 34 38" fill="none">
+        <rect x="1.5" y="1.5" width="31" height="35" rx="7.5" stroke={dark ? white : PL} strokeWidth="2.5"/>
+        <path d="M9 11 H25 L9 27 H25" stroke={dark ? white : PL} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: 600, fontSize: s(24), color: fg,
+        letterSpacing: '-0.02em',
+      }}>Zivy</span>
+    </div>
+  );
+}
+
+/* ─── LOGO 10: Z chat-bubble (hint telegram) ─────────────── */
+function Logo10({ scale = 1, dark = false }) {
+  const fg = dark ? white : PL;
+  const s = (n) => n * scale;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(13) }}>
+      <svg width={s(44)} height={s(44)} viewBox="0 0 44 44" fill="none">
+        <defs>
+          <linearGradient id="g10" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#6b1a73"/>
+            <stop offset="1" stopColor="#37003c"/>
+          </linearGradient>
+        </defs>
+        {/* Balão de mensagem com cauda */}
+        <path d="M6 6 H38 Q42 6 42 10 V28 Q42 32 38 32 H20 L8 42 V32 H6 Q2 32 2 28 V10 Q2 6 6 6Z" fill="url(#g10)"/>
+        <path d="M12 13 H32 L12 25 H32" stroke={white} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      <span style={{
+        fontFamily: "'Space Grotesk', sans-serif",
+        fontWeight: 700, fontSize: s(25), color: fg,
+        letterSpacing: '-0.025em',
+      }}>Zivy</span>
+    </div>
+  );
+}
+
+/* ─── APP ─────────────────────────────────────────────────── */
+function App() {
+  return (
+    <DesignCanvas title="Zivy — Exploração de Logo">
+      <DCSection id="monogramas" title="Monograma + Wordmark">
+
+        <DCArtboard id="l01" label="01 · Z geométrico bold" width={520} height={340}>
+          <LogoPreview>
+            <Logo01 scale={1.2}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo01 scale={0.75}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 160, marginTop: 0 }}>
+            <Logo01 scale={1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Ícone em rect arredondado · Z path simples · Space Grotesk 700
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l02" label="02 · Z circular, wordmark lowercase" width={520} height={340}>
+          <LogoPreview>
+            <Logo02 scale={1.3}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo02 scale={0.8}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 160 }}>
+            <Logo02 scale={1.1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Círculo com gradiente roxo · Z suave · Inter 800 lowercase
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l06" label="03 · Monograma Z + dot acento" width={520} height={340}>
+          <LogoPreview>
+            <Logo06 scale={1.2}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo06 scale={0.7}/>
+          </LogoPreview>
+          <LogoPreview bg="#f7f7fa" style={{ height: 160 }}>
+            <Logo06 scale={1}/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Só ícone · dot magenta = referência de notificação/urgência
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l08" label="04 · Badge hexagonal" width={520} height={380}>
+          <LogoPreview>
+            <Logo08 scale={1.1}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo08 scale={0.75}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 160 }}>
+            <Logo08 scale={0.95} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Hexágono como forma — referência "premium/badge" · Space Grotesk
+          </div>
+        </DCArtboard>
+
+      </DCSection>
+
+      <DCSection id="wordmarks" title="Wordmark Tipográfico">
+
+        <DCArtboard id="l03" label="05 · Z bold, ivy light — dois pesos" width={520} height={300}>
+          <LogoPreview>
+            <Logo03 scale={1.3}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo03 scale={0.8}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 140 }}>
+            <Logo03 scale={1.1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Só tipo · Z roxo 800 + ivy 300 · Sora — contraste de peso no nome
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l07" label="06 · Gradiente + subtítulo" width={520} height={300}>
+          <LogoPreview>
+            <Logo07 scale={1.1}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo07 scale={0.75}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 140 }}>
+            <Logo07 scale={1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Gradiente roxo→magenta · linha "gestão condominial" · Sora 800
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l09" label="07 · Z outline minimal" width={520} height={300}>
+          <LogoPreview>
+            <Logo09 scale={1.3}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo09 scale={0.85}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 140 }}>
+            <Logo09 scale={1.1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Ícone em outline — funciona em fundos claros e escuros · Inter 600
+          </div>
+        </DCArtboard>
+
+      </DCSection>
+
+      <DCSection id="conceituais" title="Conceituais — com metáfora">
+
+        <DCArtboard id="l04" label="08 · Z + prédio/janelas" width={520} height={340}>
+          <LogoPreview>
+            <Logo04 scale={1.2}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo04 scale={0.8}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 160 }}>
+            <Logo04 scale={1.1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Ícone de prédio com Z no corpo + janelas · metáfora direta com o produto
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l10" label="09 · Z balão de mensagem (hint Telegram)" width={520} height={340}>
+          <LogoPreview>
+            <Logo10 scale={1.1}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo10 scale={0.75}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 160 }}>
+            <Logo10 scale={1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Balão de chat com cauda · referência ao canal Telegram do produto · Space Grotesk
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="l05" label="10 · Z raio com gradiente magenta" width={520} height={340}>
+          <LogoPreview>
+            <Logo05 scale={1.2}/>
+            <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>
+            <Logo05 scale={0.8}/>
+          </LogoPreview>
+          <LogoPreview bg={PL} style={{ height: 160 }}>
+            <Logo05 scale={1.1} dark/>
+          </LogoPreview>
+          <div style={{ background: '#f7f7fa', padding: '12px 20px', fontSize: 12, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>
+            Z como raio/velocidade · gradiente accent→brand · DM Sans 700
+          </div>
+        </DCArtboard>
+
+      </DCSection>
+
+      <DCSection id="inuse" title="Aplicações contextuais">
+
+        <DCArtboard id="ctx1" label="Topbar do dashboard" width={840} height={200}>
+          <div style={{
+            width: '100%', height: '100%', background: PL,
+            display: 'flex', alignItems: 'center', padding: '0 28px', gap: 24,
+          }}>
+            <Logo01 scale={0.9} dark/>
+            <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.15)' }}/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Residencial Jardins ▾</span>
+            <div style={{ flex: 1 }}/>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Camila Duarte</span>
+            <div style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.15)', color: '#fff',
+              display: 'grid', placeItems: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13,
+            }}>CD</div>
+          </div>
+          <div style={{
+            width: '100%', height: '100%', background: '#fff',
+            display: 'flex', alignItems: 'center', padding: '0 28px',
+          }}>
+            <Logo03 scale={0.85}/>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="ctx2" label="App icon (512×512)" width={320} height={320}>
+          <div style={{
+            width: '100%', height: '100%', background: '#f7f7fa',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20,
+          }}>
+            <Logo06 scale={2.2}/>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <Logo06 scale={1.2}/>
+              <Logo06 scale={0.7}/>
+            </div>
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="ctx3" label="Favicon 32×32 · 16×16" width={320} height={200}>
+          <div style={{
+            width: '100%', height: '100%', background: '#f7f7fa',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40,
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <Logo06 scale={0.5}/>
+              <span style={{ fontSize: 10, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>32×32</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <Logo06 scale={0.25}/>
+              <span style={{ fontSize: 10, color: '#6b6b7d', fontFamily: 'Inter, sans-serif' }}>16×16</span>
+            </div>
+          </div>
+        </DCArtboard>
+
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

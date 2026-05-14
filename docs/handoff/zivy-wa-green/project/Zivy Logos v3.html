@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<title>Zivy — Logos v3 · Conversa dual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: 'Inter', sans-serif; background: #f2f2f6; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const PL  = '#37003c';
+const PLm = '#5c1265';
+const PLl = '#9b44a3';
+const ACC = '#e90052';
+const ink = '#14141c';
+const W   = '#ffffff';
+
+function Caption({ children }) {
+  return <div style={{ background: '#f7f7fa', borderTop: '1px solid #e5e5ec', padding: '10px 18px', fontSize: 11, color: '#6b6b7d', fontFamily: 'Inter, sans-serif', width: '100%', lineHeight: 1.6 }}>{children}</div>;
+}
+function Frame({ bg = W, children, style }) {
+  return (
+    <div style={{ width: '100%', flex: 1, background: bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, padding: '28px 32px', ...style }}>
+      {children}
+    </div>
+  );
+}
+function Row({ children, gap = 32 }) {
+  return <div style={{ display: 'flex', alignItems: 'center', gap }}>{children}</div>;
+}
+function Divider() {
+  return <div style={{ width: '100%', height: 1, background: '#e5e5ec' }}/>;
+}
+
+/* ── Wordmark helper ──────────────────────────────────────── */
+function Wordmark({ size = 26, dark = false, font = 'Space Grotesk', wZ = 700, wRest = 400 }) {
+  const fg = dark ? 'rgba(255,255,255,0.85)' : ink;
+  const zc = dark ? W : PL;
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1 }}>
+      <span style={{ fontFamily: `'${font}', sans-serif`, fontWeight: wZ, fontSize: size, color: zc, letterSpacing: '-0.04em' }}>Z</span>
+      <span style={{ fontFamily: `'${font}', sans-serif`, fontWeight: wRest, fontSize: size, color: fg, letterSpacing: '-0.025em' }}>ivy</span>
+    </div>
+  );
+}
+
+/* ── Z path compacto — não esticado ─────────────────────────
+   Viewbox 20×16: Z com proporções normais de letra,
+   não ultra-condensado. Stroke arredondado.
+─────────────────────────────────────────────────────────── */
+function ZPath({ size = 14, color = W, weight = 2.4 }) {
+  return (
+    <svg width={size} height={size * 0.78} viewBox="0 0 20 16" fill="none" style={{ display: 'block' }}>
+      <path d="M2 2 H18 L2 14 H18" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ── Três pontinhos (typing indicator) ───────────────────── */
+function Dots({ size = 4, color = W, gap = 3 }) {
+  return (
+    <div style={{ display: 'flex', gap, alignItems: 'center' }}>
+      {[0,1,2].map(i => <div key={i} style={{ width: size, height: size, borderRadius: '50%', background: color }}/>)}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ÍCONE DUAL BUBBLE — variáveis de configuração:
+   - layout: 'stack' (referência) | 'side' | 'overlap-right'
+   - fillFront, fillBack: cores de cada balão
+   - frontContent: 'Z' | 'dots'
+   - backContent: 'Z' | 'dots' | 'none'
+   - radius dos balões
+═══════════════════════════════════════════════════════════ */
+
+/* Balão frontal (maior, cauda bottom-left) */
+function BubbleFront({ w = 40, h = 32, r = 7, fill = PL, content = 'Z', contentColor = W, sw = 2.2 }) {
+  const tailX = w * 0.18;
+  const tailD = `M4,${h * 0.62} Q${tailX},${h * 0.85} ${tailX - 2},${h + 8} Q${tailX + 4},${h * 0.9} ${w * 0.32},${h * 0.78}`;
+  return (
+    <g>
+      <rect x="0" y="0" width={w} height={h} rx={r} fill={fill}/>
+      {/* cauda */}
+      <path d={`M${tailX - 4},${h * 0.7} Q${tailX - 2},${h + 5} ${tailX + 6},${h * 0.82}`} fill={fill}/>
+      {content === 'Z' && (
+        <g transform={`translate(${w * 0.18}, ${h * 0.26})`}>
+          <svg width={w * 0.64} height={h * 0.5} viewBox="0 0 20 16" fill="none" overflow="visible">
+            <path d="M2 2 H18 L2 14 H18" stroke={contentColor} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </g>
+      )}
+      {content === 'dots' && (
+        <g transform={`translate(${w * 0.22}, ${h * 0.42})`}>
+          {[0,1,2].map(i => <circle key={i} cx={i * (h * 0.22)} cy="0" r={h * 0.08} fill={contentColor}/>)}
+        </g>
+      )}
+    </g>
+  );
+}
+
+/* Balão de fundo (menor, cauda bottom-right) */
+function BubbleBack({ w = 30, h = 24, r = 6, fill = PLl, ox = 0, oy = 0, content = 'dots', contentColor = W }) {
+  return (
+    <g transform={`translate(${ox},${oy})`}>
+      <rect x="0" y="0" width={w} height={h} rx={r} fill={fill}/>
+      {/* cauda bottom-right */}
+      <path d={`M${w * 0.65},${h * 0.72} Q${w * 0.88},${h + 4} ${w * 0.78},${h * 0.88}`} fill={fill}/>
+      {content === 'dots' && (
+        <g transform={`translate(${w * 0.2}, ${h * 0.44})`}>
+          {[0,1,2].map(i => <circle key={i} cx={i * (h * 0.25)} cy="0" r={h * 0.09} fill={contentColor}/>)}
+        </g>
+      )}
+      {content === 'Z' && (
+        <g transform={`translate(${w * 0.16}, ${h * 0.24})`}>
+          <svg width={w * 0.68} height={h * 0.52} viewBox="0 0 20 16" fill="none" overflow="visible">
+            <path d="M2 2 H18 L2 14 H18" stroke={contentColor} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </g>
+      )}
+    </g>
+  );
+}
+
+/* ── Ícone composto ──────────────────────────────────────── */
+function DualBubble({ scale = 1, variant = 'a', wordmark = true, dark = false, wfont = 'Space Grotesk', wsize = 26 }) {
+  const s = n => Math.round(n * scale);
+
+  const configs = {
+    // A — referência: frontal Z roxo escuro, fundo roxo médio com dots, offset diagonal clássico
+    a: { fw: 46, fh: 36, fr: 8, ffill: PL,  fcont: 'Z',    bw: 34, bh: 26, br: 7, bfill: PLl, bcont: 'dots', box: 14, boy: -12 },
+    // B — frontal com dots, fundo com Z — inversão (gestor responde)
+    b: { fw: 46, fh: 36, fr: 8, ffill: PL,  fcont: 'dots', bw: 34, bh: 26, br: 7, bfill: PLl, bcont: 'Z',   box: 14, boy: -12 },
+    // C — frontal roxo escuro Z, fundo magenta dots
+    c: { fw: 46, fh: 36, fr: 8, ffill: PL,  fcont: 'Z',    bw: 34, bh: 26, br: 7, bfill: ACC, bcont: 'dots', box: 14, boy: -12 },
+    // D — pill (radius alto) · frontal Z, fundo dots
+    d: { fw: 46, fh: 34, fr: 17, ffill: PL, fcont: 'Z',    bw: 34, bh: 24, br: 12, bfill: PLm, bcont: 'dots', box: 15, boy: -11 },
+    // E — square minimal
+    e: { fw: 44, fh: 34, fr: 4,  ffill: PL, fcont: 'Z',    bw: 32, bh: 24, br: 4, bfill: PLm, bcont: 'dots', box: 15, boy: -11 },
+    // F — mesmo tamanho, side by side, não sobrepostos
+    f: { fw: 38, fh: 30, fr: 7,  ffill: PL, fcont: 'Z',    bw: 38, bh: 30, br: 7, bfill: PLl, bcont: 'dots', box: 42, boy: 0 },
+    // G — fundo magenta com Z, frontal roxo dots
+    g: { fw: 46, fh: 36, fr: 8, ffill: PL,  fcont: 'dots', bw: 34, bh: 26, br: 7, bfill: ACC, bcont: 'Z',   box: 14, boy: -12 },
+    // H — tudo preto (versão mono dark)
+    h: { fw: 46, fh: 36, fr: 8, ffill: ink, fcont: 'Z',    bw: 34, bh: 26, br: 7, bfill: '#3a3a4a', bcont: 'dots', box: 14, boy: -12 },
+  };
+  const c = configs[variant] || configs.a;
+
+  const totalW = s(c.fw + Math.max(0, c.box));
+  const totalH = s(c.fh + Math.abs(Math.min(0, c.boy)) + 12);
+  const offsetY = c.boy < 0 ? s(Math.abs(c.boy)) : 0;
+
+  const fg = dark ? W : PL;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: wordmark ? s(14) : 0 }}>
+      <svg width={totalW} height={totalH + s(12)} viewBox={`0 0 ${totalW} ${totalH + s(12)}`} fill="none">
+        {/* back bubble (rendered first = behind) */}
+        <BubbleBack w={s(c.bw)} h={s(c.bh)} r={s(c.br)} fill={c.bfill} ox={s(c.box)} oy={s(c.boy < 0 ? 0 : c.boy)} content={c.bcont} contentColor={W}/>
+        {/* front bubble */}
+        <g transform={`translate(0, ${offsetY})`}>
+          <BubbleFront w={s(c.fw)} h={s(c.fh)} r={s(c.fr)} fill={c.ffill} content={c.fcont} contentColor={W} sw={2.2}/>
+        </g>
+      </svg>
+      {wordmark && <Wordmark size={s(wsize)} dark={dark} font={wfont}/>}
+    </div>
+  );
+}
+
+/* ─── inversão de cor para fundo claro: ícone outline ────── */
+function DualBubbleOutline({ scale = 1 }) {
+  const s = n => Math.round(n * scale);
+  return (
+    <svg width={s(64)} height={s(60)} viewBox="0 0 64 60" fill="none">
+      {/* back */}
+      <rect x={s(18)} y={s(0)} width={s(34)} height={s(26)} rx={s(7)} stroke={PLl} strokeWidth={s(2)} fill="none"/>
+      <path d={`M${s(44)},${s(18)} Q${s(50)},${s(30)} ${s(46)},${s(26)}`} stroke={PLl} strokeWidth={s(2)} fill="none"/>
+      {/* dots inside back */}
+      {[0,1,2].map(i => <circle key={i} cx={s(27 + i * 7)} cy={s(13)} r={s(2.2)} fill={PLl}/>)}
+      {/* front */}
+      <rect x={s(0)} y={s(14)} width={s(46)} height={s(36)} rx={s(8)} stroke={PL} strokeWidth={s(2)} fill="none"/>
+      <path d={`M${s(8)},${s(42)} Q${s(6)},${s(54)} ${s(16)},${s(50)}`} stroke={PL} strokeWidth={s(2)} fill="none"/>
+      {/* Z inside front */}
+      <path d={`M${s(10)} ${s(25)} H${s(36)} L${s(10)} ${s(41)} H${s(36)}`} stroke={PL} strokeWidth={s(2.5)} strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ─── APP ─────────────────────────────────────────────────── */
+function App() {
+  return (
+    <DesignCanvas title="Zivy — Logos v3 · Dual bubble (mensagem/conversa)">
+
+      <DCSection id="core" title="Conceito dual bubble — variações de forma e cor">
+
+        <DCArtboard id="v-a" label="A · Referência — Z frontal, dots atrás" width={500} height={320}>
+          <Frame><DualBubble scale={1.2} variant="a"/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '22px 32px' }}><DualBubble scale={1} variant="a" dark/></Frame>
+          <Caption>Frontal roxo escuro com Z · fundo roxo médio com ··· · cauda bilateral = diálogo</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="v-b" label="B · Inversão — dots frontal, Z atrás" width={500} height={320}>
+          <Frame><DualBubble scale={1.2} variant="b"/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '22px 32px' }}><DualBubble scale={1} variant="b" dark/></Frame>
+          <Caption>Dots na frente (sistema processando) · Z respondendo atrás · leitura mais sutil</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="v-c" label="C · Magenta no balão de fundo" width={500} height={320}>
+          <Frame><DualBubble scale={1.2} variant="c"/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '22px 32px' }}><DualBubble scale={1} variant="c" dark/></Frame>
+          <Caption>Z roxo escuro · fundo magenta com dots · urgência/alerta como acento de marca</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="v-d" label="D · Forma pill — mais suave e amigável" width={500} height={320}>
+          <Frame><DualBubble scale={1.2} variant="d"/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '22px 32px' }}><DualBubble scale={1} variant="d" dark/></Frame>
+          <Caption>Radius alto = forma pill · mais orgânico · WhatsApp-like · ideal pra persona amador</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="v-e" label="E · Square — tech/assertivo" width={500} height={320}>
+          <Frame><DualBubble scale={1.2} variant="e"/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '22px 32px' }}><DualBubble scale={1} variant="e" dark/></Frame>
+          <Caption>Radius pequeno = ângulos quase retos · mais sério · Telegram-like · B2B profissional</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="v-g" label="G · Z no fundo magenta — energia invertida" width={500} height={320}>
+          <Frame><DualBubble scale={1.2} variant="g"/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '22px 32px' }}><DualBubble scale={1} variant="g" dark/></Frame>
+          <Caption>Balão de fundo magenta com Z · frontal roxo com dots · leitura muito diferente — Z é a resposta, não o chamado</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+      <DCSection id="tipografia" title="Tipografia — mesma forma, fontes diferentes">
+
+        <DCArtboard id="t-sg" label="Space Grotesk — geométrico (atual)" width={500} height={240}>
+          <Frame><DualBubble scale={1.1} variant="a" wfont="Space Grotesk" wsize={27}/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '18px 32px' }}><DualBubble scale={0.95} variant="a" dark wfont="Space Grotesk" wsize={27}/></Frame>
+          <Caption>Space Grotesk 700/400 · geométrico, construído · SaaS B2B</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="t-sora" label="Sora — dois pesos (dir 03 reunida)" width={500} height={240}>
+          <Frame><DualBubble scale={1.1} variant="a" wfont="Sora" wsize={27}/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '18px 32px' }}><DualBubble scale={0.95} variant="a" dark wfont="Sora" wsize={27}/></Frame>
+          <Caption>Sora 700/400 · une o espírito das duas direções favoritas · Z mais expressivo</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="t-inter" label="Inter — neutro e familiar" width={500} height={240}>
+          <Frame><DualBubble scale={1.1} variant="a" wfont="Inter" wsize={27}/></Frame>
+          <Divider/>
+          <Frame bg={PL} style={{ padding: '18px 32px' }}><DualBubble scale={0.95} variant="a" dark wfont="Inter" wsize={27}/></Frame>
+          <Caption>Inter 700/400 · máxima legibilidade · combina perfeitamente com o restante da UI</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+      <DCSection id="icone" title="Ícone isolado — app icon, favicon, avatar">
+
+        <DCArtboard id="icon-sizes" label="Escalonamento do ícone" width={540} height={260}>
+          <Frame style={{ flexDirection: 'row', gap: 32, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            {[2.2, 1.6, 1.1, 0.7, 0.45].map((sc, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <DualBubble scale={sc} variant="a" wordmark={false}/>
+                <span style={{ fontSize: 10, color: '#8b8b9e', fontFamily: 'Inter, sans-serif' }}>
+                  {['96px', '72px', '48px', '32px', '16px'][i]}
+                </span>
+              </div>
+            ))}
+          </Frame>
+          <Caption>Z compacto mantém leitura do Z mesmo em 16px · dots reconhecíveis em 32px+</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="icon-colors" label="Paleta de ícones alternativos" width={540} height={260}>
+          <Frame style={{ flexDirection: 'row', gap: 28, flexWrap: 'wrap' }}>
+            {['a','c','d','e','h'].map(v => (
+              <div key={v} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <DualBubble scale={1} variant={v} wordmark={false}/>
+                <span style={{ fontSize: 10, color: '#8b8b9e', fontFamily: 'Inter, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{v}</span>
+              </div>
+            ))}
+          </Frame>
+          <Caption>Variante H (tudo escuro) = versão mono · variante D (pill) = mais casual/WhatsApp</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="icon-outline" label="Versão outline (monocromática)" width={400} height={260}>
+          <Frame>
+            <Row>
+              <DualBubbleOutline scale={1.3}/>
+              <DualBubbleOutline scale={0.85}/>
+              <DualBubbleOutline scale={0.55}/>
+            </Row>
+          </Frame>
+          <Caption>Outline monocromático · para impressão, bordado, emboss · sem perder leitura</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+      <DCSection id="contexto" title="Em contexto — dashboard, app, splash">
+
+        <DCArtboard id="ctx-topbar" label="Topbar do dashboard" width={920} height={160}>
+          <div style={{ width: '100%', height: '100%', background: PL, display: 'flex', alignItems: 'center', padding: '0 24px', gap: 16 }}>
+            <DualBubble scale={0.62} variant="a" wordmark dark wfont="Space Grotesk" wsize={22}/>
+            <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)', marginLeft: 4 }}/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Residencial Jardins ▾</span>
+            <div style={{ flex: 1 }}/>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Camila Duarte</span>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: W, display: 'grid', placeItems: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13 }}>CD</div>
+          </div>
+          <Caption>Variante A na topbar · ícone 62% + Space Grotesk · bem encaixado na altura de 56px</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="ctx-splash" label="Splash / loading screen" width={420} height={380}>
+          <div style={{ width: '100%', height: '100%', background: PL, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+            <DualBubble scale={1.7} variant="a" wordmark={false}/>
+            <div style={{ height: 16 }}/>
+            <Wordmark size={32} dark font="Space Grotesk" wZ={700} wRest={400}/>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 4 }}>gestão condominial</span>
+          </div>
+          <Caption>Ícone grande + wordmark separado abaixo · leitura hierarchy clara em splash/loading</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="ctx-pill" label="Variante pill na topbar" width={920} height={160}>
+          <div style={{ width: '100%', height: '100%', background: PL, display: 'flex', alignItems: 'center', padding: '0 24px', gap: 16 }}>
+            <DualBubble scale={0.62} variant="d" wordmark dark wfont="Sora" wsize={22}/>
+            <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)', marginLeft: 4 }}/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Residencial Jardins ▾</span>
+            <div style={{ flex: 1 }}/>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: W, display: 'grid', placeItems: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13 }}>CD</div>
+          </div>
+          <Caption>Variante D (pill) + Sora · mais soft/orgânico · ainda premium</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

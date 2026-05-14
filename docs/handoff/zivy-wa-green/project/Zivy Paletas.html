@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<title>Zivy — Exploração de paletas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: 'IBM Plex Sans', sans-serif; background: #f2f2f6; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+/* ─────────────────────────────────────────────────────────
+   Mini dashboard mockup — renderizado em cada paleta
+───────────────────────────────────────────────────────── */
+
+function MiniDash({ p }) {
+  const navItems = ['Inbox', 'Tickets', 'Aprovações'];
+  const tickets = [
+    { proto: 'TKT-041', title: 'Elevador parado — Bloco A', status: 'urgent', loc: 'Elevador Social' },
+    { proto: 'TKT-040', title: 'Vazamento na garagem G1', status: 'open',   loc: 'Garagem G1' },
+    { proto: 'TKT-039', title: 'Torneira não fecha',       status: 'done',  loc: 'Playground' },
+  ];
+
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'grid',
+      gridTemplateColumns: '148px 1fr',
+      gridTemplateRows: '42px 1fr',
+      gridTemplateAreas: '"header header" "sidebar main"',
+      fontFamily: "'IBM Plex Sans', sans-serif",
+      fontSize: 11,
+      borderRadius: 10,
+      overflow: 'hidden',
+      border: `1px solid ${p.border}`,
+    }}>
+      {/* Header */}
+      <div style={{
+        gridArea: 'header',
+        background: p.headerBg,
+        borderBottom: `1px solid ${p.border}`,
+        display: 'flex', alignItems: 'center',
+        padding: '0 14px', gap: 10,
+      }}>
+        {/* Logo mark */}
+        <div style={{
+          width: 22, height: 22, borderRadius: 6,
+          background: p.brand, color: p.brandFg,
+          display: 'grid', placeItems: 'center',
+          fontWeight: 700, fontSize: 11,
+        }}>Z</div>
+        <span style={{ fontWeight: 700, fontSize: 13, color: p.brand, letterSpacing: '-0.02em' }}>Zivy</span>
+        {/* Condo switcher */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '3px 8px', borderRadius: 6,
+          border: `1px solid ${p.border}`,
+          background: p.surface, color: p.fgSecondary, fontSize: 10,
+          marginLeft: 6,
+        }}>
+          <div style={{ width: 14, height: 14, borderRadius: 4, background: p.brandSoft, color: p.brand, display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: 8 }}>JR</div>
+          <span style={{ color: p.fgPrimary, fontWeight: 500 }}>Res. Jardins</span>
+          <span style={{ opacity: 0.4 }}>▾</span>
+        </div>
+        {/* Search */}
+        <div style={{
+          flex: 1, maxWidth: 280,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '3px 10px', borderRadius: 6, height: 26,
+          background: p.bgMuted, border: `1px solid ${p.border}`,
+          color: p.fgTertiary, fontSize: 10, marginLeft: 4,
+        }}>
+          <span>🔍</span><span>Buscar…</span>
+          <span style={{ marginLeft: 'auto', fontFamily: 'monospace', fontSize: 9, opacity: 0.5 }}>⌘K</span>
+        </div>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
+          {/* persona */}
+          <div style={{ padding: '2px 8px', borderRadius: 999, background: p.brandSoft, color: p.brand, fontWeight: 500, fontSize: 9 }}>Administradora</div>
+          {/* avatar */}
+          <div style={{ width: 26, height: 26, borderRadius: '50%', background: p.brandSoft, color: p.brand, display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: 10 }}>CD</div>
+        </div>
+      </div>
+
+      {/* Sidebar */}
+      <div style={{
+        gridArea: 'sidebar',
+        background: p.sidebarBg,
+        borderRight: `1px solid ${p.border}`,
+        padding: '10px 6px',
+        display: 'flex', flexDirection: 'column', gap: 1,
+      }}>
+        <div style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.07em', color: p.fgTertiary, fontWeight: 600, padding: '6px 8px 4px' }}>Operação</div>
+        {navItems.map((item, i) => (
+          <div key={item} style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '5px 8px', borderRadius: 6, fontSize: 11, fontWeight: 500,
+            background: i === 1 ? p.brandSoft : 'transparent',
+            color: i === 1 ? p.brand : p.fgSecondary,
+          }}>
+            <div style={{ width: 12, height: 12, borderRadius: 3, background: i === 1 ? p.brand : p.border, opacity: i === 1 ? 1 : 0.5 }}/>
+            {item}
+            {i === 0 && <span style={{ marginLeft: 'auto', fontSize: 9, color: p.fgTertiary, background: p.bgMuted, padding: '0 4px', borderRadius: 999 }}>3</span>}
+          </div>
+        ))}
+        <div style={{ height: 1, background: p.border, margin: '6px 4px' }}/>
+        <div style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.07em', color: p.fgTertiary, fontWeight: 600, padding: '6px 8px 4px' }}>Estrutura</div>
+        {['Blocos', 'Unidades', 'Áreas'].map(item => (
+          <div key={item} style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '5px 8px', borderRadius: 6, fontSize: 11, fontWeight: 500,
+            color: p.fgSecondary,
+          }}>
+            <div style={{ width: 12, height: 12, borderRadius: 3, background: p.border, opacity: 0.5 }}/>
+            {item}
+          </div>
+        ))}
+      </div>
+
+      {/* Main */}
+      <div style={{ gridArea: 'main', background: p.canvas, padding: '14px 16px', overflow: 'hidden' }}>
+        {/* KPI row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+          {[['Abertos','7',false],['Em andamento','4',true],['Resolvidos','12',false],['Urgentes','2','urgent']].map(([lbl,num,hi]) => (
+            <div key={lbl} style={{
+              background: p.surface, border: `1px solid ${p.border}`, borderRadius: 8, padding: '8px 10px',
+            }}>
+              <div style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.fgTertiary, fontWeight: 600 }}>{lbl}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', marginTop: 2,
+                color: hi === 'urgent' ? p.danger : hi ? p.brand : p.fgPrimary }}>{num}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Ticket list */}
+        <div style={{ background: p.surface, border: `1px solid ${p.border}`, borderRadius: 8, overflow: 'hidden' }}>
+          {/* Table head */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '80px 1fr 90px 80px',
+            background: p.bgMuted, borderBottom: `1px solid ${p.border}`,
+            padding: '6px 10px', gap: 8,
+          }}>
+            {['Protocolo','Chamado','Status','Prioridade'].map(h => (
+              <div key={h} style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.fgTertiary, fontWeight: 600 }}>{h}</div>
+            ))}
+          </div>
+          {tickets.map((t, i) => (
+            <div key={t.proto} style={{
+              display: 'grid', gridTemplateColumns: '80px 1fr 90px 80px',
+              padding: '7px 10px', gap: 8, alignItems: 'center',
+              borderBottom: i < tickets.length - 1 ? `1px solid ${p.border}` : 'none',
+              background: i === 0 ? p.urgentBg : 'transparent',
+            }}>
+              <div style={{ fontFamily: 'monospace', fontSize: 9, color: p.fgTertiary }}>{t.proto}</div>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: i === 0 ? p.danger : p.fgPrimary }}>{t.title}</div>
+                <div style={{ fontSize: 9, color: p.fgTertiary, marginTop: 1 }}>{t.loc}</div>
+              </div>
+              <div>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '2px 6px', borderRadius: 999, fontSize: 9, fontWeight: 600,
+                  background: t.status === 'urgent' ? p.urgentChipBg : t.status === 'done' ? p.doneBg : p.openBg,
+                  color: t.status === 'urgent' ? p.danger : t.status === 'done' ? p.doneColor : p.openColor,
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }}/>
+                  {t.status === 'urgent' ? 'Urgente' : t.status === 'done' ? 'Resolvido' : 'Aberto'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
+                {[5,8,11].map((h,j) => (
+                  <div key={j} style={{ width: 3, height: h, borderRadius: 1,
+                    background: i === 0
+                      ? (j <= 2 ? p.danger : p.border)
+                      : (j === 0 ? p.brand : p.border)
+                  }}/>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Primary button */}
+        <div style={{ marginTop: 10, display: 'flex', gap: 6 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '5px 12px', borderRadius: 8,
+            background: p.brand, color: p.brandFg,
+            fontSize: 10, fontWeight: 600,
+          }}>+ Novo chamado</div>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '5px 12px', borderRadius: 8,
+            background: p.surface, color: p.fgSecondary,
+            border: `1px solid ${p.border}`,
+            fontSize: 10, fontWeight: 500,
+          }}>Exportar CSV</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Palettes — cada objeto é um tema completo
+───────────────────────────────────────────────────────── */
+
+const palettes = {
+
+  /* A: Verde escuro / forest — inspiração Passabot dark */
+  A: {
+    name: 'Forest dark',
+    desc: 'Verde floresta escuro como marca · sidebar quase preta · corpo cinza-escuro',
+    headerBg: '#0f1a14',
+    sidebarBg: '#111d16',
+    canvas:    '#151f18',
+    surface:   '#1c2a20',
+    bgMuted:   '#1e2e22',
+    border:    '#2a3d2e',
+    brand:     '#22c55e',
+    brandSoft: 'rgba(34,197,94,0.12)',
+    brandFg:   '#fff',
+    fgPrimary: '#f0faf2',
+    fgSecondary:'#8fb89a',
+    fgTertiary: '#5a7a62',
+    danger:    '#f87171',
+    urgentBg:  'rgba(248,113,113,0.06)',
+    urgentChipBg: 'rgba(248,113,113,0.15)',
+    openBg:    'rgba(34,197,94,0.1)',
+    openColor: '#22c55e',
+    doneBg:    'rgba(74,222,128,0.1)',
+    doneColor: '#4ade80',
+  },
+
+  /* B: Verde escuro / sidebar escura + conteúdo claro */
+  B: {
+    name: 'Dark sidebar + light main',
+    desc: 'Sidebar escura estilo Linear/Vercel · conteúdo claro · verde médio',
+    headerBg: '#fff',
+    sidebarBg: '#141f1a',
+    canvas:    '#f7f9f7',
+    surface:   '#ffffff',
+    bgMuted:   '#f0f4f1',
+    border:    '#e3ebe4',
+    brand:     '#16a34a',
+    brandSoft: '#dcfce7',
+    brandFg:   '#fff',
+    fgPrimary: '#0f1a12',
+    fgSecondary:'#4b6453',
+    fgTertiary: '#8faa97',
+    danger:    '#dc2626',
+    urgentBg:  '#fef2f2',
+    urgentChipBg: '#fee2e2',
+    openBg:    '#dcfce7',
+    openColor: '#15803d',
+    doneBg:    '#f0fdf4',
+    doneColor: '#16a34a',
+  },
+
+  /* C: WhatsApp green — tom direto do canal */
+  C: {
+    name: 'WhatsApp green',
+    desc: 'Verde WhatsApp (#25D366) como marca · fundo off-white quente · tipicamente startup BR',
+    headerBg: '#ffffff',
+    sidebarBg: '#f7f9f8',
+    canvas:    '#f4f6f4',
+    surface:   '#ffffff',
+    bgMuted:   '#edf2ee',
+    border:    '#dde8de',
+    brand:     '#25D366',
+    brandSoft: '#e8faf0',
+    brandFg:   '#fff',
+    fgPrimary: '#0a1f10',
+    fgSecondary:'#3d6147',
+    fgTertiary: '#7ea688',
+    danger:    '#ef4444',
+    urgentBg:  '#fff1f1',
+    urgentChipBg: '#fde8e8',
+    openBg:    '#e8faf0',
+    openColor: '#15803d',
+    doneBg:    '#d1fae5',
+    doneColor: '#065f46',
+  },
+
+  /* D: Slate escuro + verde-lima — moderno, tech */
+  D: {
+    name: 'Slate + lime (tech/moderno)',
+    desc: 'Cinza-slate escuro com verde-lima como acento · visual Vercel/Resend · muito atual',
+    headerBg: '#0a0a0a',
+    sidebarBg: '#111111',
+    canvas:    '#141414',
+    surface:   '#1c1c1c',
+    bgMuted:   '#222222',
+    border:    '#2e2e2e',
+    brand:     '#84cc16',
+    brandSoft: 'rgba(132,204,22,0.1)',
+    brandFg:   '#0a0a0a',
+    fgPrimary: '#fafafa',
+    fgSecondary:'#a3a3a3',
+    fgTertiary: '#666666',
+    danger:    '#f87171',
+    urgentBg:  'rgba(248,113,113,0.06)',
+    urgentChipBg: 'rgba(248,113,113,0.15)',
+    openBg:    'rgba(132,204,22,0.1)',
+    openColor: '#84cc16',
+    doneBg:    'rgba(74,222,128,0.1)',
+    doneColor: '#4ade80',
+  },
+
+  /* E: Teal escuro saturado — atual no codebase, versão premium */
+  E: {
+    name: 'Teal premium (atual melhorado)',
+    desc: 'Mantém o teal do codebase mas escurece · header teal-900 · cabecalho de produto SaaS maduro',
+    headerBg: '#0f4a44',
+    sidebarBg: '#f8fffe',
+    canvas:    '#f0fdfa',
+    surface:   '#ffffff',
+    bgMuted:   '#e6faf7',
+    border:    '#b2e8e0',
+    brand:     '#0d9488',
+    brandSoft: '#ccfbf1',
+    brandFg:   '#fff',
+    fgPrimary: '#0f2421',
+    fgSecondary:'#2a6b63',
+    fgTertiary: '#5ea49b',
+    danger:    '#dc2626',
+    urgentBg:  '#fef2f2',
+    urgentChipBg: '#fee2e2',
+    openBg:    '#e0f2fe',
+    openColor: '#0369a1',
+    doneBg:    '#ccfbf1',
+    doneColor: '#0d9488',
+  },
+};
+
+/* Caption helper */
+function SwatchRow({ p }) {
+  const swatches = [
+    { c: p.brand, lbl: 'brand' },
+    { c: p.headerBg, lbl: 'header' },
+    { c: p.sidebarBg, lbl: 'sidebar' },
+    { c: p.canvas, lbl: 'canvas' },
+    { c: p.surface, lbl: 'surface' },
+    { c: p.fgPrimary, lbl: 'fg' },
+    { c: p.danger, lbl: 'danger' },
+  ];
+  return (
+    <div style={{ display: 'flex', gap: 4, padding: '8px 14px 6px' }}>
+      {swatches.map(s => (
+        <div key={s.lbl} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <div style={{ width: 18, height: 18, borderRadius: 4, background: s.c, border: '1px solid rgba(0,0,0,0.1)' }}/>
+          <span style={{ fontSize: 8, color: '#6b6b7d', fontFamily: 'monospace' }}>{s.lbl}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas title="Zivy — Exploração de paletas de cor">
+      <DCSection id="palettes" title="5 direções — aplicadas no mini dashboard">
+        {Object.entries(palettes).map(([key, p]) => (
+          <DCArtboard key={key} id={`pal-${key}`} label={`${key} · ${p.name}`} width={560} height={480}>
+            <div style={{ width: '100%', height: 380 }}>
+              <MiniDash p={p}/>
+            </div>
+            <SwatchRow p={p}/>
+            <div style={{ padding: '4px 14px 12px', fontSize: 11, color: '#6b6b7d', fontFamily: "'IBM Plex Sans', sans-serif", lineHeight: 1.5 }}>
+              {p.desc}
+            </div>
+          </DCArtboard>
+        ))}
+      </DCSection>
+
+      <DCSection id="context" title="Comparação lado a lado — header">
+        <DCArtboard id="headers" label="Headers das 5 paletas" width={900} height={280}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {Object.entries(palettes).map(([key, p]) => (
+              <div key={key} style={{
+                height: 52, background: p.headerBg,
+                borderBottom: `1px solid ${p.border}`,
+                display: 'flex', alignItems: 'center', padding: '0 20px', gap: 12,
+              }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: p.brand, color: p.brandFg, display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: 11 }}>Z</div>
+                <span style={{ fontWeight: 700, fontSize: 14, color: p.brand, letterSpacing: '-0.02em' }}>Zivy</span>
+                <div style={{ flex: 1 }}/>
+                <span style={{ fontSize: 10, color: p.fgTertiary, fontFamily: 'monospace', opacity: 0.7 }}>{key} · {p.name}</span>
+                <div style={{ padding: '3px 10px', borderRadius: 999, background: p.brandSoft, color: p.brand, fontSize: 10, fontWeight: 600 }}>Administradora</div>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: p.brandSoft, color: p.brand, display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: 10 }}>CD</div>
+              </div>
+            ))}
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="sidebars" label="Sidebars das 5 paletas" width={360} height={280}>
+          <div style={{ display: 'flex', height: '100%' }}>
+            {Object.entries(palettes).map(([key, p]) => (
+              <div key={key} style={{
+                flex: 1, background: p.sidebarBg, padding: '10px 8px',
+                borderRight: `1px solid ${p.border}`, display: 'flex', flexDirection: 'column', gap: 2,
+              }}>
+                <div style={{ fontSize: 7, textTransform: 'uppercase', letterSpacing: '0.07em', color: p.fgTertiary, fontWeight: 600, padding: '4px 4px 2px', marginBottom: 2 }}>{key}</div>
+                {['Inbox','Tickets','Aprovações'].map((item, i) => (
+                  <div key={item} style={{
+                    padding: '4px 6px', borderRadius: 5, fontSize: 9, fontWeight: 500,
+                    background: i === 1 ? p.brandSoft : 'transparent',
+                    color: i === 1 ? p.brand : p.fgSecondary,
+                  }}>{item}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </DCArtboard>
+
+        <DCArtboard id="buttons" label="Botões primários e badges" width={560} height={160}>
+          <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {Object.entries(palettes).map(([key, p]) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 9, color: '#8b8b9e', fontFamily: 'monospace', width: 14 }}>{key}</span>
+                <div style={{ padding: '6px 14px', borderRadius: 8, background: p.brand, color: p.brandFg, fontSize: 11, fontWeight: 600 }}>+ Novo chamado</div>
+                <div style={{ padding: '6px 14px', borderRadius: 8, background: p.surface, color: p.fgSecondary, border: `1px solid ${p.border}`, fontSize: 11 }}>Exportar CSV</div>
+                <div style={{ padding: '2px 8px', borderRadius: 999, background: p.brandSoft, color: p.brand, fontSize: 10, fontWeight: 600 }}>Administradora</div>
+                <div style={{ padding: '2px 8px', borderRadius: 999, background: p.urgentChipBg, color: p.danger, fontSize: 10, fontWeight: 600 }}>● Urgente</div>
+              </div>
+            ))}
+          </div>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

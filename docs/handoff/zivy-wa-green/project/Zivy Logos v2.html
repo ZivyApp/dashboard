@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<title>Zivy — Logos v2 (Dir. 03 + 09)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: 'Inter', sans-serif; background: #f2f2f6; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const PL   = '#37003c';
+const PLm  = '#6b1a73';
+const PLl  = '#b76dbf';
+const ACC  = '#e90052';
+const ink  = '#14141c';
+const W    = '#ffffff';
+
+/* ── Shared frame ─────────────────────────────────────────── */
+function Frame({ bg = W, h = 160, children, style }) {
+  return (
+    <div style={{
+      width: '100%', minHeight: h, background: bg,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', gap: 28, padding: '28px 32px', ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+function Divider() {
+  return <div style={{ width: '90%', height: 1, background: '#e5e5ec' }}/>;
+}
+function Caption({ children }) {
+  return (
+    <div style={{ background: '#f7f7fa', borderTop: '1px solid #e5e5ec', padding: '10px 18px', fontSize: 11, color: '#6b6b7d', fontFamily: 'Inter, sans-serif', width: '100%', lineHeight: 1.55 }}>
+      {children}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DIREÇÃO 03 — Wordmark dois pesos: Z brand + ivy light
+   Variáveis: fonte, proporção de pesos, cor do Z, tagline
+═══════════════════════════════════════════════════════════ */
+
+/* Base: Z em cor de marca + resto leve, tipografia variável */
+function W3({ scale=1, dark=false, font='Sora', wZ=800, wRest=300, colorZ=PL, colorRest=null, tagline=null }) {
+  const fg = colorRest ?? (dark ? 'rgba(255,255,255,0.85)' : ink);
+  const s  = n => n * scale;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: s(4) }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 0, lineHeight: 1 }}>
+        <span style={{ fontFamily: `'${font}', sans-serif`, fontWeight: wZ, fontSize: s(38), color: dark ? W : colorZ, letterSpacing: '-0.045em' }}>Z</span>
+        <span style={{ fontFamily: `'${font}', sans-serif`, fontWeight: wRest, fontSize: s(38), color: fg, letterSpacing: '-0.03em' }}>ivy</span>
+      </div>
+      {tagline && (
+        <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: s(10), color: dark ? 'rgba(255,255,255,0.45)' : '#8b8b9e', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: s(2) }}>
+          {tagline}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DIREÇÃO 09 — Balão de mensagem com Z
+   Variáveis: forma da cauda, estilo do balão, cor, Z grosso/fino
+═══════════════════════════════════════════════════════════ */
+
+/* Balão base — cauda para baixo-esquerda */
+function Bubble({ scale=1, variant='round', fillA=PL, fillB=PL, strokeZ=W, zWeight=3.5, dark=false, word=true, font='Space Grotesk' }) {
+  const s  = n => n * scale;
+  const fg = dark ? W : PL;
+  const id = `g_${Math.random().toString(36).slice(2,6)}`;
+  const iGrad = fillA !== fillB;
+
+  const bubble = {
+    round: `M${s(6)} ${s(6)} H${s(38)} Q${s(42)} ${s(6)} ${s(42)} ${s(10)} V${s(28)} Q${s(42)} ${s(32)} ${s(38)} ${s(32)} H${s(20)} L${s(8)} ${s(42)} V${s(32)} H${s(6)} Q${s(2)} ${s(32)} ${s(2)} ${s(28)} V${s(10)} Q${s(2)} ${s(6)} ${s(6)} ${s(6)}Z`,
+    square: `M${s(4)} ${s(4)} H${s(40)} V${s(32)} H${s(22)} L${s(8)} ${s(44)} V${s(32)} H${s(4)}Z`,
+    pill:   `M${s(11)} ${s(6)} H${s(33)} Q${s(42)} ${s(6)} ${s(42)} ${s(14)} V${s(24)} Q${s(42)} ${s(32)} ${s(33)} ${s(32)} H${s(22)} L${s(8)} ${s(44)} V${s(32)} H${s(11)} Q${s(2)} ${s(32)} ${s(2)} ${s(24)} V${s(14)} Q${s(2)} ${s(6)} ${s(11)} ${s(6)}Z`,
+    sharp:  `M${s(3)} ${s(3)} H${s(41)} V${s(31)} H${s(19)} L${s(6)} ${s(44)} V${s(31)} H${s(3)}Z`,
+  }[variant] || '';
+
+  const zPath = `M${s(11)} ${s(13)} H${s(33)} L${s(11)} ${s(25)} H${s(33)}`;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: s(13) }}>
+      <svg width={s(44)} height={s(46)} viewBox={`0 0 ${s(44)} ${s(46)}`} fill="none">
+        {iGrad && (
+          <defs>
+            <linearGradient id={id} x1="0" y1="0" x2={s(44)} y2={s(44)} gradientUnits="userSpaceOnUse">
+              <stop stopColor={fillA}/><stop offset="1" stopColor={fillB}/>
+            </linearGradient>
+          </defs>
+        )}
+        <path d={bubble} fill={iGrad ? `url(#${id})` : fillA}/>
+        <path d={zPath} stroke={strokeZ} strokeWidth={zWeight} strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      {word && (
+        <span style={{ fontFamily: `'${font}', sans-serif`, fontWeight: 700, fontSize: s(26), color: fg, letterSpacing: '-0.025em' }}>
+          Zivy
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ─── APP ─────────────────────────────────────────────────── */
+function App() {
+  return (
+    <DesignCanvas title="Zivy — Dir. 03 + 09 · Exploração aprofundada">
+
+      {/* ── SECÇÃO A: Dir 03 — tipografia ───────────────────── */}
+      <DCSection id="d03" title="Direção 03 — Wordmark dois pesos">
+
+        <DCArtboard id="d03-ref" label="Referência original" width={480} height={300}>
+          <Frame><W3 scale={1.1} font="Sora" wZ={800} wRest={300} colorZ={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><W3 scale={1} font="Sora" wZ={800} wRest={300} dark/></Frame>
+          <Caption>Base: Sora 800/300 · Z roxo PL + ivy muito leve</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-a" label="A · Space Grotesk — mais geométrico" width={480} height={300}>
+          <Frame><W3 scale={1.1} font="Space Grotesk" wZ={700} wRest={400} colorZ={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><W3 scale={1} font="Space Grotesk" wZ={700} wRest={400} dark/></Frame>
+          <Caption>Space Grotesk 700/400 · mais estruturado, SaaS-like</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-b" label="B · Z em magenta — contraste máximo" width={480} height={300}>
+          <Frame><W3 scale={1.1} font="Sora" wZ={800} wRest={300} colorZ={ACC} colorRest={ink}/></Frame>
+          <Divider/>
+          <Frame bg={ink} h={120}><W3 scale={1} font="Sora" wZ={800} wRest={300} colorZ={ACC} dark/></Frame>
+          <Caption>Z em magenta #e90052 · fundo escuro neutro · chamativo, mais jovem</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-c" label="C · Z gradiente roxo→magenta" width={480} height={300}>
+          <Frame>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1 }}>
+                <span style={{
+                  fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: 42,
+                  background: `linear-gradient(120deg, ${PL} 0%, ${ACC} 100%)`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  letterSpacing: '-0.045em',
+                }}>Z</span>
+                <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 300, fontSize: 42, color: ink, letterSpacing: '-0.03em' }}>ivy</span>
+              </div>
+            </div>
+          </Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}>
+            <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1 }}>
+              <span style={{
+                fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: 38,
+                background: `linear-gradient(120deg, #ffd6e5 0%, ${ACC} 100%)`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.045em',
+              }}>Z</span>
+              <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 300, fontSize: 38, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.03em' }}>ivy</span>
+            </div>
+          </Frame>
+          <Caption>Z com gradiente roxo→magenta · funciona em fundo claro e escuro</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-d" label="D · com tagline 'gestão condominial'" width={480} height={300}>
+          <Frame><W3 scale={1} font="Sora" wZ={800} wRest={300} colorZ={PL} tagline="gestão condominial"/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><W3 scale={0.9} font="Sora" wZ={800} wRest={300} tagline="gestão condominial" dark/></Frame>
+          <Caption>Com tagline descritiva · útil em landing page / onboarding / proposta comercial</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-e" label="E · Sora 900/300 — mais agressivo" width={480} height={300}>
+          <Frame><W3 scale={1.1} font="Sora" wZ={900} wRest={300} colorZ={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><W3 scale={1} font="Sora" wZ={900} wRest={300} dark/></Frame>
+          <Caption>Sora 900/300 · contraste de peso máximo · Z domina o nome</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-f" label="F · DM Sans · mais humano/amigável" width={480} height={300}>
+          <Frame><W3 scale={1.1} font="DM Sans" wZ={700} wRest={300} colorZ={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><W3 scale={1} font="DM Sans" wZ={700} wRest={300} dark/></Frame>
+          <Caption>DM Sans 700/300 · mais orgânico · menos tech, mais próximo do síndico amador</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d03-sizes" label="Tabela de tamanhos — Sora (favorito)" width={560} height={360}>
+          <Frame style={{ alignItems: 'flex-start', padding: '28px 36px' }}>
+            {[['Heading / hero', 1.3], ['Topbar', 0.8], ['Email header', 0.65], ['Favicon / small', 0.45]].map(([lbl, sc]) => (
+              <div key={lbl} style={{ display: 'flex', alignItems: 'center', gap: 24, width: '100%' }}>
+                <W3 scale={sc} font="Sora" wZ={800} wRest={300} colorZ={PL}/>
+                <span style={{ fontSize: 11, color: '#8b8b9e', fontFamily: 'Inter, sans-serif', marginLeft: 'auto', whiteSpace: 'nowrap' }}>{lbl}</span>
+              </div>
+            ))}
+          </Frame>
+          <Caption>Escalonamento: legível de 14px até hero. Z mantém personalidade em todos os tamanhos.</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+      {/* ── SECÇÃO B: Dir 09 — balão de mensagem ───────────── */}
+      <DCSection id="d09" title="Direção 09 — Balão de mensagem + Z">
+
+        <DCArtboard id="d09-ref" label="Referência original" width={480} height={300}>
+          <Frame><Bubble scale={1.1} variant="round" fillA={PLm} fillB={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><Bubble scale={1} variant="round" fillA="rgba(255,255,255,0.18)" fillB="rgba(255,255,255,0.18)" strokeZ={W} dark/></Frame>
+          <Caption>Balão arredondado · gradiente roxo médio→escuro · Space Grotesk</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-a" label="A · balão pill — canto mais suave" width={480} height={300}>
+          <Frame><Bubble scale={1.1} variant="pill" fillA={PLm} fillB={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><Bubble scale={1} variant="pill" fillA={W} fillB={W} strokeZ={PL} dark/></Frame>
+          <Caption>Forma pill · versão invertida no fundo roxo com ícone branco sólido</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-b" label="B · balão quadrado — mais assertivo" width={480} height={300}>
+          <Frame><Bubble scale={1.1} variant="square" fillA={PL} fillB={PL}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><Bubble scale={1} variant="square" fillA="rgba(255,255,255,0.15)" fillB="rgba(255,255,255,0.15)" strokeZ={W} dark/></Frame>
+          <Caption>Ângulos retos — mais tech/confiante · Z mais grosso (sw 4)</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-c" label="C · Z em magenta no balão" width={480} height={300}>
+          <Frame><Bubble scale={1.1} variant="round" fillA={PL} fillB={PL} strokeZ={ACC} zWeight={4}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><Bubble scale={1} variant="round" fillA="rgba(255,255,255,0.15)" fillB="rgba(255,255,255,0.15)" strokeZ={ACC} zWeight={4} dark/></Frame>
+          <Caption>Z em magenta dentro do balão roxo · marca de urgência como DNA</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-d" label="D · gradiente roxo→magenta no balão" width={480} height={300}>
+          <Frame><Bubble scale={1.1} variant="round" fillA={PLm} fillB={ACC}/></Frame>
+          <Divider/>
+          <Frame bg={ink} h={120}><Bubble scale={1} variant="round" fillA={PLm} fillB={ACC}/></Frame>
+          <Caption>Gradiente roxo→magenta · fundo escuro como alternativa em dark mode</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-e" label="E · balão sharp · estilo tech ágil" width={480} height={300}>
+          <Frame><Bubble scale={1.1} variant="sharp" fillA={PL} fillB={PLm}/></Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}><Bubble scale={1} variant="sharp" fillA={ACC} fillB={ACC} strokeZ={W} dark/></Frame>
+          <Caption>Sharp (sem radius) · cauda reta · Z fino 3 · versão magenta como alternativa quente</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-f" label="F · só ícone (app icon)" width={320} height={300}>
+          <Frame>
+            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end' }}>
+              <Bubble scale={1.4} variant="round" fillA={PLm} fillB={PL} word={false}/>
+              <Bubble scale={1} variant="round" fillA={PLm} fillB={PL} word={false}/>
+              <Bubble scale={0.6} variant="round" fillA={PLm} fillB={PL} word={false}/>
+            </div>
+          </Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+              <Bubble scale={1} variant="round" fillA={W} fillB={W} strokeZ={PL} word={false}/>
+              <Bubble scale={0.7} variant="pill" fillA={ACC} fillB={ACC} strokeZ={W} word={false}/>
+            </div>
+          </Frame>
+          <Caption>Escalonamento do ícone isolado · funciona como app icon e favicon</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="d09-sora" label="G · balão + Sora (mix com dir 03)" width={480} height={300}>
+          <Frame>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <Bubble scale={1.05} variant="round" fillA={PLm} fillB={PL} word={false}/>
+              <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1 }}>
+                <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: 30, color: PL, letterSpacing: '-0.04em' }}>Z</span>
+                <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 300, fontSize: 30, color: ink, letterSpacing: '-0.03em' }}>ivy</span>
+              </div>
+            </div>
+          </Frame>
+          <Divider/>
+          <Frame bg={PL} h={120}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <Bubble scale={0.95} variant="round" fillA="rgba(255,255,255,0.2)" fillB="rgba(255,255,255,0.12)" strokeZ={W} word={false}/>
+              <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1 }}>
+                <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: 28, color: W, letterSpacing: '-0.04em' }}>Z</span>
+                <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 300, fontSize: 28, color: 'rgba(255,255,255,0.8)', letterSpacing: '-0.03em' }}>ivy</span>
+              </div>
+            </div>
+          </Frame>
+          <Caption>Fusão das duas direções: ícone balão + wordmark Sora dois pesos</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+      {/* ── SECÇÃO C: Aplicações lado a lado ───────────────── */}
+      <DCSection id="aplicacoes" title="Aplicações — as duas direções em contexto">
+
+        <DCArtboard id="app-topbar" label="Topbar dashboard — comparação" width={900} height={280}>
+          {/* Dir 03 */}
+          <div style={{ width: '100%', background: PL, display: 'flex', alignItems: 'center', padding: '0 28px', gap: 20, height: 56 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1, marginRight: 4 }}>
+              <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: 22, color: W, letterSpacing: '-0.04em' }}>Z</span>
+              <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 300, fontSize: 22, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.03em' }}>ivy</span>
+            </div>
+            <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)' }}/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Residencial Jardins ▾</span>
+            <div style={{ flex: 1 }}/>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: W, display: 'grid', placeItems: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13 }}>CD</div>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: 'Inter, sans-serif', position: 'absolute', left: 28, bottom: 4 }}>Dir 03 — wordmark</span>
+          </div>
+          {/* Dir 09 */}
+          <div style={{ width: '100%', background: PL, display: 'flex', alignItems: 'center', padding: '0 28px', gap: 14, height: 56, position: 'relative', marginTop: 4 }}>
+            <Bubble scale={0.68} variant="round" fillA={PLm} fillB={PL} word={false}/>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 18, color: W, letterSpacing: '-0.02em' }}>Zivy</span>
+            <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)' }}/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Residencial Jardins ▾</span>
+            <div style={{ flex: 1 }}/>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: W, display: 'grid', placeItems: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13 }}>CD</div>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: 'Inter, sans-serif', position: 'absolute', left: 28, bottom: 4 }}>Dir 09 — balão</span>
+          </div>
+          {/* Fusão */}
+          <div style={{ width: '100%', background: PL, display: 'flex', alignItems: 'center', padding: '0 28px', gap: 14, height: 56, position: 'relative', marginTop: 4 }}>
+            <Bubble scale={0.68} variant="round" fillA={PLm} fillB={PL} word={false}/>
+            <div style={{ display: 'flex', alignItems: 'baseline', lineHeight: 1 }}>
+              <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 800, fontSize: 20, color: W, letterSpacing: '-0.04em' }}>Z</span>
+              <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 300, fontSize: 20, color: 'rgba(255,255,255,0.82)', letterSpacing: '-0.03em' }}>ivy</span>
+            </div>
+            <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)' }}/>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Inter, sans-serif', fontSize: 13 }}>Residencial Jardins ▾</span>
+            <div style={{ flex: 1 }}/>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: W, display: 'grid', placeItems: 'center', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13 }}>CD</div>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: 'Inter, sans-serif', position: 'absolute', left: 28, bottom: 4 }}>Fusão 03+09 — balão + Sora</span>
+          </div>
+          <Caption>As três opções no mesmo contexto. Fusão (linha 3) combina o ícone com a tipografia.</Caption>
+        </DCArtboard>
+
+        <DCArtboard id="app-dark" label="Dark / splash screen" width={600} height={360}>
+          <div style={{ width: '100%', height: '100%', background: PL, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
+            {/* Dir 03 */}
+            <W3 scale={1.2} font="Sora" wZ={800} wRest={300} dark tagline="gestão condominial"/>
+            <div style={{ width: '30%', height: 1, background: 'rgba(255,255,255,0.1)' }}/>
+            {/* Dir 09 fusion */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <Bubble scale={0.9} variant="round" fillA={PLm} fillB={ACC} word={false}/>
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 26, color: W, letterSpacing: '-0.025em' }}>Zivy</span>
+            </div>
+          </div>
+          <Caption>Fundo brand roxo — 03 em cima, 09 com gradiente roxo→magenta embaixo</Caption>
+        </DCArtboard>
+
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

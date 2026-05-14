@@ -2,7 +2,19 @@
 
 **Data:** 2026-05-14
 **Status:** Spec aprovada, pronto para `writing-plans`
-**Origem:** prototipagem visual no Claude Design (screenshot anexo na conversa de brainstorming)
+**Origem:** prototipagem visual no Claude Design + handoff oficial vendorado em `docs/handoff/zivy-wa-green/`
+
+## Handoff (ground truth)
+
+O design oficial vive em `docs/handoff/zivy-wa-green/`. Arquivos-chave:
+
+- `project/theme-wa-green.css` — paleta WhatsApp Green (overrides de brand + neutros).
+- `project/styles.css` — tokens base (status, info, danger, fs, space, radius, size) + classes globais (`.header`, `.scope`, `.nav-item`, `.inbox-item`, `.seg`, etc.).
+- `project/src/chrome.jsx` — Topbar + Sidebar.
+- `project/src/page-inbox.jsx` — Inbox/Activity Feed (anatomia do item + `KIND_ICON` map).
+- `project/src/data.jsx` — shape de dados (condos, tickets, events).
+
+Quando esta spec diverge do handoff, **handoff vence**. Esta spec descreve a _estratégia_ (mock-first, rotas, repository); handoff descreve a _forma_.
 
 ## Contexto
 
