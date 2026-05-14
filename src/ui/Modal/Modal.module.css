@@ -97,3 +97,10 @@
     border-radius: 0;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialog {
+    animation: none;
+  }
+}

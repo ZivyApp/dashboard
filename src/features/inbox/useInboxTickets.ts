@@ -1,24 +1,33 @@
 import { useQueries } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import type { Ticket } from "./filterTickets";
-import type { TicketStatus } from "@/ui/StatusBadge/StatusBadge";
+import { isTicketStatus, isTicketPriority, type TicketStatus } from "./types";
 
 const ACTIVE_STATUSES: TicketStatus[] = ["open", "in_progress"];
+
+function isCompleteTicket(t: unknown): t is Ticket {
+  if (typeof t !== "object" || t === null) return false;
+  const o = t as Record<string, unknown>;
+  return (
+    typeof o.id === "string" &&
+    typeof o.protocol === "string" &&
+    typeof o.title === "string" &&
+    typeof o.updated_at === "string" &&
+    isTicketStatus(o.status) &&
+    isTicketPriority(o.priority)
+  );
+}
 
 async function fetchByStatus(status: TicketStatus): Promise<Ticket[]> {
   const { data, error } = await api.GET("/tickets", {
     params: { query: { status } },
   });
-  if (error) throw new Error(`GET /tickets?status=${status} failed`, { cause: error });
-  return (data ?? []).filter(
-    (t): t is Ticket =>
-      typeof t.id === "string" &&
-      typeof t.protocol === "string" &&
-      typeof t.title === "string" &&
-      typeof t.status === "string" &&
-      typeof t.priority === "string" &&
-      typeof t.updated_at === "string",
-  );
+  if (error) {
+    throw new Error(`TicketsService.fetchByStatus(${status}): falha em GET /tickets`, {
+      cause: error,
+    });
+  }
+  return (data ?? []).filter(isCompleteTicket);
 }
 
 export function useInboxTickets(condoId: string) {
@@ -41,9 +50,7 @@ export function useInboxTickets(condoId: string) {
   const data = isSuccess ? queries.flatMap((q) => q.data ?? []) : undefined;
 
   if (data && data.length > 200) {
-    console.warn(
-      `Inbox: ${data.length} tickets ativos no condo ${condoId}. Considerar paginação no Core.`,
-    );
+    console.warn(`Inbox: ${data.length} tickets ativos. Considerar paginação no Core.`);
   }
 
   function refetch() {

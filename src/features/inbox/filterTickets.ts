@@ -1,5 +1,4 @@
-import type { TicketStatus } from "@/ui/StatusBadge/StatusBadge";
-import type { TicketPriority } from "@/ui/PriorityChip/PriorityChip";
+import type { TicketStatus, TicketPriority } from "./types";
 
 export interface Ticket {
   id: string;

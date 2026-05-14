@@ -1,6 +1,7 @@
 import styles from "./PriorityChip.module.css";
+import type { TicketPriority } from "@/features/inbox/types";
 
-export type TicketPriority = "low" | "medium" | "high";
+export type { TicketPriority };
 
 interface PriorityChipProps {
   priority: TicketPriority;

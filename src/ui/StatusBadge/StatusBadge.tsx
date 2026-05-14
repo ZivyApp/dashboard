@@ -1,6 +1,7 @@
 import styles from "./StatusBadge.module.css";
+import type { TicketStatus } from "@/features/inbox/types";
 
-export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+export type { TicketStatus };
 
 interface StatusBadgeProps {
   status: TicketStatus;

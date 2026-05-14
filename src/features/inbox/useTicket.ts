@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import type { Ticket } from "./filterTickets";
+import { isTicketStatus, isTicketPriority } from "./types";
 
 function isCompleteTicket(t: unknown): t is Ticket {
   if (typeof t !== "object" || t === null) return false;
@@ -9,9 +10,9 @@ function isCompleteTicket(t: unknown): t is Ticket {
     typeof o.id === "string" &&
     typeof o.protocol === "string" &&
     typeof o.title === "string" &&
-    typeof o.status === "string" &&
-    typeof o.priority === "string" &&
-    typeof o.updated_at === "string"
+    typeof o.updated_at === "string" &&
+    isTicketStatus(o.status) &&
+    isTicketPriority(o.priority)
   );
 }
 
@@ -22,10 +23,20 @@ export function ticketQueryOptions(ticketId: string) {
       const { data, error } = await api.GET("/tickets/{id}", {
         params: { path: { id: ticketId } },
       });
-      if (error) throw new Error(`GET /tickets/${ticketId} failed`, { cause: error });
-      if (!data) throw new Error(`GET /tickets/${ticketId} returned empty body`);
+      if (error) {
+        throw new Error(`TicketsService.fetchById(${ticketId}): falha em GET /tickets/{id}`, {
+          cause: error,
+        });
+      }
+      if (!data) {
+        throw new Error(
+          `TicketsService.fetchById(${ticketId}): GET /tickets/{id} retornou body vazio`,
+        );
+      }
       if (!isCompleteTicket(data)) {
-        throw new Error(`GET /tickets/${ticketId} returned incomplete ticket payload`);
+        throw new Error(
+          `TicketsService.fetchById(${ticketId}): GET /tickets/{id} retornou payload incompleto`,
+        );
       }
       return data;
     },
