@@ -20,18 +20,16 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.content} aria-describedby={undefined}>
-          <div className={styles.dialog}>
-            <div className={styles.header}>
-              <Dialog.Title className={styles.title}>{title}</Dialog.Title>
-              <Dialog.Close asChild>
-                <button type="button" className={styles.close} aria-label="Fechar">
-                  <X size={18} />
-                </button>
-              </Dialog.Close>
-            </div>
-            <div className={styles.body}>{children}</div>
+        <Dialog.Content className={styles.dialog} aria-describedby={undefined}>
+          <div className={styles.header}>
+            <Dialog.Title className={styles.title}>{title}</Dialog.Title>
+            <Dialog.Close asChild>
+              <button type="button" className={styles.close} aria-label="Fechar">
+                <X size={18} />
+              </button>
+            </Dialog.Close>
           </div>
+          <div className={styles.body}>{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
