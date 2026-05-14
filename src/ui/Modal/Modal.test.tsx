@@ -56,4 +56,12 @@ describe("Modal", () => {
     await userEvent.click(screen.getByRole("button", { name: /fechar/i }));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  // NOTA: click no overlay (fora do Content) cai em onDismiss do Radix Dialog
+  // (node_modules/@radix-ui/react-dialog/dist/index.mjs L159:
+  // `onDismiss: () => context.onOpenChange(false)`), que aciona nosso
+  // onOpenChange e chama onClose. jsdom não simula bem Portal + pointer events
+  // fora — fireEvent.pointerDown/Up em document.body não dispara o handler.
+  // Cobertura via smoke manual quando o Modal for usado em rota real
+  // (Slice 4.3 — TicketDetailModal).
 });
