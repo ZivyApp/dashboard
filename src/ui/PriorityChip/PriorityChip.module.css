@@ -1,0 +1,30 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-md);
+  line-height: var(--lh-normal);
+  white-space: nowrap;
+}
+
+.low {
+  background-color: var(--ticket-priority-low-bg);
+  color: var(--ticket-priority-low-fg);
+}
+
+.medium {
+  background-color: var(--ticket-priority-medium-bg);
+  color: var(--ticket-priority-medium-fg);
+}
+
+.high {
+  background-color: var(--ticket-priority-high-bg);
+  color: var(--ticket-priority-high-fg);
+}
+
+.unknown {
+  background-color: var(--bg-muted);
+  color: var(--fg-secondary);
+}
