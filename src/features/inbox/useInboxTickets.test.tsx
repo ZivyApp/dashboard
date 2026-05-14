@@ -2,7 +2,15 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { api } from "@/api/client";
+
+// Mock @/api/client antes de qualquer import dele — evita carregar src/lib/env
+// (que faz assertEnv e quebra em CI sem .env.local). Padrão CLAUDE.md.
+const { mockGet } = vi.hoisted(() => ({ mockGet: vi.fn() }));
+vi.mock("@/api/client", () => ({
+  api: { GET: mockGet },
+  configureApiAuth: vi.fn(),
+}));
+
 import { useInboxTickets } from "./useInboxTickets";
 
 function wrapper(qc: QueryClient) {
@@ -17,15 +25,13 @@ const mkClient = () =>
   });
 
 afterEach(() => {
+  mockGet.mockReset();
   vi.restoreAllMocks();
 });
 
 describe("useInboxTickets", () => {
   it("dispara 2 calls em paralelo (open + in_progress) e mescla resultado", async () => {
-    const get = vi.spyOn(api, "GET").mockImplementation((
-      _path: string,
-      opts: { params: { query: { status: string } } },
-    ) => {
+    mockGet.mockImplementation((_path: string, opts: { params: { query: { status: string } } }) => {
       const status = opts.params.query.status;
       if (status === "open") {
         return Promise.resolve({
@@ -61,15 +67,12 @@ describe("useInboxTickets", () => {
     const { result } = renderHook(() => useInboxTickets("condo-1"), { wrapper: wrapper(qc) });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(get).toHaveBeenCalledTimes(2);
+    expect(mockGet).toHaveBeenCalledTimes(2);
     expect(result.current.data?.map((t) => t.id).sort()).toEqual(["a", "b"]);
   });
 
   it("retorna erro se uma das duas chamadas falhar", async () => {
-    vi.spyOn(api, "GET").mockImplementation((
-      _: string,
-      opts: { params: { query: { status: string } } },
-    ) => {
+    mockGet.mockImplementation((_path: string, opts: { params: { query: { status: string } } }) => {
       if (opts.params.query.status === "open") {
         return Promise.resolve({ data: undefined, error: { message: "boom" } });
       }
@@ -90,7 +93,7 @@ describe("useInboxTickets", () => {
       priority: "low" as const,
       updated_at: "2026-05-14T00:00:00Z",
     }));
-    vi.spyOn(api, "GET").mockResolvedValue({ data: big, error: undefined });
+    mockGet.mockResolvedValue({ data: big, error: undefined });
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const qc = mkClient();
