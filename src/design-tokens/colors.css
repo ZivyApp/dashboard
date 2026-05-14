@@ -32,6 +32,24 @@
   --accent-amber: #f59e0b;
   --info-bg: #dbeafe;
   --info-fg: #1e40af;
+
+  /* Ticket status (open | in_progress | resolved | closed) */
+  --ticket-status-open-bg: #dbeafe;
+  --ticket-status-open-fg: #1e40af;
+  --ticket-status-in-progress-bg: #fef3c7;
+  --ticket-status-in-progress-fg: #92400e;
+  --ticket-status-resolved-bg: #d1fae5;
+  --ticket-status-resolved-fg: #065f46;
+  --ticket-status-closed-bg: #e5e7eb;
+  --ticket-status-closed-fg: #4b5563;
+
+  /* Ticket priority (low | medium | high) */
+  --ticket-priority-low-bg: #e0e7ff;
+  --ticket-priority-low-fg: #3730a3;
+  --ticket-priority-medium-bg: #ffedd5;
+  --ticket-priority-medium-fg: #9a3412;
+  --ticket-priority-high-bg: #fee2e2;
+  --ticket-priority-high-fg: #991b1b;
   /* stylelint-disable-next-line declaration-strict-value */
   --overlay-bg: rgb(0 0 0 / 40%);
 }
@@ -70,6 +88,24 @@
   --accent-amber: #fbbf24;
   --info-bg: #1e3a8a;
   --info-fg: #93c5fd;
+
+  /* Ticket status (open | in_progress | resolved | closed) */
+  --ticket-status-open-bg: #1e3a8a;
+  --ticket-status-open-fg: #bfdbfe;
+  --ticket-status-in-progress-bg: #78350f;
+  --ticket-status-in-progress-fg: #fde68a;
+  --ticket-status-resolved-bg: #064e3b;
+  --ticket-status-resolved-fg: #a7f3d0;
+  --ticket-status-closed-bg: #374151;
+  --ticket-status-closed-fg: #d1d5db;
+
+  /* Ticket priority (low | medium | high) */
+  --ticket-priority-low-bg: #312e81;
+  --ticket-priority-low-fg: #c7d2fe;
+  --ticket-priority-medium-bg: #7c2d12;
+  --ticket-priority-medium-fg: #fed7aa;
+  --ticket-priority-high-bg: #7f1d1d;
+  --ticket-priority-high-fg: #fecaca;
   /* stylelint-disable-next-line declaration-strict-value */
   --overlay-bg: rgb(0 0 0 / 60%);
 }

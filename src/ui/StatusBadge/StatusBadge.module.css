@@ -1,0 +1,35 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-md);
+  line-height: var(--lh-normal);
+  white-space: nowrap;
+}
+
+.open {
+  background-color: var(--ticket-status-open-bg);
+  color: var(--ticket-status-open-fg);
+}
+
+.in_progress {
+  background-color: var(--ticket-status-in-progress-bg);
+  color: var(--ticket-status-in-progress-fg);
+}
+
+.resolved {
+  background-color: var(--ticket-status-resolved-bg);
+  color: var(--ticket-status-resolved-fg);
+}
+
+.closed {
+  background-color: var(--ticket-status-closed-bg);
+  color: var(--ticket-status-closed-fg);
+}
+
+.unknown {
+  background-color: var(--bg-muted);
+  color: var(--fg-secondary);
+}
