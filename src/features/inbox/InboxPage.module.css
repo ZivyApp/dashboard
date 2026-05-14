@@ -1,0 +1,53 @@
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-primary);
+}
+
+.subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--fg-secondary);
+}
+
+.fetching {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  animation: indet 1.4s linear infinite;
+  margin-bottom: var(--space-2);
+}
+
+@keyframes indet {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.error {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--fg-secondary);
+}
+
+.error h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-lg);
+  color: var(--fg-primary);
+}
+
+.error p {
+  margin: 0 0 var(--space-4);
+}
