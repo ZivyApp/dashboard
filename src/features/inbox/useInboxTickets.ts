@@ -10,7 +10,15 @@ async function fetchByStatus(status: TicketStatus): Promise<Ticket[]> {
     params: { query: { status } },
   });
   if (error) throw new Error(`GET /tickets?status=${status} failed`, { cause: error });
-  return (data ?? []) as Ticket[];
+  return (data ?? []).filter(
+    (t): t is Ticket =>
+      typeof t.id === "string" &&
+      typeof t.protocol === "string" &&
+      typeof t.title === "string" &&
+      typeof t.status === "string" &&
+      typeof t.priority === "string" &&
+      typeof t.updated_at === "string",
+  );
 }
 
 export function useInboxTickets(condoId: string) {
