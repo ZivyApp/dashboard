@@ -22,6 +22,7 @@
 .fetching {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  background-size: 200% 100%;
   animation: indet 1.4s linear infinite;
   margin-bottom: var(--space-2);
 }

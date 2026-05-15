@@ -24,9 +24,10 @@ export function InboxPage({ condoId }: InboxPageProps) {
 
   const handlePick = (ticketId: string) => {
     void navigate({
+      // @ts-expect-error rota chega no Plan 4.3
       to: "/c/$condoId/inbox/$ticketId",
       params: { condoId, ticketId },
-    } as unknown as Parameters<typeof navigate>[0]);
+    });
   };
 
   if (isPending) {

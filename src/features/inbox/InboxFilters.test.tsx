@@ -57,6 +57,6 @@ describe("InboxFilters", () => {
   it("destaca o segmented ativo", () => {
     render(<InboxFilters value={{ ...noFilters, status: "in_progress" }} onChange={() => {}} />);
     const btn = screen.getByRole("button", { name: /em andamento/i });
-    expect(btn.className).toContain("active");
+    expect(btn).toHaveAttribute("aria-pressed", "true");
   });
 });

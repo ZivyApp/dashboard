@@ -31,7 +31,19 @@ export function TicketTable({ tickets, onPick }: TicketTableProps) {
         </thead>
         <tbody>
           {tickets.map((t) => (
-            <tr key={t.id} onClick={() => onPick(t.id)}>
+            <tr
+              key={t.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`Abrir ${t.title}`}
+              onClick={() => onPick(t.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onPick(t.id);
+                }
+              }}
+            >
               <td className={styles.proto}>{t.protocol}</td>
               <td>
                 <div className={styles.title}>{t.title}</div>

@@ -27,6 +27,7 @@ export function InboxFilters({ value, onChange }: InboxFiltersProps) {
         type="search"
         className={styles.search}
         placeholder="Buscar por título, protocolo ou morador…"
+        aria-label="Buscar chamados"
         value={value.search}
         onChange={(e) => onChange({ ...value, search: e.target.value })}
       />
@@ -39,6 +40,7 @@ export function InboxFilters({ value, onChange }: InboxFiltersProps) {
               key={o.value}
               type="button"
               className={cls}
+              aria-pressed={active}
               onClick={() => onChange({ ...value, status: o.value })}
             >
               {o.label}
@@ -48,6 +50,7 @@ export function InboxFilters({ value, onChange }: InboxFiltersProps) {
       </div>
       <select
         className={styles.select}
+        aria-label="Filtrar por prioridade"
         value={value.priority}
         onChange={(e) => onChange({ ...value, priority: e.target.value as TicketPriority | "all" })}
       >

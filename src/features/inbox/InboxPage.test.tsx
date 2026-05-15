@@ -1,13 +1,21 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { InboxPage } from "./InboxPage";
-import * as inboxQuery from "./useInboxTickets";
 
-const mockNavigate = vi.fn();
+const { mockUseInboxTickets, mockNavigate } = vi.hoisted(() => ({
+  mockUseInboxTickets: vi.fn(),
+  mockNavigate: vi.fn(),
+}));
+
+vi.mock("./useInboxTickets", () => ({
+  useInboxTickets: mockUseInboxTickets,
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
+
+import { InboxPage } from "./InboxPage";
 
 const mkTicket = (over: Partial<{ id: string; title: string; protocol: string }> = {}) => ({
   id: over.id ?? "t1",
@@ -19,13 +27,13 @@ const mkTicket = (over: Partial<{ id: string; title: string; protocol: string }>
 });
 
 afterEach(() => {
-  vi.restoreAllMocks();
+  mockUseInboxTickets.mockReset();
   mockNavigate.mockReset();
 });
 
 describe("InboxPage", () => {
   it("mostra skeleton em loading", () => {
-    vi.spyOn(inboxQuery, "useInboxTickets").mockReturnValue({
+    mockUseInboxTickets.mockReturnValue({
       data: undefined,
       isPending: true,
       isFetching: true,
@@ -39,7 +47,7 @@ describe("InboxPage", () => {
   });
 
   it("mostra empty 'Tudo em dia' quando não há tickets nem filtros", () => {
-    vi.spyOn(inboxQuery, "useInboxTickets").mockReturnValue({
+    mockUseInboxTickets.mockReturnValue({
       data: [],
       isPending: false,
       isFetching: false,
@@ -53,7 +61,7 @@ describe("InboxPage", () => {
   });
 
   it("mostra empty 'Nenhum chamado' quando filtros não retornam nada", async () => {
-    vi.spyOn(inboxQuery, "useInboxTickets").mockReturnValue({
+    mockUseInboxTickets.mockReturnValue({
       data: [mkTicket({ title: "Elevador" })],
       isPending: false,
       isFetching: false,
@@ -69,7 +77,7 @@ describe("InboxPage", () => {
 
   it("mostra erro com botão tentar novamente", async () => {
     const refetch = vi.fn();
-    vi.spyOn(inboxQuery, "useInboxTickets").mockReturnValue({
+    mockUseInboxTickets.mockReturnValue({
       data: undefined,
       isPending: false,
       isFetching: false,
@@ -85,7 +93,7 @@ describe("InboxPage", () => {
   });
 
   it("renderiza lista de tickets e click chama navigate", async () => {
-    vi.spyOn(inboxQuery, "useInboxTickets").mockReturnValue({
+    mockUseInboxTickets.mockReturnValue({
       data: [mkTicket({ id: "t1", title: "Elevador" })],
       isPending: false,
       isFetching: false,
