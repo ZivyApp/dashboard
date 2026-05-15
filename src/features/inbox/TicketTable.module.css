@@ -1,0 +1,65 @@
+.wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.table thead {
+  text-align: left;
+  background-color: var(--bg-muted);
+  color: var(--fg-secondary);
+}
+
+.table th {
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--fw-medium);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table tbody tr {
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg-muted);
+}
+
+.table td {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: top;
+  color: var(--fg-primary);
+}
+
+.proto {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-secondary);
+  white-space: nowrap;
+}
+
+.title {
+  font-weight: var(--fw-medium);
+  margin-bottom: var(--space-1);
+}
+
+.sub {
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+  white-space: nowrap;
+}

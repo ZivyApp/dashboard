@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { filterTickets, type Ticket, type FilterState } from "./filterTickets";
+import { filterTickets, type FilterState } from "./filterTickets";
+import type { Ticket } from "./types";
 
 const t = (overrides: Partial<Ticket> = {}): Ticket => {
   const base: Ticket = {

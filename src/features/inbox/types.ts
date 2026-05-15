@@ -11,3 +11,16 @@ export function isTicketStatus(v: unknown): v is TicketStatus {
 export function isTicketPriority(v: unknown): v is TicketPriority {
   return typeof v === "string" && (TICKET_PRIORITIES as readonly string[]).includes(v);
 }
+
+export interface Ticket {
+  id: string;
+  protocol: string;
+  title: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  resident_name?: string;
+  unit_number?: string;
+  block_name?: string;
+  common_area_name?: string;
+  updated_at: string;
+}

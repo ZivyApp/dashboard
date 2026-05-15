@@ -1,8 +1,11 @@
+import { useCallback, useEffect } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Ticket } from "./filterTickets";
+import type { Ticket } from "./types";
 import { isTicketStatus, isTicketPriority, type TicketStatus } from "./types";
 
+// Duas queries paralelas porque GET /tickets aceita apenas um `status` por chamada.
+// Quando Core suportar CSV (ex.: `status=open,in_progress`), trocar por um useQuery único.
 const ACTIVE_STATUSES: TicketStatus[] = ["open", "in_progress"];
 
 function isCompleteTicket(t: unknown): t is Ticket {
@@ -49,15 +52,17 @@ export function useInboxTickets(condoId: string) {
 
   const data = isSuccess ? queries.flatMap((q) => q.data ?? []) : undefined;
 
-  if (data && data.length > 200) {
-    console.warn(`Inbox: ${data.length} tickets ativos. Considerar paginação no Core.`);
-  }
+  useEffect(() => {
+    if (data && data.length > 200) {
+      console.warn(`Inbox: ${data.length} tickets ativos. Considerar paginação no Core.`);
+    }
+  }, [data]);
 
-  function refetch() {
+  const refetch = useCallback(() => {
     queries.forEach((q) => {
       void q.refetch();
     });
-  }
+  }, [queries]);
 
   return { data, isPending, isFetching, isError, isSuccess, error, refetch };
 }

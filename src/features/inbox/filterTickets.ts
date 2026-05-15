@@ -1,17 +1,4 @@
-import type { TicketStatus, TicketPriority } from "./types";
-
-export interface Ticket {
-  id: string;
-  protocol: string;
-  title: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  resident_name?: string;
-  unit_number?: string;
-  block_name?: string;
-  common_area_name?: string;
-  updated_at: string;
-}
+import type { Ticket, TicketStatus, TicketPriority } from "./types";
 
 export interface FilterState {
   search: string;

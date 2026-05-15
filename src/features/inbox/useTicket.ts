@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Ticket } from "./filterTickets";
+import type { Ticket } from "./types";
 import { isTicketStatus, isTicketPriority } from "./types";
 
 function isCompleteTicket(t: unknown): t is Ticket {

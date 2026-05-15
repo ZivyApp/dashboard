@@ -1,8 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { EmptyState } from "@/ui/AppShell/EmptyState";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { InboxPage } from "@/features/inbox/InboxPage";
 
 export const Route = createFileRoute("/_app/c/$condoId/inbox")({
-  component: () => (
-    <EmptyState title="Inbox" description="Em breve. Esta tela será implementada no Plan 4." />
-  ),
+  component: InboxRoute,
 });
+
+function InboxRoute() {
+  const { condoId } = Route.useParams();
+  return (
+    <>
+      <InboxPage condoId={condoId} />
+      <Outlet />
+    </>
+  );
+}
