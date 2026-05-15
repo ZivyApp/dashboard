@@ -23,11 +23,8 @@ export function InboxPage({ condoId }: InboxPageProps) {
   const filtered = useMemo(() => filterTickets(data ?? [], filters), [data, filters]);
 
   const handlePick = (ticketId: string) => {
-    void navigate({
-      // @ts-expect-error rota chega no Plan 4.3
-      to: "/c/$condoId/inbox/$ticketId",
-      params: { condoId, ticketId },
-    });
+    // @ts-expect-error rota chega no Plan 4.3
+    void navigate({ to: "/c/$condoId/inbox/$ticketId", params: { condoId, ticketId } });
   };
 
   if (isPending) {

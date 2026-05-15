@@ -1,6 +1,6 @@
 import { TicketTable } from "./TicketTable";
 import { TicketCards } from "./TicketCards";
-import type { Ticket } from "./filterTickets";
+import type { Ticket } from "./types";
 import styles from "./InboxList.module.css";
 
 interface InboxListProps {
