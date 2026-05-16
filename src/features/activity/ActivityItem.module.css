@@ -22,17 +22,44 @@
   background-color: var(--bg-muted);
 }
 
+.row:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
 .unread {
   border-left-color: var(--brand);
 }
 
 .iconBox {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   width: 36px;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   height: 36px;
   border-radius: var(--radius-md);
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+
+.iconBox[data-kind="ticket_new"] {
+  background-color: var(--info-bg);
+  color: var(--info-fg);
+}
+
+.iconBox[data-kind="ticket_comment"] {
+  background-color: var(--brand-soft);
+  color: var(--brand);
+}
+
+.iconBox[data-kind="approval"] {
+  background-color: var(--status-onhold-bg);
+  color: var(--status-onhold-fg);
+}
+
+.iconBox[data-kind="status_change"] {
+  background-color: var(--status-media-bg);
+  color: var(--status-media-fg);
 }
 
 .body {

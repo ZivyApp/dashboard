@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import type { ActivityEvent } from "./repository/types";
-import { visualFor } from "./activityIcon";
+import { iconFor } from "./activityIcon";
 import { isUnread, isUrgent } from "./activityPalette";
 import { formatRelTime } from "@/features/inbox/formatRelTime";
 import styles from "./ActivityItem.module.css";
@@ -12,8 +12,7 @@ interface Props {
 }
 
 export function ActivityItem({ event, onPick, onMarkRead }: Props) {
-  const visual = visualFor(event.kind);
-  const Icon = visual.icon;
+  const Icon = iconFor(event.kind);
   const unread = isUnread(event);
   const urgent = isUrgent(event);
   const cls = [styles.row, unread ? styles.unread : ""].filter(Boolean).join(" ");
@@ -32,11 +31,7 @@ export function ActivityItem({ event, onPick, onMarkRead }: Props) {
       }}
       aria-label={event.title}
     >
-      <span
-        className={styles.iconBox}
-        style={{ backgroundColor: visual.bg, color: visual.fg }}
-        aria-hidden="true"
-      >
+      <span className={styles.iconBox} data-kind={event.kind} aria-hidden="true">
         <Icon size={18} />
       </span>
       <div className={styles.body}>
