@@ -15,6 +15,8 @@ vitest.config.js
 vitest.config.d.ts
 .storybook/*.js
 .storybook/*.d.ts
+build/*.js
+build/*.d.ts
 .vercel
 .worktrees
 .superpowers/
