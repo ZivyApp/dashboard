@@ -2,6 +2,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useNavigate } from "@tanstack/react-router";
 import { User } from "lucide-react";
 import { useSessionStore } from "@/stores/session";
+import { clearActivityReads } from "@/features/activity/repository/local";
 import styles from "./UserMenu.module.css";
 
 export function UserMenu() {
@@ -16,6 +17,7 @@ export function UserMenu() {
     } catch (err) {
       console.error("signOut failed:", err);
     } finally {
+      clearActivityReads();
       void navigate({ to: "/login" });
     }
   }

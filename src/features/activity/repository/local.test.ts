@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { FIXTURES } from "./fixtures";
-import { createLocalActivityRepository } from "./local";
+import { clearActivityReads, createLocalActivityRepository } from "./local";
 
 beforeEach(() => {
   localStorage.clear();
@@ -82,5 +82,30 @@ describe("LocalActivityRepository", () => {
     await repo.markAllRead();
     const res = await repo.list({ tab: "unread" });
     expect(res.items.length).toBe(0);
+  });
+
+  it("persiste readAt entre instâncias via localStorage", async () => {
+    const repo1 = createLocalActivityRepository({ events: FIXTURES });
+    const unreadBefore = await repo1.list({ tab: "unread" });
+    const target = unreadBefore.items[0];
+    if (!target) throw new Error("fixtures sem unread — ajustar baseline");
+    await repo1.markRead(target.id);
+
+    // Nova instância simula reload — mesmo localStorage.
+    const repo2 = createLocalActivityRepository({ events: FIXTURES });
+    const found = (await repo2.list({})).items.find((e) => e.id === target.id);
+    expect(found?.readAt).toBeTruthy();
+  });
+
+  it("clearActivityReads zera o storage", async () => {
+    const repo = createLocalActivityRepository({ events: FIXTURES });
+    const target = (await repo.list({ tab: "unread" })).items[0];
+    if (!target) throw new Error("fixtures sem unread");
+    await repo.markRead(target.id);
+    clearActivityReads();
+
+    const repoAfter = createLocalActivityRepository({ events: FIXTURES });
+    const found = (await repoAfter.list({})).items.find((e) => e.id === target.id);
+    expect(found?.readAt).toBeNull();
   });
 });

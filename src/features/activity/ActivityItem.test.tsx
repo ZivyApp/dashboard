@@ -31,10 +31,13 @@ describe("ActivityItem", () => {
     expect(onPick).toHaveBeenCalledWith(ev);
   });
 
-  it("botão ✓ chama onMarkRead com id", async () => {
+  it("botão ✓ chama onMarkRead com id", () => {
     const onMarkRead = vi.fn();
     render(<ActivityItem event={ev} onPick={() => {}} onMarkRead={onMarkRead} />);
-    await userEvent.click(screen.getByRole("button", { name: /marcar como lido/i }));
+    const btn = screen.getByRole("button", { name: /marcar como lido/i });
+    // jsdom não computa :hover, então :hover { pointer-events: auto } não dispara.
+    // Disparamos o click programaticamente — equivalente a focus-within + Enter.
+    btn.click();
     expect(onMarkRead).toHaveBeenCalledWith("ev-1");
   });
 

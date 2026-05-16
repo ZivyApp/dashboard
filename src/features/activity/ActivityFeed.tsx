@@ -6,7 +6,7 @@ import { EmptyState } from "@/ui/AppShell/EmptyState";
 import type { Scope } from "@/features/scope/useScope";
 import { useActivityFeed } from "./useActivityFeed";
 import { useMarkRead } from "./useMarkRead";
-import { ActivityFeedTabs } from "./ActivityFeedTabs";
+import { ActivityFeedTabs, PANEL_ID, TAB_ID_PREFIX } from "./ActivityFeedTabs";
 import { ActivityItem } from "./ActivityItem";
 import type { ActivityEvent, ActivityTab } from "./repository/types";
 import styles from "./ActivityFeed.module.css";
@@ -49,23 +49,20 @@ export function ActivityFeed({ scope }: Props) {
   }
 
   function handleTabChange(next: ActivityTab) {
+    // TanStack Router não consegue inferir o tipo de `search` para rotas
+    // relativas (`to: "."`) sem `from`. Como ActivityFeed é montado em duas
+    // rotas (/inbox e /c/$condoId/inbox), mantemos a navegação relativa.
     void navigate({ to: ".", search: { tab: next } } as unknown as Parameters<typeof navigate>[0]);
   }
 
   function handlePick(event: ActivityEvent) {
     const ref = event.resourceRef;
     if (ref.type === "ticket") {
-      const target =
-        scope.kind === "condo"
-          ? {
-              to: "/c/$condoId/inbox/$ticketId",
-              params: { condoId: scope.condoId, ticketId: ref.ticketId },
-            }
-          : {
-              to: "/c/$condoId/inbox/$ticketId",
-              params: { condoId: event.condoId, ticketId: ref.ticketId },
-            };
-      void navigate(target as unknown as Parameters<typeof navigate>[0]);
+      const condoId = scope.kind === "condo" ? scope.condoId : event.condoId;
+      void navigate({
+        to: "/c/$condoId/inbox/$ticketId",
+        params: { condoId, ticketId: ref.ticketId },
+      });
       return;
     }
     if (ref.type === "resident_approval") {
@@ -92,22 +89,29 @@ export function ActivityFeed({ scope }: Props) {
         }
       />
       <ActivityFeedTabs value={tab} counts={data.counts} onChange={handleTabChange} />
-      {data.items.length === 0 ? (
-        <EmptyState title="Tudo em dia" description="Nenhuma atividade neste recorte." />
-      ) : (
-        <div className={styles.list}>
-          {data.items.map((ev) => (
-            <ActivityItem
-              key={ev.id}
-              event={ev}
-              onPick={handlePick}
-              onMarkRead={(id) => {
-                void markRead(id);
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <div
+        id={PANEL_ID}
+        role="tabpanel"
+        aria-labelledby={`${TAB_ID_PREFIX}-${tab}`}
+        className={styles.panel}
+      >
+        {data.items.length === 0 ? (
+          <EmptyState title="Tudo em dia" description="Nenhuma atividade neste recorte." />
+        ) : (
+          <div className={styles.list}>
+            {data.items.map((ev) => (
+              <ActivityItem
+                key={ev.id}
+                event={ev}
+                onPick={handlePick}
+                onMarkRead={(id) => {
+                  void markRead(id);
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 }
@@ -117,7 +121,9 @@ function Header({ subtitle, actions }: { subtitle: string; actions?: ReactNode }
     <header className={styles.header}>
       <div>
         <h1 className={styles.title}>Inbox</h1>
-        <p className={styles.subtitle}>{subtitle}</p>
+        <p className={styles.subtitle} aria-live="polite">
+          {subtitle}
+        </p>
       </div>
       {actions ? <div className={styles.actions}>{actions}</div> : null}
     </header>

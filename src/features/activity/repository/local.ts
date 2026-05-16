@@ -9,6 +9,18 @@ import type { Scope } from "@/features/scope/useScope";
 
 const STORAGE_KEY = "zivy.activity.reads";
 
+/**
+ * Limpa o estado de leituras persistido — chamar no logout para evitar que
+ * dois usuários no mesmo browser herdem o `readAt` um do outro.
+ */
+export function clearActivityReads(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Safari Private Browsing — ignorar
+  }
+}
+
 function safeRead(): Record<string, string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

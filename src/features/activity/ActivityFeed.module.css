@@ -24,6 +24,10 @@
   gap: var(--space-2);
 }
 
+.panel {
+  display: contents;
+}
+
 .list {
   display: flex;
   flex-direction: column;

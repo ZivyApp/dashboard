@@ -108,6 +108,7 @@
   color: var(--fg-secondary);
   cursor: pointer;
   opacity: 0;
+  pointer-events: none;
   transition: opacity var(--duration-fast) var(--easing-standard);
 }
 
@@ -115,4 +116,5 @@
 .row:focus-within .markBtn,
 .markBtn:focus {
   opacity: 1;
+  pointer-events: auto;
 }
