@@ -1,6 +1,6 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMatches, useNavigate, useParams } from "@tanstack/react-router";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Globe } from "lucide-react";
 import { useMyCondos } from "./useMyCondos";
 import styles from "./CondoSwitcher.module.css";
 
@@ -17,6 +17,23 @@ export function CondoSwitcher() {
   // which falls through to the default "inbox" — acceptable behavior.
   const subPath = leafRouteId.split("/").pop() ?? "inbox";
   const activeCondoId = params.condoId;
+
+  function handleSelectAll() {
+    // Cross-condo routes (/inbox, /tickets, /approvals) are created in Task 12;
+    // until routeTree.gen.ts is regenerated, navigate({ to }) rejects them. Wrap
+    // navigate in a relaxed signature local to this function.
+    const goto = navigate as unknown as (args: { to: string }) => Promise<void>;
+    switch (subPath) {
+      case "tickets":
+        void goto({ to: "/tickets" });
+        return;
+      case "approvals":
+        void goto({ to: "/approvals" });
+        return;
+      default:
+        void goto({ to: "/inbox" });
+    }
+  }
 
   function handleSelect(newId: string) {
     const p = { condoId: newId };
@@ -69,6 +86,18 @@ export function CondoSwitcher() {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content className={styles.content} align="start" sideOffset={8}>
+          <DropdownMenu.Item
+            className={styles.item}
+            aria-current={activeCondoId === undefined ? "true" : undefined}
+            onSelect={() => handleSelectAll()}
+          >
+            <span className={styles.checkSlot}>
+              {activeCondoId === undefined && <Check size={14} aria-hidden="true" />}
+            </span>
+            <Globe size={16} aria-hidden="true" />
+            <span className={styles.itemName}>Todos os condomínios</span>
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator className={styles.separator} />
           {data.map((condo) => {
             const isActive = condo.condoId === activeCondoId;
             return (
