@@ -1,0 +1,63 @@
+.header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  height: var(--size-header-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  background-color: var(--bg-canvas);
+  border-bottom: 1px solid var(--border);
+  z-index: var(--z-sticky);
+}
+
+.hamburger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+
+  /* Visible only on mobile */
+}
+
+.hamburger:hover {
+  background-color: var(--bg-muted);
+}
+
+@media (width >= 768px) {
+  .hamburger {
+    display: none;
+  }
+}
+
+.logo {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--brand);
+  letter-spacing: var(--tracking-tight);
+  user-select: none;
+}
+
+/* TODO(Plan 3.3): CondoSwitcher will be mounted here */
+.condoSlot {
+  flex-shrink: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
