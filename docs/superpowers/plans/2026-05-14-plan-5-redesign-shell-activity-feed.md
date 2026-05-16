@@ -1782,6 +1782,58 @@ Slice 5.1 do Plan 5. Sem mudanças de dados — Plan 4 continua funcionando. Pr�
 
 ---
 
+### Task 15.A: Débitos técnicos do Slice 5.1 (do code review do PR #14)
+
+Itens não-bloqueantes deixados no PR #14 e endereçados antes de plantar o feed. Cada um é um commit separado.
+
+- [ ] **Step 1: Teste de active state da `Sidebar`**
+
+  Em `src/ui/AppShell/Sidebar/Sidebar.test.tsx`, adicionar um caso que renderiza `<Sidebar pathname="/c/c1/inbox" scope={{ kind: "condo", condoId: "c1" }} />` e asserta que o item "Inbox" tem classe `active` (use `closest("a, button")?.className` e `toContain("active")`). Cobrir também o caso de `kind: "all"` + pathname `/inbox`. Justificativa: garantir que `matchesActive` não regride quando reordenarmos rotas no 5.2/5.3.
+
+  Commit: `test(sidebar): cobre active state por pathname`
+
+- [ ] **Step 2: `SidebarFooter` mostra version+branch só em dev**
+
+  (Opcional — implementar se Slice 5.1 não tiver tratado.) Em produção, suprimir a string `v… · branch` ou trocar por algo neutro (ex.: ano). Em dev, manter. Critério: `if (import.meta.env.PROD) return null` (ou esconder via flag). Justifica: branch name + commit hash em prod expõem detalhes sobre fluxo interno; pode ficar restrito ao staging/preview.
+
+  Commit: `feat(sidebar): footer só exibe versão em dev/preview` (skip se já feito no 5.1)
+
+- [ ] **Step 3: Extrair `define` compartilhado entre Vite e Vitest**
+
+  Criar `build/defines.ts` (ou `scripts/build-defines.ts`) exportando:
+
+  ```ts
+  import { execSync } from "node:child_process";
+  import pkg from "../package.json" with { type: "json" };
+
+  function safeBranch(): string {
+    try {
+      return execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+    } catch {
+      return "unknown";
+    }
+  }
+
+  export const buildDefines = {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_BRANCH__: JSON.stringify(safeBranch()),
+  } as const;
+  ```
+
+  Importar em `vite.config.ts` e `vitest.config.ts` no campo `define`. Remover os literais duplicados.
+
+  Commit: `chore(build): extrai defines compartilhados Vite/Vitest`
+
+- [ ] **Step 4: Criar `src/design-tokens/semantic.css` e migrar tokens de sidebar**
+
+  Mover os 6 tokens de sidebar (`--sidebar-item-bg-hover|active|fg-active|badge-bg|badge-fg|group-label`) de `colors.css` para um novo arquivo `src/design-tokens/semantic.css`. Estrutura: dois blocos (`:root` e `:root[data-theme="dark"]`) com os mesmos seis tokens (valores referenciando `var(--bg-*)`/`var(--brand-*)`/`var(--fg-*)` já existentes). Adicionar `@import url("./semantic.css")` em `src/design-tokens/index.css` depois de `colors.css` e antes de `shadow.css`. Justificativa: separar tokens "primitivos" (cor base) de "semânticos" (papel funcional) — abre espaço para os tokens de activity (`--activity-*`) no Step seguinte. Rodar `npm run lint && npm run test` para confirmar nada quebrou.
+
+  Commit: `refactor(tokens): extrai tokens semânticos para semantic.css`
+
+> Quando esses 4 steps terminarem, seguir para Task 16. Eles entram no MESMO PR do Slice 5.2 (não abrir PR separado).
+
+---
+
 ### Task 16: Tipos do repository
 
 **Files:**
