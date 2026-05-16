@@ -52,9 +52,6 @@
   --ticket-priority-high-fg: #991b1b;
   /* stylelint-disable-next-line declaration-strict-value */
   --overlay-bg: rgb(0 0 0 / 40%);
-
-  /* stylelint-disable-next-line declaration-strict-value */
-  --shadow-focus: 0 0 0 3px rgb(37 211 102 / 28%);
 }
 
 :root[data-theme="dark"] {
@@ -111,7 +108,4 @@
   --ticket-priority-high-fg: #fecaca;
   /* stylelint-disable-next-line declaration-strict-value */
   --overlay-bg: rgb(0 0 0 / 60%);
-
-  /* stylelint-disable-next-line declaration-strict-value */
-  --shadow-focus: 0 0 0 3px rgb(74 222 128 / 40%);
 }
