@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Inbox, Ticket, CheckCircle2, Settings, Building2, Home, Trees } from "lucide-react";
 import type { Scope } from "@/features/scope/useScope";
+import { isAtLeast, type Role } from "@/features/condo/roleHierarchy";
 import { SidebarGroup } from "./SidebarGroup";
 import { SidebarItem } from "./SidebarItem";
 import { SidebarHeader } from "./SidebarHeader";
@@ -13,6 +14,22 @@ interface SidebarProps {
   scopeSubtitle?: string;
   inboxUnreadCount?: number;
   approvalsCount?: number;
+  /** Role no scope atual; ausente em scope "all" — usar aggregateRoles. */
+  currentRole?: Role;
+  /** Roles do user em todos os condos; usado em scope "all". */
+  aggregateRoles?: Role[];
+}
+
+function canApprovals(scope: Scope, currentRole?: Role, aggregate?: Role[]): boolean {
+  if (scope.kind === "condo") {
+    return currentRole !== undefined && isAtLeast(currentRole, "manager");
+  }
+  return (aggregate ?? []).some((r) => isAtLeast(r, "manager"));
+}
+
+function canStructure(scope: Scope, currentRole?: Role): boolean {
+  if (scope.kind !== "condo") return false;
+  return currentRole !== undefined && isAtLeast(currentRole, "manager");
 }
 
 interface Item {
@@ -29,8 +46,13 @@ export function Sidebar({
   scopeSubtitle,
   inboxUnreadCount,
   approvalsCount,
+  currentRole,
+  aggregateRoles,
 }: SidebarProps) {
   const { location } = useRouterState();
+  const showApprovals = canApprovals(scope, currentRole, aggregateRoles);
+  const showStructure = canStructure(scope, currentRole);
+
   const operacao: Item[] =
     scope.kind === "condo"
       ? [
@@ -47,13 +69,17 @@ export function Sidebar({
             label: "Tickets",
             icon: Ticket,
           },
-          {
-            to: "/c/$condoId/approvals",
-            params: { condoId: scope.condoId },
-            label: "Aprovações",
-            icon: CheckCircle2,
-            ...(typeof approvalsCount === "number" ? { badge: approvalsCount } : {}),
-          },
+          ...(showApprovals
+            ? [
+                {
+                  to: "/c/$condoId/approvals",
+                  params: { condoId: scope.condoId },
+                  label: "Aprovações",
+                  icon: CheckCircle2,
+                  ...(typeof approvalsCount === "number" ? { badge: approvalsCount } : {}),
+                } satisfies Item,
+              ]
+            : []),
           {
             to: "/c/$condoId/settings",
             params: { condoId: scope.condoId },
@@ -69,16 +95,20 @@ export function Sidebar({
             ...(typeof inboxUnreadCount === "number" ? { badge: inboxUnreadCount } : {}),
           },
           { to: "/tickets", label: "Tickets", icon: Ticket },
-          {
-            to: "/approvals",
-            label: "Aprovações",
-            icon: CheckCircle2,
-            ...(typeof approvalsCount === "number" ? { badge: approvalsCount } : {}),
-          },
+          ...(showApprovals
+            ? [
+                {
+                  to: "/approvals",
+                  label: "Aprovações",
+                  icon: CheckCircle2,
+                  ...(typeof approvalsCount === "number" ? { badge: approvalsCount } : {}),
+                } satisfies Item,
+              ]
+            : []),
         ];
 
   const estrutura: Item[] =
-    scope.kind === "condo"
+    showStructure && scope.kind === "condo"
       ? [
           {
             to: "/c/$condoId/structure/blocks",

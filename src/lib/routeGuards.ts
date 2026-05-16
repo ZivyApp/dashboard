@@ -45,3 +45,18 @@ export function requireRole(min: Role) {
     }
   };
 }
+
+/**
+ * Cross-condo role guard: garante que o usuário tem ao menos `min` em pelo
+ * menos UM condo. Usado em rotas globais (ex.: `/approvals`).
+ */
+export function requireRoleAny(min: Role) {
+  return async ({ context }: { context: { queryClient: QueryClient } }) => {
+    const condos = await context.queryClient.ensureQueryData(myCondosQueryOptions());
+    const has = condos.some((c) => isAtLeast(c.role, min));
+    if (!has) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
+      throw redirect({ to: "/no-access" });
+    }
+  };
+}

@@ -2,6 +2,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useMatches, useNavigate, useParams } from "@tanstack/react-router";
 import { Check, ChevronDown, Globe } from "lucide-react";
 import { useMyCondos } from "./useMyCondos";
+import { isAtLeast } from "./roleHierarchy";
 import styles from "./CondoSwitcher.module.css";
 
 export function CondoSwitcher() {
@@ -71,6 +72,11 @@ export function CondoSwitcher() {
   const activeCondo = data.find((c) => c.condoId === activeCondoId);
   const triggerLabel = activeCondo?.condoName ?? "Selecione condomínio";
 
+  // "Todos os condomínios" só faz sentido para quem opera cross-condo
+  // (super_admin global ou manager em qualquer condo). Para staff/viewer
+  // restritos a um único condo, escondemos a opção.
+  const showAllOption = data.some((c) => isAtLeast(c.role, "manager"));
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -82,19 +88,22 @@ export function CondoSwitcher() {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content className={styles.content} align="start" sideOffset={8}>
-          {/* TODO(Slice 5.3): gate "Todos os condomínios" por role com escopo cross-condo (super_admin / manager multi-condo). */}
-          <DropdownMenu.Item
-            className={styles.item}
-            aria-current={activeCondoId === undefined ? "true" : undefined}
-            onSelect={() => handleSelectAll()}
-          >
-            <span className={styles.checkSlot}>
-              {activeCondoId === undefined && <Check size={14} aria-hidden="true" />}
-            </span>
-            <Globe size={16} aria-hidden="true" />
-            <span className={styles.itemName}>Todos os condomínios</span>
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator className={styles.separator} />
+          {showAllOption ? (
+            <>
+              <DropdownMenu.Item
+                className={styles.item}
+                aria-current={activeCondoId === undefined ? "true" : undefined}
+                onSelect={() => handleSelectAll()}
+              >
+                <span className={styles.checkSlot}>
+                  {activeCondoId === undefined && <Check size={14} aria-hidden="true" />}
+                </span>
+                <Globe size={16} aria-hidden="true" />
+                <span className={styles.itemName}>Todos os condomínios</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator className={styles.separator} />
+            </>
+          ) : null}
           {data.map((condo) => {
             const isActive = condo.condoId === activeCondoId;
             return (
