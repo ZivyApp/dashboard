@@ -19,19 +19,15 @@ export function CondoSwitcher() {
   const activeCondoId = params.condoId;
 
   function handleSelectAll() {
-    // Cross-condo routes (/inbox, /tickets, /approvals) are created in Task 12;
-    // until routeTree.gen.ts is regenerated, navigate({ to }) rejects them. Wrap
-    // navigate in a relaxed signature local to this function.
-    const goto = navigate as unknown as (args: { to: string }) => Promise<void>;
     switch (subPath) {
       case "tickets":
-        void goto({ to: "/tickets" });
+        void navigate({ to: "/tickets" });
         return;
       case "approvals":
-        void goto({ to: "/approvals" });
+        void navigate({ to: "/approvals" });
         return;
       default:
-        void goto({ to: "/inbox" });
+        void navigate({ to: "/inbox" });
     }
   }
 

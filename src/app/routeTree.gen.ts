@@ -13,11 +13,17 @@ import { Route as NoAccessRouteImport } from './routes/no-access'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppTicketsRouteImport } from './routes/_app/tickets'
+import { Route as AppInboxRouteImport } from './routes/_app/inbox'
+import { Route as AppApprovalsRouteImport } from './routes/_app/approvals'
 import { Route as AppCCondoIdRouteImport } from './routes/_app/c/$condoId'
 import { Route as AppCCondoIdTicketsRouteImport } from './routes/_app/c/$condoId/tickets'
 import { Route as AppCCondoIdSettingsRouteImport } from './routes/_app/c/$condoId/settings'
 import { Route as AppCCondoIdInboxRouteImport } from './routes/_app/c/$condoId/inbox'
 import { Route as AppCCondoIdApprovalsRouteImport } from './routes/_app/c/$condoId/approvals'
+import { Route as AppCCondoIdStructureUnitsRouteImport } from './routes/_app/c/$condoId/structure/units'
+import { Route as AppCCondoIdStructureCommonAreasRouteImport } from './routes/_app/c/$condoId/structure/common-areas'
+import { Route as AppCCondoIdStructureBlocksRouteImport } from './routes/_app/c/$condoId/structure/blocks'
 import { Route as AppCCondoIdInboxTicketIdRouteImport } from './routes/_app/c/$condoId/inbox/$ticketId'
 
 const NoAccessRoute = NoAccessRouteImport.update({
@@ -37,6 +43,21 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTicketsRoute = AppTicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppApprovalsRoute = AppApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCCondoIdRoute = AppCCondoIdRouteImport.update({
@@ -64,6 +85,24 @@ const AppCCondoIdApprovalsRoute = AppCCondoIdApprovalsRouteImport.update({
   path: '/approvals',
   getParentRoute: () => AppCCondoIdRoute,
 } as any)
+const AppCCondoIdStructureUnitsRoute =
+  AppCCondoIdStructureUnitsRouteImport.update({
+    id: '/structure/units',
+    path: '/structure/units',
+    getParentRoute: () => AppCCondoIdRoute,
+  } as any)
+const AppCCondoIdStructureCommonAreasRoute =
+  AppCCondoIdStructureCommonAreasRouteImport.update({
+    id: '/structure/common-areas',
+    path: '/structure/common-areas',
+    getParentRoute: () => AppCCondoIdRoute,
+  } as any)
+const AppCCondoIdStructureBlocksRoute =
+  AppCCondoIdStructureBlocksRouteImport.update({
+    id: '/structure/blocks',
+    path: '/structure/blocks',
+    getParentRoute: () => AppCCondoIdRoute,
+  } as any)
 const AppCCondoIdInboxTicketIdRoute =
   AppCCondoIdInboxTicketIdRouteImport.update({
     id: '/$ticketId',
@@ -75,16 +114,25 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
+  '/approvals': typeof AppApprovalsRoute
+  '/inbox': typeof AppInboxRoute
+  '/tickets': typeof AppTicketsRoute
   '/c/$condoId': typeof AppCCondoIdRouteWithChildren
   '/c/$condoId/approvals': typeof AppCCondoIdApprovalsRoute
   '/c/$condoId/inbox': typeof AppCCondoIdInboxRouteWithChildren
   '/c/$condoId/settings': typeof AppCCondoIdSettingsRoute
   '/c/$condoId/tickets': typeof AppCCondoIdTicketsRoute
   '/c/$condoId/inbox/$ticketId': typeof AppCCondoIdInboxTicketIdRoute
+  '/c/$condoId/structure/blocks': typeof AppCCondoIdStructureBlocksRoute
+  '/c/$condoId/structure/common-areas': typeof AppCCondoIdStructureCommonAreasRoute
+  '/c/$condoId/structure/units': typeof AppCCondoIdStructureUnitsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
+  '/approvals': typeof AppApprovalsRoute
+  '/inbox': typeof AppInboxRoute
+  '/tickets': typeof AppTicketsRoute
   '/': typeof AppIndexRoute
   '/c/$condoId': typeof AppCCondoIdRouteWithChildren
   '/c/$condoId/approvals': typeof AppCCondoIdApprovalsRoute
@@ -92,12 +140,18 @@ export interface FileRoutesByTo {
   '/c/$condoId/settings': typeof AppCCondoIdSettingsRoute
   '/c/$condoId/tickets': typeof AppCCondoIdTicketsRoute
   '/c/$condoId/inbox/$ticketId': typeof AppCCondoIdInboxTicketIdRoute
+  '/c/$condoId/structure/blocks': typeof AppCCondoIdStructureBlocksRoute
+  '/c/$condoId/structure/common-areas': typeof AppCCondoIdStructureCommonAreasRoute
+  '/c/$condoId/structure/units': typeof AppCCondoIdStructureUnitsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
+  '/_app/approvals': typeof AppApprovalsRoute
+  '/_app/inbox': typeof AppInboxRoute
+  '/_app/tickets': typeof AppTicketsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/c/$condoId': typeof AppCCondoIdRouteWithChildren
   '/_app/c/$condoId/approvals': typeof AppCCondoIdApprovalsRoute
@@ -105,6 +159,9 @@ export interface FileRoutesById {
   '/_app/c/$condoId/settings': typeof AppCCondoIdSettingsRoute
   '/_app/c/$condoId/tickets': typeof AppCCondoIdTicketsRoute
   '/_app/c/$condoId/inbox/$ticketId': typeof AppCCondoIdInboxTicketIdRoute
+  '/_app/c/$condoId/structure/blocks': typeof AppCCondoIdStructureBlocksRoute
+  '/_app/c/$condoId/structure/common-areas': typeof AppCCondoIdStructureCommonAreasRoute
+  '/_app/c/$condoId/structure/units': typeof AppCCondoIdStructureUnitsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -112,16 +169,25 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/no-access'
+    | '/approvals'
+    | '/inbox'
+    | '/tickets'
     | '/c/$condoId'
     | '/c/$condoId/approvals'
     | '/c/$condoId/inbox'
     | '/c/$condoId/settings'
     | '/c/$condoId/tickets'
     | '/c/$condoId/inbox/$ticketId'
+    | '/c/$condoId/structure/blocks'
+    | '/c/$condoId/structure/common-areas'
+    | '/c/$condoId/structure/units'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/no-access'
+    | '/approvals'
+    | '/inbox'
+    | '/tickets'
     | '/'
     | '/c/$condoId'
     | '/c/$condoId/approvals'
@@ -129,11 +195,17 @@ export interface FileRouteTypes {
     | '/c/$condoId/settings'
     | '/c/$condoId/tickets'
     | '/c/$condoId/inbox/$ticketId'
+    | '/c/$condoId/structure/blocks'
+    | '/c/$condoId/structure/common-areas'
+    | '/c/$condoId/structure/units'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/no-access'
+    | '/_app/approvals'
+    | '/_app/inbox'
+    | '/_app/tickets'
     | '/_app/'
     | '/_app/c/$condoId'
     | '/_app/c/$condoId/approvals'
@@ -141,6 +213,9 @@ export interface FileRouteTypes {
     | '/_app/c/$condoId/settings'
     | '/_app/c/$condoId/tickets'
     | '/_app/c/$condoId/inbox/$ticketId'
+    | '/_app/c/$condoId/structure/blocks'
+    | '/_app/c/$condoId/structure/common-areas'
+    | '/_app/c/$condoId/structure/units'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,6 +254,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/tickets': {
+      id: '/_app/tickets'
+      path: '/tickets'
+      fullPath: '/tickets'
+      preLoaderRoute: typeof AppTicketsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inbox': {
+      id: '/_app/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AppInboxRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/approvals': {
+      id: '/_app/approvals'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof AppApprovalsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/c/$condoId': {
       id: '/_app/c/$condoId'
       path: '/c/$condoId'
@@ -214,6 +310,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCCondoIdApprovalsRouteImport
       parentRoute: typeof AppCCondoIdRoute
     }
+    '/_app/c/$condoId/structure/units': {
+      id: '/_app/c/$condoId/structure/units'
+      path: '/structure/units'
+      fullPath: '/c/$condoId/structure/units'
+      preLoaderRoute: typeof AppCCondoIdStructureUnitsRouteImport
+      parentRoute: typeof AppCCondoIdRoute
+    }
+    '/_app/c/$condoId/structure/common-areas': {
+      id: '/_app/c/$condoId/structure/common-areas'
+      path: '/structure/common-areas'
+      fullPath: '/c/$condoId/structure/common-areas'
+      preLoaderRoute: typeof AppCCondoIdStructureCommonAreasRouteImport
+      parentRoute: typeof AppCCondoIdRoute
+    }
+    '/_app/c/$condoId/structure/blocks': {
+      id: '/_app/c/$condoId/structure/blocks'
+      path: '/structure/blocks'
+      fullPath: '/c/$condoId/structure/blocks'
+      preLoaderRoute: typeof AppCCondoIdStructureBlocksRouteImport
+      parentRoute: typeof AppCCondoIdRoute
+    }
     '/_app/c/$condoId/inbox/$ticketId': {
       id: '/_app/c/$condoId/inbox/$ticketId'
       path: '/$ticketId'
@@ -240,6 +357,9 @@ interface AppCCondoIdRouteChildren {
   AppCCondoIdInboxRoute: typeof AppCCondoIdInboxRouteWithChildren
   AppCCondoIdSettingsRoute: typeof AppCCondoIdSettingsRoute
   AppCCondoIdTicketsRoute: typeof AppCCondoIdTicketsRoute
+  AppCCondoIdStructureBlocksRoute: typeof AppCCondoIdStructureBlocksRoute
+  AppCCondoIdStructureCommonAreasRoute: typeof AppCCondoIdStructureCommonAreasRoute
+  AppCCondoIdStructureUnitsRoute: typeof AppCCondoIdStructureUnitsRoute
 }
 
 const AppCCondoIdRouteChildren: AppCCondoIdRouteChildren = {
@@ -247,6 +367,9 @@ const AppCCondoIdRouteChildren: AppCCondoIdRouteChildren = {
   AppCCondoIdInboxRoute: AppCCondoIdInboxRouteWithChildren,
   AppCCondoIdSettingsRoute: AppCCondoIdSettingsRoute,
   AppCCondoIdTicketsRoute: AppCCondoIdTicketsRoute,
+  AppCCondoIdStructureBlocksRoute: AppCCondoIdStructureBlocksRoute,
+  AppCCondoIdStructureCommonAreasRoute: AppCCondoIdStructureCommonAreasRoute,
+  AppCCondoIdStructureUnitsRoute: AppCCondoIdStructureUnitsRoute,
 }
 
 const AppCCondoIdRouteWithChildren = AppCCondoIdRoute._addFileChildren(
@@ -254,11 +377,17 @@ const AppCCondoIdRouteWithChildren = AppCCondoIdRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppApprovalsRoute: typeof AppApprovalsRoute
+  AppInboxRoute: typeof AppInboxRoute
+  AppTicketsRoute: typeof AppTicketsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppCCondoIdRoute: typeof AppCCondoIdRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppApprovalsRoute: AppApprovalsRoute,
+  AppInboxRoute: AppInboxRoute,
+  AppTicketsRoute: AppTicketsRoute,
   AppIndexRoute: AppIndexRoute,
   AppCCondoIdRoute: AppCCondoIdRouteWithChildren,
 }

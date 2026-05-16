@@ -103,7 +103,6 @@ export function Sidebar({
 
   function renderItem(item: Item) {
     const active = matchesActive(location.pathname, item.to, item.params);
-    // Routes still being created in Task 12; cast until routeTree.gen.ts knows them.
     const linkProps = { to: item.to, params: item.params } as unknown as Parameters<typeof Link>[0];
     return (
       <Link
