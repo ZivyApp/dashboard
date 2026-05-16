@@ -49,6 +49,13 @@ vi.mock("@/features/condo/useMyCondos", () => ({
   useMyCondos: () => mockUseMyCondos(),
 }));
 
+vi.mock("@/features/activity/useActivityFeed", () => ({
+  useActivityFeed: () => ({
+    data: { counts: { all: 8, unread: 3, approvals: 2 }, items: [] },
+    isPending: false,
+  }),
+}));
+
 vi.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {

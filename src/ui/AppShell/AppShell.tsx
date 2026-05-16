@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useScope } from "@/features/scope/useScope";
 import { useMyCondos } from "@/features/condo/useMyCondos";
 import type { Role } from "@/features/condo/roleHierarchy";
+import { useActivityFeed } from "@/features/activity/useActivityFeed";
 import { Topbar } from "./Topbar/Topbar";
 import { Sidebar } from "./Sidebar/Sidebar";
 import styles from "./AppShell.module.css";
@@ -40,6 +41,9 @@ export function AppShell({ children }: AppShellProps) {
     role = highestRole(condos.map((c) => c.role));
   }
 
+  const unread = useActivityFeed({ scope, tab: "unread" });
+  const inboxUnreadCount = unread.data?.counts.unread;
+
   return (
     <div className={styles.shell}>
       <div className={styles.topbar}>
@@ -50,6 +54,7 @@ export function AppShell({ children }: AppShellProps) {
           scope={scope}
           scopeTitle={scopeTitle}
           {...(scopeSubtitle ? { scopeSubtitle } : {})}
+          {...(typeof inboxUnreadCount === "number" ? { inboxUnreadCount } : {})}
         />
       </div>
       <main className={styles.main}>{children}</main>
