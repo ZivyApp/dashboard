@@ -1,0 +1,16 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  padding: var(--space-3) var(--space-2);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  width: 240px;
+  flex-shrink: 0;
+}
+
+.groups {
+  flex: 1;
+  overflow-y: auto;
+}
