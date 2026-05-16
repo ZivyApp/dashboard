@@ -44,7 +44,7 @@ vi.mock("@/features/condo/useMyCondos", () => ({
   myCondosQueryOptions: vi.fn(() => ({ queryKey: ["condos", "me"] })),
 }));
 
-const { requireAuth, requireRole } = await import("./routeGuards");
+const { requireAuth, requireRole, requireRoleAny } = await import("./routeGuards");
 
 describe("requireAuth", () => {
   afterEach(() => {
@@ -195,5 +195,46 @@ describe("requireRole", () => {
       to: "/c/$condoId/inbox",
       params: { condoId },
     });
+  });
+});
+
+describe("requireRoleAny", () => {
+  function makeQueryClient(condos: CondoMembership[]): QueryClient {
+    return {
+      ensureQueryData: mockEnsureQueryData.mockResolvedValue(condos),
+    } as unknown as QueryClient;
+  }
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("passes when at least one condo has role >= min", async () => {
+    const condos: CondoMembership[] = [
+      { condoId: "c1", condoName: "A", condoSlug: "a", role: "viewer" },
+      { condoId: "c2", condoName: "B", condoSlug: "b", role: "manager" },
+    ];
+    const guard = requireRoleAny("manager");
+    await expect(
+      guard({ context: { queryClient: makeQueryClient(condos) } }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("throws redirect to /no-access when no condo meets min", async () => {
+    const condos: CondoMembership[] = [
+      { condoId: "c1", condoName: "A", condoSlug: "a", role: "viewer" },
+      { condoId: "c2", condoName: "B", condoSlug: "b", role: "staff" },
+    ];
+    const guard = requireRoleAny("manager");
+
+    await expect(guard({ context: { queryClient: makeQueryClient(condos) } })).rejects.toThrow();
+    expect(redirect).toHaveBeenCalledWith({ to: "/no-access" });
+  });
+
+  it("throws redirect to /no-access when condos list is empty", async () => {
+    const guard = requireRoleAny("manager");
+
+    await expect(guard({ context: { queryClient: makeQueryClient([]) } })).rejects.toThrow();
+    expect(redirect).toHaveBeenCalledWith({ to: "/no-access" });
   });
 });
