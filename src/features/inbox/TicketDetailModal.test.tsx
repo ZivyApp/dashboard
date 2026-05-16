@@ -67,11 +67,12 @@ describe("TicketDetailModal", () => {
     expect(screen.getByText(/comentários, atribuição/i)).toBeInTheDocument();
   });
 
-  it("mostra mensagem 404 com botão voltar", async () => {
+  it("mostra mensagem 404 com botões voltar e tentar novamente", async () => {
     const onClose = vi.fn();
     mockUseTicket.mockReturnValue({
       data: undefined,
       isPending: false,
+      isFetching: false,
       isError: true,
       isSuccess: false,
       error: new Error("not found"),
@@ -79,8 +80,25 @@ describe("TicketDetailModal", () => {
     });
     render(<TicketDetailModal ticketId="zzz" onClose={onClose} />);
     expect(screen.getByRole("heading", { name: /ticket não encontrado/i })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /tentar novamente/i }));
+    expect(mockRefetch).toHaveBeenCalledOnce();
     await userEvent.click(screen.getByRole("button", { name: /voltar para inbox/i }));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("desabilita botão tentar novamente enquanto refetching", () => {
+    mockUseTicket.mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isFetching: true,
+      isError: true,
+      isSuccess: false,
+      error: new Error("not found"),
+      refetch: mockRefetch,
+    });
+    render(<TicketDetailModal ticketId="zzz" onClose={() => {}} />);
+    const btn = screen.getByRole("button", { name: /tentando/i });
+    expect(btn).toBeDisabled();
   });
 
   it("Esc chama onClose", async () => {

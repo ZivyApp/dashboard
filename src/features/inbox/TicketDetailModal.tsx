@@ -34,7 +34,7 @@ function formatAbsolute(iso: string | undefined): string {
 }
 
 export function TicketDetailModal({ ticketId, onClose }: TicketDetailModalProps) {
-  const { data, isPending, isError, refetch } = useTicket(ticketId);
+  const { data, isPending, isFetching, isError, refetch } = useTicket(ticketId);
 
   if (isPending) {
     return (
@@ -60,8 +60,9 @@ export function TicketDetailModal({ ticketId, onClose }: TicketDetailModalProps)
               onClick={() => {
                 void refetch();
               }}
+              disabled={isFetching}
             >
-              Tentar novamente
+              {isFetching ? "Tentando…" : "Tentar novamente"}
             </Button>
           </div>
         </div>
