@@ -285,6 +285,25 @@ describe("CondoSwitcher", () => {
     });
   });
 
+  it("esconde 'Todos os condomínios' quando nenhum condo tem role >= manager", async () => {
+    const user = userEvent.setup();
+    const VIEWER_ONLY: CondoMembership[] = [
+      { condoId: "condo-1", condoName: "Edifício Aurora", condoSlug: "aurora", role: "viewer" },
+      { condoId: "condo-2", condoName: "Residencial Bravo", condoSlug: "bravo", role: "staff" },
+    ];
+    mockUseMyCondos.mockReturnValue({ data: VIEWER_ONLY, isPending: false, error: null });
+    mockUseParams.mockReturnValue({ condoId: "condo-1" });
+    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
+
+    render(<CondoSwitcher />);
+
+    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
+
+    expect(screen.queryByText("Todos os condomínios")).not.toBeInTheDocument();
+    const items = screen.getAllByRole("menuitem");
+    expect(items).toHaveLength(2);
+  });
+
   it("defaults to inbox sub-route when pathname doesn't match known sub-routes", async () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });

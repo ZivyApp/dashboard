@@ -41,10 +41,44 @@ describe("Sidebar", () => {
     expect(screen.queryByText(/Estrutura/i)).not.toBeInTheDocument();
   });
 
-  it("mostra ESTRUTURA quando scope é 'condo'", () => {
-    render(<Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />);
+  it("mostra ESTRUTURA quando scope é 'condo' e currentRole é manager", () => {
+    render(
+      <Sidebar
+        scope={{ kind: "condo", condoId: "c1" }}
+        scopeTitle="Cond Y"
+        currentRole="manager"
+      />,
+    );
     expect(screen.getByText(/Estrutura/i)).toBeInTheDocument();
     expect(screen.getByText(/Blocos/i)).toBeInTheDocument();
+  });
+
+  it("esconde Aprovações para staff em scope 'condo'", () => {
+    render(
+      <Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" currentRole="staff" />,
+    );
+    expect(screen.queryByText(/Aprovações/i)).not.toBeInTheDocument();
+  });
+
+  it("esconde Estrutura para staff em scope 'condo'", () => {
+    render(
+      <Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" currentRole="staff" />,
+    );
+    expect(screen.queryByText(/Estrutura/i)).not.toBeInTheDocument();
+  });
+
+  it("mostra Aprovações em scope 'all' se aggregateRoles inclui manager", () => {
+    render(
+      <Sidebar scope={{ kind: "all" }} scopeTitle="Todos" aggregateRoles={["manager", "viewer"]} />,
+    );
+    expect(screen.getByText(/Aprovações/i)).toBeInTheDocument();
+  });
+
+  it("esconde Aprovações em scope 'all' se aggregateRoles não inclui >= manager", () => {
+    render(
+      <Sidebar scope={{ kind: "all" }} scopeTitle="Todos" aggregateRoles={["viewer", "staff"]} />,
+    );
+    expect(screen.queryByText(/Aprovações/i)).not.toBeInTheDocument();
   });
 
   it("marca o item Inbox como active no scope condo quando pathname bate", () => {

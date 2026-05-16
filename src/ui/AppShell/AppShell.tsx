@@ -29,17 +29,21 @@ export function AppShell({ children }: AppShellProps) {
   let scopeTitle = "Todos os condomínios";
   let scopeSubtitle: string | undefined;
   let role: Role = "viewer";
+  let currentRole: Role | undefined;
 
   if (scope.kind === "condo" && condos) {
     const current = condos.find((c) => c.condoId === scope.condoId);
     if (current) {
       scopeTitle = current.condoName;
       role = current.role;
+      currentRole = current.role;
     }
   } else if (condos) {
     scopeSubtitle = `${condos.length} condomínio${condos.length === 1 ? "" : "s"}`;
     role = highestRole(condos.map((c) => c.role));
   }
+
+  const aggregateRoles: Role[] = (condos ?? []).map((c) => c.role);
 
   const unread = useActivityFeed({ scope, tab: "unread" });
   const inboxUnreadCount = unread.data?.counts.unread;
@@ -55,6 +59,8 @@ export function AppShell({ children }: AppShellProps) {
           scopeTitle={scopeTitle}
           {...(scopeSubtitle ? { scopeSubtitle } : {})}
           {...(typeof inboxUnreadCount === "number" ? { inboxUnreadCount } : {})}
+          {...(currentRole ? { currentRole } : {})}
+          aggregateRoles={aggregateRoles}
         />
       </div>
       <main className={styles.main}>{children}</main>
