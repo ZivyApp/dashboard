@@ -1,7 +1,8 @@
-import { Settings } from "lucide-react";
 import type { Role } from "@/features/condo/roleHierarchy";
 import { CondoSwitcher } from "@/features/condo/CondoSwitcher";
 import { RoleBadge } from "@/ui/AppShell/RoleBadge";
+import { ThemeToggle } from "@/ui/AppShell/ThemeToggle";
+import { UserMenu } from "@/ui/AppShell/UserMenu";
 import { SearchBox } from "./SearchBox";
 import styles from "./Topbar.module.css";
 
@@ -17,9 +18,8 @@ export function Topbar({ role }: TopbarProps) {
       <SearchBox />
       <div className={styles.right}>
         <RoleBadge role={role} />
-        <button type="button" className={styles.settings} aria-label="Configurações">
-          <Settings size={18} />
-        </button>
+        <ThemeToggle />
+        <UserMenu />
       </div>
     </header>
   );

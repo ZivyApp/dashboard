@@ -82,6 +82,7 @@ export function CondoSwitcher() {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content className={styles.content} align="start" sideOffset={8}>
+          {/* TODO(Slice 5.3): gate "Todos os condomínios" por role com escopo cross-condo (super_admin / manager multi-condo). */}
           <DropdownMenu.Item
             className={styles.item}
             aria-current={activeCondoId === undefined ? "true" : undefined}

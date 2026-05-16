@@ -21,23 +21,3 @@
   align-items: center;
   gap: var(--space-3);
 }
-
-.settings {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  width: 32px;
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  height: 32px;
-  border-radius: var(--radius-md);
-  background: transparent;
-  border: none;
-  color: var(--fg-secondary);
-  cursor: pointer;
-}
-
-.settings:hover {
-  background-color: var(--bg-muted);
-  color: var(--fg-primary);
-}
