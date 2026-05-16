@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EmptyState } from "@/ui/AppShell/EmptyState";
+import { ActivityFeed } from "@/features/activity/ActivityFeed";
 
 export const Route = createFileRoute("/_app/inbox")({
-  component: () => (
-    <EmptyState
-      title="Inbox cross-condo"
-      description="Será implementada no Slice 5.2 (Activity Feed)."
-    />
-  ),
+  validateSearch: (search: Record<string, unknown>): { tab?: "all" | "unread" | "approvals" } => {
+    if (search.tab === "unread" || search.tab === "approvals" || search.tab === "all") {
+      return { tab: search.tab };
+    }
+    return {};
+  },
+  component: () => <ActivityFeed scope={{ kind: "all" }} />,
 });

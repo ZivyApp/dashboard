@@ -1,0 +1,22 @@
+/* Tokens semânticos — papéis funcionais (sidebar, activity, etc.).
+   Referenciam tokens primitivos definidos em colors.css. */
+
+:root {
+  /* Sidebar semantic tokens */
+  --sidebar-item-bg-hover: var(--bg-muted);
+  --sidebar-item-bg-active: var(--brand-soft);
+  --sidebar-item-fg-active: var(--brand);
+  --sidebar-badge-bg: var(--bg-canvas);
+  --sidebar-badge-fg: var(--fg-secondary);
+  --sidebar-group-label: var(--fg-tertiary);
+}
+
+:root[data-theme="dark"] {
+  /* Sidebar semantic tokens */
+  --sidebar-item-bg-hover: var(--bg-muted);
+  --sidebar-item-bg-active: var(--brand-soft);
+  --sidebar-item-fg-active: var(--brand);
+  --sidebar-badge-bg: var(--bg-elevated);
+  --sidebar-badge-fg: var(--fg-secondary);
+  --sidebar-group-label: var(--fg-tertiary);
+}

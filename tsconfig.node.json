@@ -5,7 +5,14 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "vitest.config.ts", ".storybook/**/*.ts", ".storybook/**/*.tsx"]
+  "include": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "build/**/*.ts",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx"
+  ]
 }

@@ -51,13 +51,6 @@
   --ticket-priority-high-bg: #fee2e2;
   --ticket-priority-high-fg: #991b1b;
 
-  /* Sidebar semantic tokens */
-  --sidebar-item-bg-hover: var(--bg-muted);
-  --sidebar-item-bg-active: var(--brand-soft);
-  --sidebar-item-fg-active: var(--brand);
-  --sidebar-badge-bg: var(--bg-canvas);
-  --sidebar-badge-fg: var(--fg-secondary);
-  --sidebar-group-label: var(--fg-tertiary);
   /* stylelint-disable-next-line declaration-strict-value */
   --overlay-bg: rgb(0 0 0 / 40%);
 }
@@ -115,13 +108,6 @@
   --ticket-priority-high-bg: #7f1d1d;
   --ticket-priority-high-fg: #fecaca;
 
-  /* Sidebar semantic tokens */
-  --sidebar-item-bg-hover: var(--bg-muted);
-  --sidebar-item-bg-active: var(--brand-soft);
-  --sidebar-item-fg-active: var(--brand);
-  --sidebar-badge-bg: var(--bg-elevated);
-  --sidebar-badge-fg: var(--fg-secondary);
-  --sidebar-group-label: var(--fg-tertiary);
   /* stylelint-disable-next-line declaration-strict-value */
   --overlay-bg: rgb(0 0 0 / 60%);
 }

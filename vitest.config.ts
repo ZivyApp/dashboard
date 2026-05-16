@@ -1,5 +1,6 @@
 import { defineConfig } from "vitest/config";
 import path from "node:path";
+import { buildDefines } from "./build/defines";
 
 export default defineConfig({
   test: {
@@ -11,8 +12,5 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },
-  define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? "0.0.0"),
-    __APP_BRANCH__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_REF ?? "develop"),
-  },
+  define: buildDefines,
 });

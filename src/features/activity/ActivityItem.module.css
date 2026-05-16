@@ -1,0 +1,147 @@
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  position: relative;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background-color: var(--bg-muted);
+}
+
+.row:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.unread {
+  border-left-color: var(--brand);
+}
+
+.iconBox {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  width: 36px;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.iconBox[data-kind="ticket_new"] {
+  background-color: var(--info-bg);
+  color: var(--info-fg);
+}
+
+.iconBox[data-kind="ticket_comment"] {
+  background-color: var(--brand-soft);
+  color: var(--brand);
+}
+
+.iconBox[data-kind="approval"] {
+  background-color: var(--status-onhold-bg);
+  color: var(--status-onhold-fg);
+}
+
+.iconBox[data-kind="status_change"] {
+  background-color: var(--status-media-bg);
+  color: var(--status-media-fg);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-1);
+}
+
+.title {
+  color: var(--fg-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  margin: 0;
+}
+
+.unread .title {
+  font-weight: var(--fw-semibold);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  /* stylelint-disable-next-line declaration-strict-value */
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  background-color: var(--brand-soft);
+  color: var(--brand);
+}
+
+.badgeUrgent {
+  background-color: var(--status-urgent-bg);
+  color: var(--status-urgent-fg);
+}
+
+.time {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+  white-space: nowrap;
+}
+
+.sub {
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+  margin: 0;
+}
+
+.markBtn {
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  /* stylelint-disable-next-line declaration-strict-value */
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg-secondary);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+.row:hover .markBtn,
+.row:focus-within .markBtn,
+.markBtn:focus {
+  opacity: 1;
+  pointer-events: auto;
+}
