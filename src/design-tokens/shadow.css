@@ -6,7 +6,7 @@
   /* stylelint-disable-next-line declaration-strict-value */
   --shadow-lg: 0 12px 32px rgb(0 0 0 / 12%);
   /* stylelint-disable-next-line declaration-strict-value */
-  --shadow-focus: 0 0 0 3px rgb(13 148 136 / 25%);
+  --shadow-focus: 0 0 0 3px rgb(37 211 102 / 28%);
 }
 
 :root[data-theme="dark"] {
@@ -17,5 +17,5 @@
   /* stylelint-disable-next-line declaration-strict-value */
   --shadow-lg: 0 12px 32px rgb(0 0 0 / 50%);
   /* stylelint-disable-next-line declaration-strict-value */
-  --shadow-focus: 0 0 0 3px rgb(45 212 191 / 40%);
+  --shadow-focus: 0 0 0 3px rgb(74 222 128 / 40%);
 }

@@ -90,3 +90,15 @@
   font-size: var(--fs-sm);
   color: var(--danger);
 }
+
+.separator {
+  height: 1px;
+  background-color: var(--border);
+  margin: var(--space-1) 0;
+}
+
+.check {
+  margin-left: auto;
+  color: var(--brand);
+  flex-shrink: 0;
+}

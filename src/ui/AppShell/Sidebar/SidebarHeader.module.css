@@ -1,0 +1,28 @@
+.header {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-4);
+}
+
+.label {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sidebar-group-label);
+  margin-bottom: var(--space-2);
+}
+
+.title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  color: var(--fg-primary);
+  margin-bottom: var(--space-1);
+}
+
+.subtitle {
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+}
