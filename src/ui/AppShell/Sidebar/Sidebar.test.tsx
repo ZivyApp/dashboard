@@ -2,11 +2,31 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Sidebar } from "./Sidebar";
 
+const mockPathname = { current: "/inbox" };
+
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, ...rest }: { children: React.ReactNode } & Record<string, unknown>) => (
-    <a {...(rest)}>{children}</a>
-  ),
-  useRouterState: () => ({ location: { pathname: "/inbox" } }),
+  Link: ({
+    children,
+    to,
+    params,
+    ...rest
+  }: { children: React.ReactNode; to?: string; params?: Record<string, string> } & Record<
+    string,
+    unknown
+  >) => {
+    let href = to ?? "#";
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        href = href.replace(`$${k}`, v);
+      }
+    }
+    return (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    );
+  },
+  useRouterState: () => ({ location: { pathname: mockPathname.current } }),
 }));
 
 describe("Sidebar", () => {
@@ -25,6 +45,23 @@ describe("Sidebar", () => {
     render(<Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />);
     expect(screen.getByText(/Estrutura/i)).toBeInTheDocument();
     expect(screen.getByText(/Blocos/i)).toBeInTheDocument();
+  });
+
+  it("marca o item Inbox como active no scope condo quando pathname bate", () => {
+    mockPathname.current = "/c/c1/inbox";
+    render(<Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />);
+    const inboxLabel = screen.getByText("Inbox");
+    const wrapper = inboxLabel.closest("a, button");
+    expect(wrapper?.className).toContain("active");
+    mockPathname.current = "/inbox";
+  });
+
+  it("marca o item Inbox como active no scope all quando pathname é /inbox", () => {
+    mockPathname.current = "/inbox";
+    render(<Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />);
+    const inboxLabel = screen.getByText("Inbox");
+    const wrapper = inboxLabel.closest("a, button");
+    expect(wrapper?.className).toContain("active");
   });
 
   it("renderiza header com title e subtitle", () => {
