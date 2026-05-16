@@ -107,17 +107,15 @@ Projeto Vercel: `zivy-dashboard` (org `adams-alves-projects`)
 
 ## Estado atual do projeto
 
-Scaffold completo (Plan 2) mergeado em `main` (PR #1, squash → `78fe26e`). `develop` sincronizada com `main` em 2026-05-02.
+Plans 2, 3 e 4 mergeados em `develop`. `main` segue Plan 2 (release pendente).
 
 Conteúdo entregue:
 
-- Design tokens, theme store (light/dark/system), componente `ui/Button`
-- API client `openapi-fetch` + tipos gerados do Core staging
-- Supabase singleton + bridge de auth no header da API
-- TanStack Router + Query providers
-- Storybook, PWA, CI GitHub Actions, deploy Vercel
+- **Plan 2**: design tokens, theme store (light/dark/system), `ui/Button`, API client `openapi-fetch` + tipos gerados, Supabase + bridge auth, TanStack Router + Query, Storybook, PWA, CI, deploy Vercel.
+- **Plan 3**: login screen, layout shell (header/sidebar), condo switcher com `condoId` na URL, guards de role.
+- **Plan 4 (inbox MVP)**: tokens semânticos de status/prioridade, `StatusBadge`, `PriorityChip`, `Modal` (Radix Dialog), hooks `useInboxTickets` (polling 30s) e `useTicket`, página `/c/$condoId/inbox` (lista + filtros + segmented + search), rota filha `inbox/$ticketId` em apresentação modal (read-only).
 
-Próximo: **Plan 3** — login screen, layout shell (header/sidebar), condo switcher, guards de role.
+Próximo: **Plan 5** — redesign shell + activity feed (ver `docs/superpowers/specs/2026-05-14-plan-5-redesign-shell-activity-feed-design.md`).
 
 ## Padrões e convenções (lições de code review)
 
@@ -151,6 +149,19 @@ Convenções fixadas a partir de revisões anteriores. Seguir antes de propor al
 
 - Botões default `type="button"` — evita submit acidental quando aninhados em `<form>`.
 - CSS Modules: classes acessadas via `Record<Variant, string>` com fallback `?? ""` para satisfazer `noUncheckedIndexedAccess`.
+- **Handlers com Promise** (ex.: `refetch()` do TanStack Query): envolver em arrow void para satisfazer `@typescript-eslint/no-misused-promises`:
+
+  ```tsx
+  <Button
+    onClick={() => {
+      void refetch();
+    }}
+  >
+    Tentar novamente
+  </Button>
+  ```
+
+- **`Modal` (Radix Dialog)**: `Dialog.Content` é o próprio box (sem wrapper grid externo). `Dialog.Overlay` precisa de `pointer-events: auto` explícito para receber o click-to-close. Quando usar `transform` para centralizar (`translate(-50%, -50%)`), todos os keyframes da animação precisam reproduzir a transformação base — senão o conteúdo "salta" durante a transição.
 
 ### Bundle hygiene
 
@@ -162,12 +173,26 @@ Convenções fixadas a partir de revisões anteriores. Seguir antes de propor al
 - Mocks globais usam `vi.spyOn(...)` + `vi.restoreAllMocks()` em `afterEach`. **Nunca** `Object.defineProperty` direto — vaza entre testes.
 - Testes de setters/actions verificam **side-effects**, não só state. Ex.: `setMode("dark")` deve assertar tanto `getState().mode === "dark"` quanto `document.documentElement.dataset.theme === "dark"`.
 - Para módulos que dependem de env (`client.ts`, `supabase.ts`): extrair lógica pura para sibling sem env, testar lá.
+- **Hooks que importam `@/api/client` (transitivamente `@/lib/env`)**: mockar com `vi.mock` + `vi.hoisted`, não `vi.spyOn`. `vi.spyOn` ainda carrega o módulo real e quebra em CI sem `.env.local`. Padrão:
+
+  ```ts
+  const { mockHook } = vi.hoisted(() => ({ mockHook: vi.fn() }));
+  vi.mock("./useTicket", () => ({ useTicket: mockHook }));
+  // depois: import { Componente } from "./Componente";
+  ```
+
+### Tipagem de API gerada
+
+- `openapi-typescript` gera campos como opcionais mesmo quando o Core garante valor. **Nunca** `as Domain` para converter `TicketResponse` → `Ticket` — usar type guard (`isCompleteTicket(t): t is Ticket`) e `filter(isCompleteTicket)` em listas ou `throw new Error("Service.method: payload incompleto")` em recursos singulares. Exemplo em `src/features/inbox/useTicket.ts`.
+- Em `tsconfig`, `exactOptionalPropertyTypes` proíbe `prop: undefined`. Para campos opcionais, omitir a chave ao construir o objeto e tipar como `prop?: T`, não `prop: T | undefined`.
 
 ### Tooling
 
 - `.nvmrc` (`20`) + `engines.node` (`>=20`) fixados — evita drift entre dev local, CI e Vercel.
 - PWA: `sw.js` e `manifest.webmanifest` têm `Cache-Control: public, max-age=0, must-revalidate` no `vercel.json`. Sem isso, mobile não recebe updates do service worker.
 - `routeTree.gen.ts` (TanStack Router) é **commitado intencionalmente** — aceita custo de conflito de merge em troca de CI sem step de geração.
+- **Regenerar `routeTree.gen.ts`**: o plugin `TanStackRouterVite` regenera ao rodar `npm run dev`. Se subir dev em background para regenerar, **matar o PID explicitamente** (`kill $PID`) — processo órfão segue regenerando o arquivo silenciosamente e bloqueia `git pull`/checkout com "local changes would be overwritten" no `routeTree.gen.ts`.
+- **`@ts-expect-error` para placeholders futuros**: quando deixar `@ts-expect-error` apontando para "rota X chega no Plan Y", lembrar de removê-lo no PR que cria a rota — vira `error: Unused '@ts-expect-error' directive` em CI assim que o tipo passa a existir.
 
 ## Code review graph (MCP)
 
