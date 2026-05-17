@@ -31,7 +31,7 @@ npm run dev                      # http://localhost:5173
 
 ## Estrutura
 
-Veja `docs/superpowers/specs/2026-04-23-zivy-frontend-stack-design.md` (§3) para o mapa completo de pastas.
+Veja [`CLAUDE.md`](./CLAUDE.md) (§Architecture + §Padrões e convenções) para o mapa de pastas e convenções vigentes. Specs históricas em `docs/superpowers/specs/` registram decisões de cada plan.
 
 ## Ambientes
 

@@ -107,15 +107,16 @@ Projeto Vercel: `zivy-dashboard` (org `adams-alves-projects`)
 
 ## Estado atual do projeto
 
-Plans 2, 3 e 4 mergeados em `develop`. `main` segue Plan 2 (release pendente).
+Plans 2, 3, 4 e 5 mergeados em `develop`. `main` segue Plan 2 (release pendente).
 
 Conteúdo entregue:
 
 - **Plan 2**: design tokens, theme store (light/dark/system), `ui/Button`, API client `openapi-fetch` + tipos gerados, Supabase + bridge auth, TanStack Router + Query, Storybook, PWA, CI, deploy Vercel.
 - **Plan 3**: login screen, layout shell (header/sidebar), condo switcher com `condoId` na URL, guards de role.
 - **Plan 4 (inbox MVP)**: tokens semânticos de status/prioridade, `StatusBadge`, `PriorityChip`, `Modal` (Radix Dialog), hooks `useInboxTickets` (polling 30s) e `useTicket`, página `/c/$condoId/inbox` (lista + filtros + segmented + search), rota filha `inbox/$ticketId` em apresentação modal (read-only).
+- **Plan 5 (redesign shell + activity feed)**: paleta WhatsApp Green, Topbar nova (logo, condo switcher com "Todos", search ⌘K, role badge, theme toggle, user menu), Sidebar agrupada (Operação/Estrutura) com badge de unread, `useScope` (`condo | all`), `ActivityRepository` (interface + adapter local com fixtures + adapter HTTP gated por `VITE_ACTIVITY_REPOSITORY`), `ActivityFeed` plugado em `/inbox` (cross-condo) e `/c/$id/inbox`, role guards completos (`requireRole`/`requireRoleAny` em `_app/{inbox,tickets,approvals}` cross e `_app/c/$id/structure/*`).
 
-Próximo: **Plan 5** — redesign shell + activity feed (ver `docs/superpowers/specs/2026-05-14-plan-5-redesign-shell-activity-feed-design.md`).
+Próximo: release `develop → main` quando smoke geral passar; cleanup do `InboxPage` antigo (Plan 4) se confirmado obsoleto.
 
 ## Padrões e convenções (lições de code review)
 
@@ -143,7 +144,9 @@ Convenções fixadas a partir de revisões anteriores. Seguir antes de propor al
 ### Storage e env
 
 - Acesso a `localStorage` em caminhos críticos deve estar protegido por try/catch — Safari Private Browsing lança `SecurityError` em `setItem`. Ver `safeStorage()` em `src/stores/theme.ts`.
-- `src/lib/env.ts` é avaliado **eagerly** no import e lança se vars faltarem. Qualquer arquivo que o importe transitivamente quebra em testes sem env setada. **Padrão:** extrair lógica pura para arquivo irmão sem import de env. Exemplo no repo: `src/api/auth.ts` (testável, sem env) é separado de `src/api/client.ts` (importa env e instancia o `api`).
+- **Limpar storage no logout** quando guardar estado por usuário (ex.: `readAt` de activity). Sem limpeza, dois usuários no mesmo browser herdam estado um do outro. Padrão: helper `clearXxx()` exportado pelo módulo de storage + chamada em `UserMenu.signOut`. Ver `clearActivityReads()` em `src/features/activity/repository/local.ts`.
+- `src/lib/env.ts` é avaliado **eagerly** no import e lança se vars faltarem. Qualquer arquivo que o importe transitivamente quebra em testes sem env setada. **Padrão:** extrair lógica pura para arquivo irmão sem import de env. Exemplo no repo: `src/api/auth.ts` (testável, sem env) é separado de `src/api/client.ts` (importa env e instancia o `api`). Outro: `src/features/activity/RepositoryContext.ts` (puro) separado de `RepositoryProvider.tsx` (importa env via factory).
+- **Vite DCE com `import.meta.env.PROD`**: para tirar dados/módulos de bundle prod, use `if (import.meta.env.PROD) return earlyReturn` antes do branch que importa. Vite substitui a flag por literal `true`/`false` em build; esbuild tree-shakes o branch unreachable e seus imports. Confirmar via `grep -l "string-fixture" dist/assets/*.js` (vazio = ok). Exemplo: `src/features/activity/repository/index.ts` mantém fixtures fora do bundle prod.
 
 ### Componentes UI
 
@@ -162,6 +165,10 @@ Convenções fixadas a partir de revisões anteriores. Seguir antes de propor al
   ```
 
 - **`Modal` (Radix Dialog)**: `Dialog.Content` é o próprio box (sem wrapper grid externo). `Dialog.Overlay` precisa de `pointer-events: auto` explícito para receber o click-to-close. Quando usar `transform` para centralizar (`translate(-50%, -50%)`), todos os keyframes da animação precisam reproduzir a transformação base — senão o conteúdo "salta" durante a transição.
+- **Tabs a11y completa**: `role="tablist"` + `aria-label` no container; cada tab tem `id`, `role="tab"`, `aria-selected`, `aria-controls={panelId}`, `tabIndex={active ? 0 : -1}`. Painel tem `role="tabpanel"`, `id={panelId}`, `aria-labelledby={activeTabId}`. Sem isso, leitores de tela não associam tab ao conteúdo. Ver `ActivityFeedTabs.tsx` + `ActivityFeed.tsx`.
+- **Botões com hover-fade** (`opacity 0→1`): adicionar `pointer-events: none` no estado escondido e `auto` no `:hover`/`:focus-within`/`:focus`. Sem isso o botão fica clicável invisível em desktop. Em testes (`jsdom` não computa `:hover`), usar `btn.click()` direto em vez de `userEvent.click()`. Ver `ActivityItem.module.css`.
+- **Não esconda elementos com `display: none` se forem testáveis** — jsdom remove da árvore acessível e quebra `getByRole`/`getByLabel`. Use `opacity: 0 + pointer-events: none`.
+- **Audit shell para regressões funcionais**: ao trocar Header/Sidebar (ou similar), verificar que botões críticos não foram perdidos (logout, theme toggle, settings). PR #14 (Slice 5.1) precisou de fix tardio porque `ThemeToggle` e `UserMenu` ficaram dead code na nova Topbar. Padrão: checklist no PR description.
 
 ### Bundle hygiene
 
@@ -184,7 +191,16 @@ Convenções fixadas a partir de revisões anteriores. Seguir antes de propor al
 ### Tipagem de API gerada
 
 - `openapi-typescript` gera campos como opcionais mesmo quando o Core garante valor. **Nunca** `as Domain` para converter `TicketResponse` → `Ticket` — usar type guard (`isCompleteTicket(t): t is Ticket`) e `filter(isCompleteTicket)` em listas ou `throw new Error("Service.method: payload incompleto")` em recursos singulares. Exemplo em `src/features/inbox/useTicket.ts`.
+- **Type guards validam itens individualmente, não só a forma da coleção**. `{ items: Array }` não basta — itera com `items.every(isItem)` e valida cada chave do item (string/number/union/etc.). Exemplo: `isActivityListResult` + `isActivityEvent` em `src/features/activity/repository/http.ts`. Sem isso, shape parcial vaza para a UI e quebra render.
 - Em `tsconfig`, `exactOptionalPropertyTypes` proíbe `prop: undefined`. Para campos opcionais, omitir a chave ao construir o objeto e tipar como `prop?: T`, não `prop: T | undefined`.
+
+### TanStack Router
+
+- **Guards de role/auth via `beforeLoad`**, não `useEffect`. `beforeLoad` bloqueia antes de renderizar (sem flash), e o `throw redirect()` aborta a navegação. Hook em `useEffect` rende a tela e só depois navega. Ver `src/lib/routeGuards.ts` (`requireAuth`, `requireRole`, `requireRoleAny`).
+- **`requireRoleAny(min)` para rotas cross-condo**: aceita se o usuário tem role `>= min` em **algum** condo. Use em rotas como `_app/inbox`, `_app/tickets`, `_app/approvals` (cross). Per-condo (`_app/c/$id/...`) usa `requireRole(min)`.
+- **Visibilidade da sidebar é UX, não segurança**: itens escondidos por role ainda precisam de guard `beforeLoad` na rota. Audit: toda rota sob `_app/` que requer role tem `beforeLoad`?
+- **`useNavigate` sem `from` literal não consegue inferir tipo de `to`/`search` para rotas dinâmicas**. Quando o componente é renderizado em múltiplas rotas (ex.: `ActivityFeed` em `/inbox` e `/c/$id/inbox`) ou quando navega relativo (`to: "."`), aceita o cast `as unknown as Parameters<typeof navigate>[0]` com comentário explicando o motivo. Alternativa para rotas literais únicas: usar `Route.useNavigate()` (tipado por rota).
+- **`@ts-expect-error` para rotas futuras**: lembrar de remover no PR que cria a rota — vira `Unused '@ts-expect-error' directive` em CI quando o tipo passa a existir.
 
 ### Tooling
 
