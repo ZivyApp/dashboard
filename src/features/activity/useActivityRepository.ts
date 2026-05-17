@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { RepositoryContext } from "./RepositoryProvider";
+import { RepositoryContext } from "./RepositoryContext";
 
 export function useActivityRepository() {
   const ctx = useContext(RepositoryContext);

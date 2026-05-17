@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode } from "react";
-import { RepositoryContext } from "./RepositoryProvider";
+import { RepositoryContext } from "./RepositoryContext";
 import { createLocalActivityRepository } from "./repository/local";
 import { FIXTURES } from "./repository/fixtures";
 import { useMarkRead } from "./useMarkRead";
