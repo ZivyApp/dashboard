@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ActivityFeed } from "./ActivityFeed";
-import { RepositoryContext } from "./RepositoryProvider";
+import { RepositoryContext } from "./RepositoryContext";
 import { createLocalActivityRepository } from "./repository/local";
 import { FIXTURES } from "./repository/fixtures";
 
