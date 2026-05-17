@@ -1,11 +1,26 @@
 import { env } from "@/lib/env";
 import { getAccessToken } from "@/stores/session";
 import type { Scope } from "@/features/scope/useScope";
-import type { ActivityListInput, ActivityListResult, ActivityRepository } from "./types";
+import {
+  ACTIVITY_KINDS,
+  type ActivityEvent,
+  type ActivityKind,
+  type ActivityListInput,
+  type ActivityListResult,
+  type ActivityRepository,
+  type ResourceRef,
+} from "./types";
+
+function requireToken(): string {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error("HttpActivityRepository: sem token de acesso (sessão expirou?)");
+  }
+  return token;
+}
 
 function authHeaders(): HeadersInit {
-  const token = getAccessToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return { Authorization: `Bearer ${requireToken()}` };
 }
 
 function urlFor(input: ActivityListInput): string {
@@ -18,10 +33,38 @@ function urlFor(input: ActivityListInput): string {
   return `${env.CORE_API_URL}/activity${q ? `?${q}` : ""}`;
 }
 
+function isActivityKind(v: unknown): v is ActivityKind {
+  return typeof v === "string" && (ACTIVITY_KINDS as readonly string[]).includes(v);
+}
+
+function isResourceRef(v: unknown): v is ResourceRef {
+  if (typeof v !== "object" || v === null) return false;
+  const r = v as Record<string, unknown>;
+  if (r.type === "ticket") return typeof r.ticketId === "string";
+  if (r.type === "resident_approval") return typeof r.residentId === "string";
+  return false;
+}
+
+function isActivityEvent(v: unknown): v is ActivityEvent {
+  if (typeof v !== "object" || v === null) return false;
+  const e = v as Record<string, unknown>;
+  return (
+    typeof e.id === "string" &&
+    isActivityKind(e.kind) &&
+    typeof e.condoId === "string" &&
+    typeof e.condoName === "string" &&
+    typeof e.title === "string" &&
+    typeof e.occurredAt === "string" &&
+    (e.readAt === null || typeof e.readAt === "string") &&
+    isResourceRef(e.resourceRef)
+  );
+}
+
 function isActivityListResult(value: unknown): value is ActivityListResult {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
   if (!Array.isArray(v.items)) return false;
+  if (!v.items.every(isActivityEvent)) return false;
   if (typeof v.counts !== "object" || v.counts === null) return false;
   return true;
 }

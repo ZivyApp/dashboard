@@ -4,14 +4,19 @@ vi.mock("@/lib/env", () => ({
   env: { CORE_API_URL: "http://core.test" },
 }));
 
+const { mockGetAccessToken } = vi.hoisted(() => ({
+  mockGetAccessToken: vi.fn<() => string | undefined>(() => "tok"),
+}));
+
 vi.mock("@/stores/session", () => ({
-  getAccessToken: vi.fn(() => "tok"),
+  getAccessToken: mockGetAccessToken,
 }));
 
 import { createHttpActivityRepository } from "./http";
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  mockGetAccessToken.mockReturnValue("tok");
 });
 
 afterEach(() => {
@@ -84,6 +89,29 @@ describe("HttpActivityRepository", () => {
     vi.spyOn(global, "fetch").mockResolvedValue(okJson({ items: "not-an-array" }));
     const repo = createHttpActivityRepository();
     await expect(repo.list({})).rejects.toThrow(/invalid response/i);
+  });
+
+  it("list: lança erro quando item individual tem shape parcial", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      okJson({
+        items: [{ id: "ev-1", kind: "ticket_new" }], // faltam outros campos
+        counts: { all: 1, unread: 0, approvals: 0 },
+      }),
+    );
+    const repo = createHttpActivityRepository();
+    await expect(repo.list({})).rejects.toThrow(/invalid response/i);
+  });
+
+  it("list: lança fail-fast quando não há token", async () => {
+    mockGetAccessToken.mockReturnValue(undefined);
+    const repo = createHttpActivityRepository();
+    await expect(repo.list({})).rejects.toThrow(/sem token de acesso/i);
+  });
+
+  it("list: lança em status 401 (não confunde com payload inválido)", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(new Response(null, { status: 401 }));
+    const repo = createHttpActivityRepository();
+    await expect(repo.list({})).rejects.toThrow(/HTTP 401/);
   });
 
   it("markRead: POST em /activity/{id}/read", async () => {
