@@ -7,12 +7,36 @@ interface Result {
   error: string | null;
 }
 
-interface ErrorBody {
-  error?: string;
+function isErrorBody(v: unknown): v is { error: string } {
+  return typeof v === "object" && v !== null && "error" in v && typeof v.error === "string";
 }
 
-function isErrorBody(v: unknown): v is ErrorBody {
-  return typeof v === "object" && v !== null && (!("error" in v) || typeof v.error === "string");
+function messageFor(status: number, body: unknown): string {
+  if (status === 403) return "Sem permissão para exportar chamados deste condomínio.";
+  if (isErrorBody(body)) return body.error;
+  return `Falha ao exportar (HTTP ${String(status)})`;
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function filenameFrom(headerValue: string | null): string {
+  const fallback = `tickets-${new Date().toISOString().slice(0, 10)}.csv`;
+  if (!headerValue) return fallback;
+  const match = /filename="([^"]+)"/.exec(headerValue);
+  return match?.[1] ?? fallback;
 }
 
 export function useExportTickets(condoId: string): Result {
@@ -26,24 +50,12 @@ export function useExportTickets(condoId: string): Result {
       const res = await authedFetch("/tickets/export", { condoId });
       if (!res.ok) {
         const body: unknown = await res.json().catch(() => null);
-        const msg =
-          isErrorBody(body) && body.error ? body.error : `Falha ao exportar (HTTP ${res.status})`;
-        setError(msg);
+        setError(messageFor(res.status, body));
         return;
       }
       const blob = await res.blob();
-      const cd = res.headers.get("Content-Disposition") ?? "";
-      const match = /filename="([^"]+)"/.exec(cd);
-      const filename = match?.[1] ?? `tickets-${new Date().toISOString().slice(0, 10)}.csv`;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const filename = filenameFrom(res.headers.get("Content-Disposition"));
+      downloadBlob(blob, filename);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro desconhecido");
     } finally {

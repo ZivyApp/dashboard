@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 describe("useExportTickets", () => {
-  it("baixa CSV em sucesso", async () => {
+  it("baixa CSV em sucesso e remove o <a> do DOM", async () => {
     const blob = new Blob(["a,b\n1,2"], { type: "text/csv" });
     mockFetch.mockResolvedValue(
       new Response(blob, {
@@ -47,6 +47,7 @@ describe("useExportTickets", () => {
     expect(createObjectURL).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectURL).toHaveBeenCalled();
+    expect(document.body.querySelector("a[download]")).toBeNull();
     expect(result.current.error).toBeNull();
   });
 
@@ -75,5 +76,49 @@ describe("useExportTickets", () => {
     });
 
     await waitFor(() => expect(result.current.error).toMatch(/HTTP 500/));
+  });
+
+  it("mostra mensagem amigável em 403", async () => {
+    mockFetch.mockResolvedValue(new Response(null, { status: 403 }));
+
+    const { result } = renderHook(() => useExportTickets("c1"));
+    await act(async () => {
+      await result.current.exportTickets();
+    });
+
+    await waitFor(() => expect(result.current.error).toMatch(/sem permissão/i));
+  });
+
+  it("propaga network error no catch", async () => {
+    mockFetch.mockRejectedValue(new Error("Network down"));
+
+    const { result } = renderHook(() => useExportTickets("c1"));
+    await act(async () => {
+      await result.current.exportTickets();
+    });
+
+    await waitFor(() => expect(result.current.error).toBe("Network down"));
+  });
+
+  it("revoga blob URL mesmo se click lança", async () => {
+    const blob = new Blob(["csv"], { type: "text/csv" });
+    mockFetch.mockResolvedValue(
+      new Response(blob, {
+        status: 200,
+        headers: { "Content-Disposition": 'attachment; filename="x.csv"' },
+      }),
+    );
+    clickSpy.mockImplementation(() => {
+      throw new Error("click boom");
+    });
+
+    const { result } = renderHook(() => useExportTickets("c1"));
+    await act(async () => {
+      await result.current.exportTickets();
+    });
+
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalled();
+    expect(result.current.error).toBe("click boom");
   });
 });
