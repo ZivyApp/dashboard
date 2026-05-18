@@ -1,8 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { EmptyState } from "@/ui/AppShell/EmptyState";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { TicketsPage } from "@/features/tickets/TicketsPage";
+import { requireRole } from "@/lib/routeGuards";
 
 export const Route = createFileRoute("/_app/c/$condoId/tickets")({
-  component: () => (
-    <EmptyState title="Tickets" description="Em breve. Esta tela será implementada no Plan 5." />
-  ),
+  beforeLoad: requireRole("viewer"),
+  component: TicketsRoute,
 });
+
+function TicketsRoute() {
+  const { condoId } = Route.useParams();
+  return (
+    <>
+      <TicketsPage condoId={condoId} />
+      <Outlet />
+    </>
+  );
+}
