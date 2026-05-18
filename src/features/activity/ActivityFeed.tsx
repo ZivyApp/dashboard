@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { CheckCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/ui/Button/Button";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { EmptyState } from "@/ui/AppShell/EmptyState";
 import type { Scope } from "@/features/scope/useScope";
+import { useCanApprove } from "@/features/auth/useCanApprove";
 import { useActivityFeed } from "./useActivityFeed";
 import { useMarkRead } from "./useMarkRead";
 import { ActivityFeedTabs, PANEL_ID, TAB_ID_PREFIX } from "./ActivityFeedTabs";
 import { ActivityItem } from "./ActivityItem";
+import { unreadCopy } from "./unreadCopy";
 import type { ActivityEvent, ActivityTab } from "./repository/types";
 import styles from "./ActivityFeed.module.css";
 
@@ -26,6 +29,15 @@ export function ActivityFeed({ scope }: Props) {
     rawTab === "unread" || rawTab === "approvals" || rawTab === "all" ? rawTab : "all";
   const { data, isPending, isError, refetch } = useActivityFeed({ scope, tab });
   const { markRead, markAllRead } = useMarkRead();
+  const canApprove = useCanApprove(scope);
+
+  function handleSeeApprovals() {
+    if (scope.kind === "condo") {
+      void navigate({ to: "/c/$condoId/approvals", params: { condoId: scope.condoId } });
+      return;
+    }
+    void navigate({ to: "/approvals" });
+  }
 
   if (isPending) {
     return (
@@ -77,15 +89,25 @@ export function ActivityFeed({ scope }: Props) {
   return (
     <>
       <Header
-        subtitle={`${data.counts.unread} não lidos`}
+        subtitle={unreadCopy(data.counts.unread)}
         actions={
-          <Button
-            onClick={() => {
-              void markAllRead(scope);
-            }}
-          >
-            Marcar tudo como lido
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                void markAllRead(scope);
+              }}
+            >
+              <CheckCheck aria-hidden="true" size={14} />
+              Marcar tudo como lido
+            </Button>
+            {canApprove ? (
+              <Button onClick={handleSeeApprovals}>
+                <ShieldCheck aria-hidden="true" size={14} />
+                Ver aprovações pendentes
+              </Button>
+            ) : null}
+          </>
         }
       />
       <ActivityFeedTabs value={tab} counts={data.counts} onChange={handleTabChange} />

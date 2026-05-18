@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,22 +6,34 @@ import { ActivityFeed } from "./ActivityFeed";
 import { RepositoryContext } from "./RepositoryContext";
 import { createLocalActivityRepository } from "./repository/local";
 import { FIXTURES } from "./repository/fixtures";
+import type { Scope } from "@/features/scope/useScope";
 
-const mockNavigate = vi.fn();
-const mockSearch: { tab?: string } = {};
+const { mockNavigate, mockMyCondos, mockSearch } = vi.hoisted(() => {
+  const search: { tab?: string } = {};
+  return { mockNavigate: vi.fn(), mockMyCondos: vi.fn(), mockSearch: search };
+});
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
   useSearch: () => mockSearch,
 }));
+vi.mock("@/features/condo/useMyCondos", () => ({ useMyCondos: mockMyCondos }));
+
+beforeEach(() => {
+  // Default: loading state (data: undefined) → useCanApprove retorna false →
+  // botão "Ver aprovações pendentes" escondido. Testes que precisam do botão
+  // visível sobrescrevem com mockMyCondos.mockReturnValue(...) explícito.
+  mockMyCondos.mockReturnValue({ data: undefined });
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
   mockNavigate.mockReset();
+  mockMyCondos.mockReset();
   for (const k of Object.keys(mockSearch)) delete (mockSearch as Record<string, unknown>)[k];
   localStorage.clear();
 });
 
-function setup() {
+function setup(scope: Scope = { kind: "all" }) {
   const repo = createLocalActivityRepository({ events: FIXTURES });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return {
@@ -29,7 +41,7 @@ function setup() {
     ui: (
       <QueryClientProvider client={qc}>
         <RepositoryContext.Provider value={repo}>
-          <ActivityFeed scope={{ kind: "all" }} />
+          <ActivityFeed scope={scope} />
         </RepositoryContext.Provider>
       </QueryClientProvider>
     ),
@@ -37,10 +49,10 @@ function setup() {
 }
 
 describe("ActivityFeed", () => {
-  it("renderiza header com contagem de não lidos", async () => {
+  it("renderiza header com contagem de não lidos (plural)", async () => {
     const { ui } = setup();
     render(ui);
-    await waitFor(() => expect(screen.getByText(/^\d+ não lidos$/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/^\d+ itens? não lidos?$/i)).toBeInTheDocument());
   });
 
   it("click em item navega para o resource", async () => {
@@ -60,7 +72,56 @@ describe("ActivityFeed", () => {
     const btn = await screen.findByRole("button", { name: /Marcar tudo como lido/i });
     await userEvent.click(btn);
     await waitFor(() => {
-      expect(screen.getByText(/^0 não lidos/i)).toBeInTheDocument();
+      expect(screen.getByText(/tudo em dia/i)).toBeInTheDocument();
     });
+  });
+
+  it("exibe 'Ver aprovações pendentes' quando user é manager+ no condo (scope condo)", async () => {
+    mockMyCondos.mockReturnValue({
+      data: [{ condoId: "c1", condoName: "C1", condoSlug: "c1", role: "manager" }],
+    });
+    const { ui } = setup({ kind: "condo", condoId: "c1" });
+    render(ui);
+    expect(
+      await screen.findByRole("button", { name: /ver aprovações pendentes/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("não exibe 'Ver aprovações pendentes' quando user é viewer", async () => {
+    mockMyCondos.mockReturnValue({
+      data: [{ condoId: "c1", condoName: "C1", condoSlug: "c1", role: "viewer" }],
+    });
+    const { ui } = setup({ kind: "condo", condoId: "c1" });
+    render(ui);
+    // Aguarda o feed carregar (botão "Marcar tudo como lido" presente)
+    await screen.findByRole("button", { name: /marcar tudo como lido/i });
+    expect(
+      screen.queryByRole("button", { name: /ver aprovações pendentes/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("navega para /c/$condoId/approvals em scope condo", async () => {
+    mockMyCondos.mockReturnValue({
+      data: [{ condoId: "c1", condoName: "C1", condoSlug: "c1", role: "manager" }],
+    });
+    const { ui } = setup({ kind: "condo", condoId: "c1" });
+    render(ui);
+    await userEvent.click(await screen.findByRole("button", { name: /ver aprovações pendentes/i }));
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "/c/$condoId/approvals",
+        params: { condoId: "c1" },
+      }),
+    );
+  });
+
+  it("navega para /approvals em scope all", async () => {
+    mockMyCondos.mockReturnValue({
+      data: [{ condoId: "c1", condoName: "C1", condoSlug: "c1", role: "manager" }],
+    });
+    const { ui } = setup({ kind: "all" });
+    render(ui);
+    await userEvent.click(await screen.findByRole("button", { name: /ver aprovações pendentes/i }));
+    expect(mockNavigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/approvals" }));
   });
 });
