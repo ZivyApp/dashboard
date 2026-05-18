@@ -1,5 +1,5 @@
 import styles from "./StatusBadge.module.css";
-import type { TicketStatus } from "@/features/inbox/types";
+import type { TicketStatus } from "@/features/tickets/types";
 
 export type { TicketStatus };
 

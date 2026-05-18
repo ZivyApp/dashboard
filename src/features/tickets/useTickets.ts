@@ -33,7 +33,7 @@ async function fetchByStatus(status: TicketStatus): Promise<Ticket[]> {
   return (data ?? []).filter(isCompleteTicket);
 }
 
-export function useInboxTickets(condoId: string) {
+export function useTickets(condoId: string) {
   const queries = useQueries({
     queries: ACTIVE_STATUSES.map((status) => ({
       queryKey: ["tickets", condoId, status] as const,
@@ -54,7 +54,7 @@ export function useInboxTickets(condoId: string) {
 
   useEffect(() => {
     if (data && data.length > 200) {
-      console.warn(`Inbox: ${data.length} tickets ativos. Considerar paginação no Core.`);
+      console.warn(`Tickets: ${data.length} tickets ativos. Considerar paginação no Core.`);
     }
   }, [data]);
 

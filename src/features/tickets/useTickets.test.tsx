@@ -11,7 +11,7 @@ vi.mock("@/api/client", () => ({
   configureApiAuth: vi.fn(),
 }));
 
-import { useInboxTickets } from "./useInboxTickets";
+import { useTickets } from "./useTickets";
 
 function wrapper(qc: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
@@ -29,7 +29,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("useInboxTickets", () => {
+describe("useTickets", () => {
   it("dispara 2 calls em paralelo (open + in_progress) e mescla resultado", async () => {
     mockGet.mockImplementation((_path: string, opts: { params: { query: { status: string } } }) => {
       const status = opts.params.query.status;
@@ -64,7 +64,7 @@ describe("useInboxTickets", () => {
     });
 
     const qc = mkClient();
-    const { result } = renderHook(() => useInboxTickets("condo-1"), { wrapper: wrapper(qc) });
+    const { result } = renderHook(() => useTickets("condo-1"), { wrapper: wrapper(qc) });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockGet).toHaveBeenCalledTimes(2);
@@ -80,7 +80,7 @@ describe("useInboxTickets", () => {
     });
 
     const qc = mkClient();
-    const { result } = renderHook(() => useInboxTickets("condo-1"), { wrapper: wrapper(qc) });
+    const { result } = renderHook(() => useTickets("condo-1"), { wrapper: wrapper(qc) });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 
@@ -97,9 +97,9 @@ describe("useInboxTickets", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const qc = mkClient();
-    const { result } = renderHook(() => useInboxTickets("condo-1"), { wrapper: wrapper(qc) });
+    const { result } = renderHook(() => useTickets("condo-1"), { wrapper: wrapper(qc) });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Inbox"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Tickets"));
   });
 });

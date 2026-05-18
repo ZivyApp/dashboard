@@ -1,5 +1,5 @@
 import styles from "./PriorityChip.module.css";
-import type { TicketPriority } from "@/features/inbox/types";
+import type { TicketPriority } from "@/features/tickets/types";
 
 export type { TicketPriority };
 

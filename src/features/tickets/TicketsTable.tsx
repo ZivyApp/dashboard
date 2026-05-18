@@ -1,10 +1,10 @@
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
 import { PriorityChip } from "@/ui/PriorityChip/PriorityChip";
 import type { Ticket } from "./types";
-import { formatRelTime } from "./formatRelTime";
-import styles from "./TicketTable.module.css";
+import { formatRelTime } from "@/lib/formatRelTime";
+import styles from "./TicketsTable.module.css";
 
-interface TicketTableProps {
+interface TicketsTableProps {
   tickets: Ticket[];
   onPick: (ticketId: string) => void;
 }
@@ -16,7 +16,7 @@ function locationLabel(t: Ticket): string {
   return "—";
 }
 
-export function TicketTable({ tickets, onPick }: TicketTableProps) {
+export function TicketsTable({ tickets, onPick }: TicketsTableProps) {
   return (
     <div className={styles.wrap}>
       <table className={styles.table}>

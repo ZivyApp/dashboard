@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import type { ActivityEvent } from "./repository/types";
 import { iconFor } from "./activityIcon";
 import { isUnread, isUrgent } from "./activityPalette";
-import { formatRelTime } from "@/features/inbox/formatRelTime";
+import { formatRelTime } from "@/lib/formatRelTime";
 import styles from "./ActivityItem.module.css";
 
 interface Props {
