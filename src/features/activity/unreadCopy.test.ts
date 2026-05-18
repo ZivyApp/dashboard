@@ -17,4 +17,12 @@ describe("unreadCopy", () => {
   it("10 → plural 'itens não lidos'", () => {
     expect(unreadCopy(10)).toBe("10 itens não lidos");
   });
+
+  it("negativos → 'Tudo em dia' (defensivo)", () => {
+    expect(unreadCopy(-3)).toBe("Tudo em dia — nenhum item não lido");
+  });
+
+  it("NaN → 'Tudo em dia' (defensivo)", () => {
+    expect(unreadCopy(Number.NaN)).toBe("Tudo em dia — nenhum item não lido");
+  });
 });

@@ -8,17 +8,20 @@ import { createLocalActivityRepository } from "./repository/local";
 import { FIXTURES } from "./repository/fixtures";
 import type { Scope } from "@/features/scope/useScope";
 
-const mockNavigate = vi.fn();
-const mockSearch: { tab?: string } = {};
+const { mockNavigate, mockMyCondos, mockSearch } = vi.hoisted(() => {
+  const search: { tab?: string } = {};
+  return { mockNavigate: vi.fn(), mockMyCondos: vi.fn(), mockSearch: search };
+});
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
   useSearch: () => mockSearch,
 }));
-
-const { mockMyCondos } = vi.hoisted(() => ({ mockMyCondos: vi.fn() }));
 vi.mock("@/features/condo/useMyCondos", () => ({ useMyCondos: mockMyCondos }));
 
 beforeEach(() => {
+  // Default: loading state (data: undefined) → useCanApprove retorna false →
+  // botão "Ver aprovações pendentes" escondido. Testes que precisam do botão
+  // visível sobrescrevem com mockMyCondos.mockReturnValue(...) explícito.
   mockMyCondos.mockReturnValue({ data: undefined });
 });
 

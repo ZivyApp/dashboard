@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ShieldCheck } from "lucide-react";
+import { CheckCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/ui/Button/Button";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { EmptyState } from "@/ui/AppShell/EmptyState";
@@ -98,6 +98,7 @@ export function ActivityFeed({ scope }: Props) {
                 void markAllRead(scope);
               }}
             >
+              <CheckCheck aria-hidden="true" size={14} />
               Marcar tudo como lido
             </Button>
             {canApprove ? (

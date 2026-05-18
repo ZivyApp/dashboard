@@ -20,6 +20,11 @@ interface SidebarProps {
   aggregateRoles?: Role[];
 }
 
+// TODO(plan-6-4): a lógica abaixo é equivalente a `useCanApprove(scope)` em
+// `src/features/auth/useCanApprove.ts`. Mantida aqui porque a Sidebar é
+// apresentacional pura (recebe roles via props do AppShell). Quando a Slice 6.4
+// (Approvals page) entrar, considerar mover a derivação de role para o AppShell
+// ou um hook irmão e consumir `useCanApprove` aqui também.
 function canApprovals(scope: Scope, currentRole?: Role, aggregate?: Role[]): boolean {
   if (scope.kind === "condo") {
     return currentRole !== undefined && isAtLeast(currentRole, "manager");
