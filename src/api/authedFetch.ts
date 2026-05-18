@@ -1,5 +1,5 @@
 import { env } from "@/lib/env";
-import { getAuthGetters } from "./auth";
+import { applyAuthHeaders, getAuthGetters } from "./auth";
 
 interface AuthedFetchOpts {
   condoId?: string;
@@ -9,13 +9,10 @@ interface AuthedFetchOpts {
 
 /**
  * fetch cru autenticado para endpoints que devolvem non-JSON (ex.: CSV).
- * Aplica Bearer + X-Condo-ID (mesma lógica do openapi-fetch via applyAuthHeaders).
+ * Reusa `applyAuthHeaders` para evitar divergência de headers com o middleware
+ * do openapi-fetch (`src/api/client.ts`).
  */
 export async function authedFetch(path: string, opts: AuthedFetchOpts = {}): Promise<Response> {
-  const getters = getAuthGetters();
-  const token = await getters.getAccessToken();
-  const condoId = opts.condoId ?? getters.getActiveCondoId();
-
   const url = new URL(path.startsWith("http") ? path : `${env.CORE_API_URL}${path}`);
   if (opts.query) {
     for (const [k, v] of Object.entries(opts.query)) {
@@ -23,12 +20,13 @@ export async function authedFetch(path: string, opts: AuthedFetchOpts = {}): Pro
     }
   }
 
-  const headers: Record<string, string> = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
-  if (condoId) headers["X-Condo-ID"] = condoId;
+  const baseGetters = getAuthGetters();
+  const getters =
+    opts.condoId !== undefined
+      ? { ...baseGetters, getActiveCondoId: () => opts.condoId }
+      : baseGetters;
 
-  return fetch(url.toString(), {
-    method: opts.method ?? "GET",
-    headers,
-  });
+  const request = new Request(url.toString(), { method: opts.method ?? "GET" });
+  await applyAuthHeaders(request, getters);
+  return fetch(request);
 }
