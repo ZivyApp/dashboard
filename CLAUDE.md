@@ -49,6 +49,39 @@ Alias `@/*` → `src/*` (configurado em `vite.config.ts`, `vitest.config.ts` e `
 
 `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noUnusedLocals/Parameters`. Ao acessar arrays/records, tratar o `undefined`. Ao tipar props opcionais, prefira omitir a chave em vez de `prop: undefined` (por causa de `exactOptionalPropertyTypes`).
 
+### Premissa: tipagem honesta — sem `any`, sem `unknown` sem refinamento, sem casts disfarçados
+
+**Regra do projeto:** nenhum código novo introduz `any` (explícito ou implícito), nem usa atalhos para silenciar o type checker. Tipos errados custam mais caro do que esforço de tipar certo — é a hipoteca técnica que corrói o resto das garantias do `strict`.
+
+**Proibido:**
+
+- `: any`, `as any`, `<any>`, `Function`, `Object` (use o tipo concreto ou um genérico nomeado).
+- `@ts-ignore` e `@ts-nocheck`. Para suprimir erro real em código transitório, **só** `@ts-expect-error` com comentário explicando o motivo e o gatilho de remoção (ex.: "remover quando a rota X for criada no Plan Y"). `@ts-expect-error` órfão vira erro de CI assim que o tipo passa a existir — esse é o ponto.
+- `eslint-disable` para `@typescript-eslint/no-explicit-any`, `no-unsafe-*`, `no-misused-promises` — se a regra reclamou, o tipo está errado, não a regra.
+- Casts de domínio em payload de API (`as Ticket`, `as Activity`, etc.). Usar type guard (ver "Tipagem de API gerada" abaixo).
+- `as unknown as T` exceto para o caso documentado de `useNavigate` com rota dinâmica (ver "TanStack Router"). Qualquer outro uso exige comentário explicando por que o tipo correto é inviável.
+
+**Permitido (com cuidado):**
+
+- `unknown` em pontos de entrada de dados não confiáveis (ex.: `JSON.parse`, body cru de fetch) — **mas obrigatório refinar via type guard antes de usar**. `unknown` sem narrowing tem o mesmo problema prático que `any`.
+- Genéricos amplos (`T`, `T extends ...`) — é tipagem honesta.
+- Casts seguros para subtipos discriminados via type guard (`function isX(v): v is X`).
+- `as const`, `satisfies` — não são escape hatches, são afirmações de tipo legítimas.
+
+**Exceções estruturais (já no ignore do ESLint):**
+
+- `src/app/routeTree.gen.ts` é gerado pelo `TanStackRouterVite` plugin e usa `as any` internamente. Não editar à mão; não tentar "tipar melhor".
+- Arquivos de tipos vendorados em `src/api/types.ts` (gerado por `openapi-typescript`) — nunca editar; regenerar via `npm run gen:api`.
+
+**Como decidir quando tipar dói:**
+
+1. O tipo certo existe e está acessível? Use-o.
+2. O tipo certo precisa ser construído (type guard, união discriminada, genérico)? Construa — é trabalho legítimo, não overhead.
+3. O tipo certo depende de mudança em outro lugar (Core, biblioteca externa)? Documente como follow-up e use `@ts-expect-error` com prazo, **não** `any`.
+4. O dado é genuinamente desconhecido em tempo de build (e.g., resposta arbitrária de plugin)? `unknown` + refinamento.
+
+Se nenhum desses fluir, parar e pedir review — é sinal de que a arquitetura precisa mudar, não que o type system está no caminho.
+
 ## PWA
 
 `vite-plugin-pwa` em `autoUpdate` com runtime caching para imagens (CacheFirst, 30d) e fontes (CacheFirst, 1y), e `navigateFallback: /index.html`. Mudanças em `manifest`/ícones exigem rebuild.
