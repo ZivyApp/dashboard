@@ -10,6 +10,7 @@ import { useActivityFeed } from "./useActivityFeed";
 import { useMarkRead } from "./useMarkRead";
 import { ActivityFeedTabs, PANEL_ID, TAB_ID_PREFIX } from "./ActivityFeedTabs";
 import { ActivityItem } from "./ActivityItem";
+import { unreadCopy } from "./unreadCopy";
 import type { ActivityEvent, ActivityTab } from "./repository/types";
 import styles from "./ActivityFeed.module.css";
 
@@ -35,9 +36,6 @@ export function ActivityFeed({ scope }: Props) {
       void navigate({ to: "/c/$condoId/approvals", params: { condoId: scope.condoId } });
       return;
     }
-    // Rota cross-condo `/approvals`: usar o cast documentado em `handleTabChange`
-    // — `useNavigate` sem `from` literal não infere `to` quando o componente
-    // é montado em múltiplas rotas (/inbox e /c/$condoId/inbox).
     void navigate({ to: "/approvals" });
   }
 
@@ -91,7 +89,7 @@ export function ActivityFeed({ scope }: Props) {
   return (
     <>
       <Header
-        subtitle={`${data.counts.unread} não lidos`}
+        subtitle={unreadCopy(data.counts.unread)}
         actions={
           <>
             <Button

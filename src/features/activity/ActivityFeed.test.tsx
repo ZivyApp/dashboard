@@ -46,10 +46,10 @@ function setup(scope: Scope = { kind: "all" }) {
 }
 
 describe("ActivityFeed", () => {
-  it("renderiza header com contagem de não lidos", async () => {
+  it("renderiza header com contagem de não lidos (plural)", async () => {
     const { ui } = setup();
     render(ui);
-    await waitFor(() => expect(screen.getByText(/^\d+ não lidos$/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/^\d+ itens? não lidos?$/i)).toBeInTheDocument());
   });
 
   it("click em item navega para o resource", async () => {
@@ -69,7 +69,7 @@ describe("ActivityFeed", () => {
     const btn = await screen.findByRole("button", { name: /Marcar tudo como lido/i });
     await userEvent.click(btn);
     await waitFor(() => {
-      expect(screen.getByText(/^0 não lidos/i)).toBeInTheDocument();
+      expect(screen.getByText(/tudo em dia/i)).toBeInTheDocument();
     });
   });
 
