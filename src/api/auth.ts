@@ -3,10 +3,23 @@ export interface AuthGetters {
   getActiveCondoId: () => string | undefined;
 }
 
-export async function applyAuthHeaders(request: Request, getters: AuthGetters): Promise<Request> {
-  const token = await getters.getAccessToken();
+let getters: AuthGetters = {
+  getAccessToken: () => Promise.resolve(undefined),
+  getActiveCondoId: () => undefined,
+};
+
+export function configureApiAuth(opts: AuthGetters) {
+  getters = opts;
+}
+
+export function getAuthGetters(): AuthGetters {
+  return getters;
+}
+
+export async function applyAuthHeaders(request: Request, g: AuthGetters): Promise<Request> {
+  const token = await g.getAccessToken();
   if (token) request.headers.set("Authorization", `Bearer ${token}`);
-  const condoId = getters.getActiveCondoId();
+  const condoId = g.getActiveCondoId();
   if (condoId) request.headers.set("X-Condo-ID", condoId);
   return request;
 }
