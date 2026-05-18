@@ -517,6 +517,8 @@ PR body checklist:
 - Delete: `src/features/inbox/InboxPage.tsx`, `InboxPage.test.tsx`, `InboxPage.module.css`, `InboxFilters.*`, `InboxList.tsx` (substituídos)
 - Manter (Slice 6.5): `src/features/inbox/TicketDetailModal.*`, `useTicket.*` (rota `inbox/$ticketId` ainda usa)
 
+**Nota sobre o diretório `features/inbox/`:** após esta Slice, `features/inbox/` continua existindo só hospedando `TicketDetailModal.*` + `useTicket.*` enquanto a rota `inbox/$ticketId` (Plan 4) não for substituída pela page-level em `tickets/$ticketId` na Slice 6.5. Ou seja, **o rename "definitivo" só completa ao fim da 6.5**, quando o modal Plan-4 sai e o diretório pode ser removido. Aceitar essa coabitação curta para não inflar a 6.2 com a migração do detail.
+
 **Decisão antes de começar:** `formatRelTime` é usado por `features/activity/ActivityItem.tsx` também. Melhor sair de `features/inbox/` para um local neutro. **Mover para `src/lib/formatRelTime.ts`** e atualizar imports.
 
 - [ ] **Step 1: Inventariar imports atuais**
@@ -677,7 +679,9 @@ git commit -m "feat(plan-6-2): viewModeStore persiste table|cards|kanban"
 
 A primeira versão **não expõe período** (botão simples). Se o usuário receber 400 com mensagem de cap, mostrar toast/alert com a instrução. Filtro de período é follow-up.
 
-`openapi-fetch` retorna `Response` cru para non-JSON. Vamos contornar usando `fetch` direto autenticado (reaproveitar o helper de auth do `src/api/client.ts`) — `openapi-fetch` é otimizado pra JSON e tipos de `paths`, não pra streaming de CSV.
+`openapi-fetch` retorna `Response` cru para non-JSON. Vamos contornar usando `fetch` direto autenticado — `openapi-fetch` é otimizado pra JSON e tipos de `paths`, não pra streaming de CSV.
+
+**Pré-requisito: criar `src/api/authedFetch.ts`.** Hoje `src/api/client.ts` exporta apenas `api` (instância `openapi-fetch`) e `configureApiAuth(opts)` — não há helper público de headers/baseUrl reutilizável para `fetch` cru. O hook **não pode** ler `import.meta.env` direto (regra do `CLAUDE.md`) nem duplicar a lógica de Supabase do `applyAuthHeaders`. Solução: introduzir `src/api/authedFetch.ts` como um Step 0 desta task (ver Pré-requisito após Step 2), que reaproveita os mesmos `AuthGetters` configurados em `configureApiAuth` (extraindo o módulo `auth.ts` para exportar também os getters/baseUrl, sem mexer no `client.ts`). Assim, `useExportTickets` consome o helper, `openapi-fetch` continua sendo a via única para JSON, e não há regressão.
 
 - [ ] **Step 1: Teste falhando**
 
@@ -1491,24 +1495,24 @@ src/features/approvals/
 
 **Escopo:**
 
-1. Trocar a rota `_app/c/$condoId/inbox/$ticketId` (modal Plan 4 — Radix Dialog) por uma rota page-level `_app/c/$condoId/tickets/$ticketId.tsx`. Manter `inbox/$ticketId` redirecionando para a nova URL (compat curta — pode ser removida em release seguinte).
+1. Trocar a rota `_app/c/$condoId/inbox/$ticketId` (modal Plan 4 — Radix Dialog) por uma rota page-level `_app/c/$condoId/tickets/$ticketId.tsx`. Manter `inbox/$ticketId` como **redirect via `beforeLoad: () => throw redirect({ to: "/c/$condoId/tickets/$ticketId", params, replace: true })`** (não `useEffect`, não componente que rerenderiza). Com `defaultPreload: "intent"`, isso evita disparar fetch da rota antiga ao hover. Antes da remoção definitiva (release seguinte), **migrar os deep-links externos**: bot Telegram (URLs de notificação enviadas aos moradores/managers), templates de email transacional, e qualquer integração que linke direto. Lista a verificar: `core/internal/adapters/notifier/*` (Telegram bot) + templates pendentes.
 2. Header da página: protocolo + condo name + h2 (título) + close button (volta para `/c/<id>/tickets`). Linha de chips: StatusBadge + PriorityChip + categoria + localização. Metadata row: morador, contato (mono), aberto em (fullTime), atualizado (relTime).
-3. Card "Mudar status" (segmented com 4 status; clica → mutation no Core) + dropdown "Responsável" (lista de managers, atribui).
+3. Card "Mudar status" (segmented com 4 status; clica → mutation no Core) + botão **"Assumir ticket"** (atribui ao manager logado via `PATCH /tickets/{id}/assign` sem body — ver nota abaixo).
 4. "Descrição" em bloco muted.
-5. "Timeline" — lista de `TicketEvent[]` do Core (`created | status_changed | assigned | comment`), com dot temático por tipo, autor + ação + relTime + corpo (quando comment).
-6. "Composer" — textarea + footer com aviso "Será enviado a <Nome> via Telegram" + botão "Publicar" (disabled quando vazio).
+5. "Timeline" — lista de `TicketEvent[]` do Core (`status_changed | assigned | comment_added`), com dot temático por tipo, autor + ação + relTime + corpo (quando comment). Item `created` UI-only no topo derivado de `ticket.created_at`.
+6. "Composer" — textarea + footer com botão "Publicar" (disabled quando vazio). **Sem aviso de "Telegram"**: `service.AddComment` (ver `core/internal/app/ticket_service.go:210`) apenas persiste o evento `comment_added`, não dispara `NotificationSender`. As notificações Telegram saem em `CreateTicket` (linha 116) e `Assign` (linha 205), não em comentários.
 
 **Endpoints Core (todos existem em `develop`):**
 
 - `GET /tickets/{id}` (já existe via `useTicket`).
 - `GET /tickets/{id}/events` — devolve `TicketEvent[]` (router linha 138).
-- `PATCH /tickets/{id}/status` — atualiza status (manager/staff).
-- `PATCH /tickets/{id}/assign` — atribui responsável (manager/staff). **Endpoint é `assign`, não `assignee`.**
-- `POST /tickets/{id}/comments` — adiciona comentário (manager/staff).
+- `PATCH /tickets/{id}/status` — atualiza status (manager/staff), body `{ status }`.
+- `PATCH /tickets/{id}/assign` — **auto-atribuição** (manager/staff). **Não aceita body** — o handler lê o manager autenticado (`MustUserFromContext`) e chama `service.Assign(ctx, condo, ticketID, user.UserID, user.UserID)` (ver `ticket_handler.go:399–422`). Path é `/assign`, não `/assignee`. **Limitação:** não é possível atribuir a outro manager nesta versão do Core. UI exposta como botão "Assumir ticket"; "Atribuir a outro manager" fica como follow-up dependente de um novo endpoint Core (ex.: `PATCH /tickets/{id}/assign-to` com body `{ assignee_id }`) — registrar issue no Core antes de iniciar esta Slice.
+- `POST /tickets/{id}/comments` — adiciona comentário (manager/staff). Body é `{ text: string }` (campo `text`, **não** `note`). Devolve um `TicketEvent` com `event_type = "comment_added"` e `payload = { "text": "<texto>" }`.
 
-**`TicketEventType` no Core:** `status_changed | assigned | comment_added`. **Não há evento `created`** — o handoff inventou esse tipo na UI. Convenção no front: derivar um item `created` UI-only a partir de `ticket.created_at` no topo da timeline. Ajustar o `Record<EventType, Meta>` da `TicketTimeline` para mapear `comment_added` (não `comment`).
+**`TicketEventType` no Core:** `status_changed | assigned | comment_added` (constantes em `core/internal/domain/ticket_event.go:12-14`). **Não há evento `created`** — o handoff inventou esse tipo na UI. Convenção no front: derivar um item `created` UI-only a partir de `ticket.created_at` no topo da timeline. Ajustar o `Record<EventType, Meta>` da `TicketTimeline` para mapear `comment_added` (não `comment`). O corpo do comentário sai de `event.payload.text` (não `event.payload.note`).
 
-**`TicketActorType`:** `manager | resident | system` (vem em `event.actor_type`). Usar pra escolher ícone/cor da dot da timeline.
+**`TicketActorType`:** `manager | resident | system` (vem em `event.actor_type`; constantes em `core/internal/domain/ticket_event.go:20-22`). Usar pra escolher ícone/cor da dot da timeline.
 
 **File structure:**
 
@@ -1516,13 +1520,13 @@ src/features/approvals/
 src/features/ticket-detail/
 ├── TicketDetailPage.tsx + .test.tsx + .module.css
 ├── TicketStatusControl.tsx + .test.tsx + .module.css
-├── TicketAssignControl.tsx + .test.tsx + .module.css
+├── TicketClaimButton.tsx + .test.tsx + .module.css   # "Assumir ticket" (auto-atribuição, sem body)
 ├── TicketTimeline.tsx + .test.tsx + .module.css
 ├── TicketComposer.tsx + .test.tsx + .module.css
 ├── useTicketEvents.ts + .test.tsx
 ├── useUpdateStatus.ts + .test.tsx
-├── useAssignTicket.ts + .test.tsx
-└── useAddComment.ts + .test.tsx
+├── useClaimTicket.ts + .test.tsx                     # PATCH /tickets/{id}/assign sem body
+└── useAddComment.ts + .test.tsx                      # POST /tickets/{id}/comments body { text }
 src/app/routes/_app/c/$condoId/
 ├── tickets/$ticketId.tsx              # substitui placeholder de Slice 6.2
 └── inbox/$ticketId.tsx                # redirect para nova URL (transitório)
@@ -1532,8 +1536,8 @@ src/app/routes/_app/c/$condoId/
 
 - `/c/<id>/tickets/<ticketId>` renderiza página completa com header, status control, timeline, composer.
 - Mudança de status atualiza UI e adiciona evento na timeline (optimistic + refetch).
-- Atribuir responsável aparece o evento `assigned` na timeline.
-- Composer publica comentário → aparece evento `comment_added` na timeline.
+- "Assumir ticket" dispara `PATCH /tickets/{id}/assign` (sem body) e o evento `assigned` aparece na timeline com `assignee_id` = manager logado.
+- Composer publica comentário (body `{ text }`) → aparece evento `comment_added` com `payload.text` na timeline.
 - Composer envia comentário e limpa textarea após sucesso.
 - Modal antigo (Plan 4) removido.
 - Lint/typecheck/test/build verdes.
@@ -1548,9 +1552,11 @@ src/app/routes/_app/c/$condoId/
 
 **Escopo:** 3 telas em `_app/c/$condoId/structure/{blocks,units,common-areas}.tsx` (rotas já existem como placeholders desde Plan 5.3 com role gate `manager`):
 
-1. **Blocos:** tabela (nome, unidades count, criado em) + modal Criar/Editar (campo nome + número de andares) + confirm delete.
+1. **Blocos:** tabela (nome, unidades count, criado em) + modal Criar/Editar (campos: **`name` + `description`** — ver schema do Core em `block_handler.go:14-34`; **não** há `floors`/número de andares no MVP atual) + confirm delete.
 2. **Unidades:** filter por bloco (select) + tabela (número, bloco, morador atual) + modal Criar/Editar.
-3. **Áreas comuns:** grid de cards + modal Criar/Editar (campos: nome, tipo do enum `CommonAreaType` do Core, capacidade, regras) + confirm delete.
+3. **Áreas comuns:** grid de cards + modal Criar/Editar (campos: **`name` + `type`** do enum `CommonAreaType` do Core — valores aceitos: `elevator | pool | lobby | garage | gym | other` (ver `common_area_handler.go:14-24`); **não** há `capacity` nem `rules` no MVP atual) + confirm delete.
+
+**Limitações do MVP do Core registradas em 2026-05-17:** Bloco não tem `floors`; CommonArea não tem `capacity`/`rules`. A UI desta Slice reflete o schema atual. Campos extras (andares, capacidade, regras) são follow-up dependente de mudança no Core — abrir issue lá antes de prometer no handoff de produto.
 
 **Endpoints Core (todos existem em `develop`, tenant via `X-Condo-ID`):**
 
@@ -1619,22 +1625,42 @@ src/ui/
 
 Cross-check feito em 2026-05-17 contra `core@develop` (router `internal/adapters/http/router.go`). Endpoints disponíveis e mapeamento por slice:
 
-| Slice | Endpoint Core                          | Verb                  | Role                                | Notas                                                                 |
-| ----- | -------------------------------------- | --------------------- | ----------------------------------- | --------------------------------------------------------------------- |
-| 6.2   | `/tickets`                             | GET                   | viewer+                             | Filtros `status`, `priority`, `protocol` na query                     |
-| 6.2   | `/tickets/export`                      | GET                   | manager                             | `text/csv`, filtros `created_from`/`created_to`, cap 10k linhas       |
-| 6.2.1 | `/tickets`                             | POST                  | manager/staff                       | `CreateTicketRequest` (title/description/priority/location/resident…) |
-| 6.4   | `/residents`                           | GET                   | viewer+                             | Sem filtro server-side; cliente filtra `status === "PENDING"`         |
-| 6.4   | `/residents/{id}/approve`              | PATCH                 | manager/staff                       | Body vazio                                                            |
-| 6.4   | `/residents/{id}/reject`               | PATCH                 | manager/staff                       | Body vazio; **NÃO** é DELETE                                          |
-| 6.5   | `/tickets/{id}/events`                 | GET                   | viewer+                             | Tipos: `status_changed`, `assigned`, `comment_added` (sem `created`)  |
-| 6.5   | `/tickets/{id}/status`                 | PATCH                 | manager/staff                       | `{ status }`                                                          |
-| 6.5   | `/tickets/{id}/assign`                 | PATCH                 | manager/staff                       | `{ assignee_id }` (endpoint é `/assign`, **não** `/assignee`)         |
-| 6.5   | `/tickets/{id}/comments`               | POST                  | manager/staff                       | `{ note }` (devolve `TicketEvent`)                                    |
-| 6.6   | `/blocks` + `/blocks/{id}`             | GET/POST/PATCH/DELETE | reads viewer+; writes manager/staff |                                                                       |
-| 6.6   | `/units` + `/units/{id}`               | GET/POST/PATCH/DELETE | reads viewer+; writes manager/staff |                                                                       |
-| 6.6   | `/common-areas` + `/common-areas/{id}` | GET/POST/PATCH/DELETE | reads viewer+; writes manager/staff |                                                                       |
+| Slice | Endpoint Core                          | Verb                  | Role                                | Notas                                                                                                                                                                                                       |
+| ----- | -------------------------------------- | --------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6.2   | `/tickets`                             | GET                   | viewer+                             | Filtros `status`, `priority`, `protocol` na query                                                                                                                                                           |
+| 6.2   | `/tickets/export`                      | GET                   | manager                             | `text/csv`, filtros `created_from`/`created_to` + `status`/`priority`/`protocol`, cap 10k linhas                                                                                                            |
+| 6.2.1 | `/tickets`                             | POST                  | manager/staff                       | `CreateTicketRequest` (title/description/priority/location/resident…)                                                                                                                                       |
+| 6.4   | `/residents`                           | GET                   | viewer+                             | Sem filtro server-side; cliente filtra `status === "PENDING"`                                                                                                                                               |
+| 6.4   | `/residents/{id}/approve`              | PATCH                 | manager/staff                       | Body vazio                                                                                                                                                                                                  |
+| 6.4   | `/residents/{id}/reject`               | PATCH                 | manager/staff                       | Body vazio; **NÃO** é DELETE                                                                                                                                                                                |
+| 6.5   | `/tickets/{id}/events`                 | GET                   | viewer+                             | Tipos: `status_changed`, `assigned`, `comment_added` (sem `created`); ver `core/internal/domain/ticket_event.go:12-14`                                                                                      |
+| 6.5   | `/tickets/{id}/status`                 | PATCH                 | manager/staff                       | `{ status }`                                                                                                                                                                                                |
+| 6.5   | `/tickets/{id}/assign`                 | PATCH                 | manager/staff                       | **Sem body** — auto-atribuição (manager autenticado assume o ticket). Path é `/assign`, **não** `/assignee`. Ver `ticket_handler.go:399-422`. Atribuir a outro manager exige novo endpoint Core (follow-up) |
+| 6.5   | `/tickets/{id}/comments`               | POST                  | manager/staff                       | `{ text: string }` (campo é `text`, **não** `note`); devolve `TicketEvent` com `payload.text`. Ver `ticket_handler.go:64-67, 444`                                                                           |
+| 6.6   | `/blocks` + `/blocks/{id}`             | GET/POST/PATCH/DELETE | reads viewer+; writes manager/staff | Schema MVP: `{ name, description }` — sem `floors`/andares                                                                                                                                                  |
+| 6.6   | `/units` + `/units/{id}`               | GET/POST/PATCH/DELETE | reads viewer+; writes manager/staff |                                                                                                                                                                                                             |
+| 6.6   | `/common-areas` + `/common-areas/{id}` | GET/POST/PATCH/DELETE | reads viewer+; writes manager/staff | Schema MVP: `{ name, type }` (enum `elevator\|pool\|lobby\|garage\|gym\|other`) — sem `capacity`/`rules`                                                                                                    |
 
 **Tenancy:** todas as rotas protegidas exigem header `X-Condo-ID` (middleware `Authenticate`). A única rota protegida sem `X-Condo-ID` é `GET /condos/me` (descoberta). Scopo `all` no front faz fan-out por condo (padrão herdado do `HttpActivityRepository` em Plan 5.4).
+
+**Limitações Core conhecidas (follow-ups dependentes do backend):**
+
+- **`PATCH /tickets/{id}/assign` é auto-atribuição** — manager logado assume o ticket; não aceita body. Para "atribuir a outro manager", abrir issue no Core propondo `PATCH /tickets/{id}/assign-to` com body `{ assignee_id }`. A Slice 6.5 entrega apenas o botão "Assumir".
+- **`Block` não tem `floors`** — schema atual é `{ name, description }`. Se produto pedir "número de andares", abrir issue no Core para acrescentar o campo antes da Slice 6.6.
+- **`CommonArea` não tem `capacity` nem `rules`** — schema atual é `{ name, type }` (enum). Mesmo raciocínio: campos extras dependem de mudança no Core.
+- **`POST /tickets/{id}/comments` não dispara Telegram** — apenas persiste o evento `comment_added`. Notificações Telegram saem só em `CreateTicket` e `Assign` (ver `core/internal/app/ticket_service.go:116,205`). Footer do composer não deve prometer notificação.
+
+**Follow-ups front-end conhecidos (não bloqueiam o Plan 6, herdados de plans anteriores):**
+
+- **`routeGuards` confunde rede com RBAC** — `requireAuth`/`requireRole`/`requireRoleAny` em `src/lib/routeGuards.ts` usam `ensureQueryData(myCondosQueryOptions())` no `beforeLoad`; quando essa query rejeita (rede caiu, sessão expirou, 5xx no Core), o erro propaga como `errorComponent` indistinto de "sem permissão". **Impacto no Plan 6:** todas as rotas das Slices 6.4 (`_app/approvals`), 6.5 (`_app/c/$id/tickets/$ticketId`) e 6.6 (`_app/c/$id/structure/*`) passam por guards — quanto mais rotas guard-protected, mais visível o problema. **Não regride no Plan 6** (dívida pré-existente desde Plan 3, identificada no review do PR #17 do Plan 5.3). Slice própria futura: try/catch dentro do guard, diferenciar `redirect("/error?reason=network")` vs `redirect("/no-access")`, considerar fallback para cache stale de `myCondos`. Testes em `routeGuards.test.ts` mockando `ensureQueryData` para rejeitar. Ver memory `project_routeguards_error_ux.md` e [comentário no PR #17](https://github.com/ZivyApp/dashboard/pull/17#issuecomment-4467297268).
+
+**Side-effects de notificação (referência rápida):**
+
+| Endpoint                      | Notifica via Telegram?                        |
+| ----------------------------- | --------------------------------------------- |
+| `POST /tickets`               | ✅ managers do condo (`NotifyCondoManagers`)  |
+| `PATCH /tickets/{id}/assign`  | ✅ morador autor do ticket (`NotifyResident`) |
+| `POST /tickets/{id}/comments` | ❌ silencioso (só persiste evento)            |
+| `PATCH /tickets/{id}/status`  | ❌ silencioso                                 |
 
 **Tipos no `src/api/types.ts`:** regenerar via `npm run sync:swagger && npm run gen:api` no início da Slice 6.5 (e nas demais que tocarem em novos endpoints) para garantir paridade com `core/docs/swagger.json` atual.
