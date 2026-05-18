@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Ticket } from "./types";
-import { isTicketStatus, isTicketPriority, type TicketStatus } from "./types";
+import type { Ticket } from "@/types/ticket";
+import { isTicketStatus, isTicketPriority, type TicketStatus } from "@/types/ticket";
 
 // Duas queries paralelas porque GET /tickets aceita apenas um `status` por chamada.
 // Quando Core suportar CSV (ex.: `status=open,in_progress`), trocar por um useQuery único.

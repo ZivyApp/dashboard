@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { TicketsKanban } from "./TicketsKanban";
-import type { Ticket } from "./types";
+import type { Ticket } from "@/types/ticket";
 
 function make(status: Ticket["status"], id: string, overrides: Partial<Ticket> = {}): Ticket {
   return {

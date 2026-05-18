@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Ticket } from "./types";
+import type { Ticket } from "@/types/ticket";
 
 const { mockUseTickets, mockUseExportTickets, mockUseMyCondos, mockNavigate } = vi.hoisted(() => ({
   mockUseTickets: vi.fn(),

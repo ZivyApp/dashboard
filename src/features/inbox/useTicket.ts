@@ -1,7 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Ticket } from "@/features/tickets/types";
-import { isTicketStatus, isTicketPriority } from "@/features/tickets/types";
+import type { Ticket } from "@/types/ticket";
+import { isTicketStatus, isTicketPriority } from "@/types/ticket";
 
 function isCompleteTicket(t: unknown): t is Ticket {
   if (typeof t !== "object" || t === null) return false;

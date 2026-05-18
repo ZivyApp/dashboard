@@ -1,6 +1,6 @@
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
 import { PriorityChip } from "@/ui/PriorityChip/PriorityChip";
-import type { Ticket } from "./types";
+import type { Ticket } from "@/types/ticket";
 import { formatRelTime } from "@/lib/formatRelTime";
 import styles from "./TicketsCards.module.css";
 
