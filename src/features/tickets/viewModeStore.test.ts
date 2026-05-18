@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { useTicketsView } from "./viewModeStore";
 
 describe("useTicketsView", () => {
@@ -25,5 +25,15 @@ describe("useTicketsView", () => {
     const raw = localStorage.getItem("zivy-tickets-view");
     expect(raw).not.toBeNull();
     expect(raw).toContain("cards");
+  });
+
+  it("hidrata de localStorage no boot", async () => {
+    localStorage.setItem(
+      "zivy-tickets-view",
+      JSON.stringify({ state: { mode: "kanban" }, version: 0 }),
+    );
+    vi.resetModules();
+    const mod = await import("./viewModeStore");
+    expect(mod.useTicketsView.getState().mode).toBe("kanban");
   });
 });

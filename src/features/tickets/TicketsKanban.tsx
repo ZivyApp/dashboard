@@ -1,7 +1,7 @@
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
 import { PriorityChip } from "@/ui/PriorityChip/PriorityChip";
 import { formatRelTime } from "@/lib/formatRelTime";
-import type { Ticket, TicketStatus } from "./types";
+import { TICKET_STATUSES, type Ticket, type TicketStatus } from "@/types/ticket";
 import styles from "./TicketsKanban.module.css";
 
 interface Column {
@@ -9,12 +9,17 @@ interface Column {
   label: string;
 }
 
-const COLUMNS: Column[] = [
-  { id: "open", label: "Abertos" },
-  { id: "in_progress", label: "Em andamento" },
-  { id: "resolved", label: "Resolvidos" },
-  { id: "closed", label: "Fechados" },
-];
+const COLUMN_LABELS: Record<TicketStatus, string> = {
+  open: "Abertos",
+  in_progress: "Em andamento",
+  resolved: "Resolvidos",
+  closed: "Fechados",
+};
+
+// Deriva colunas direto de TICKET_STATUSES — se o Core adicionar um status
+// novo no `TicketStatus` union, o `Record<TicketStatus, string>` acima quebra
+// em build, forçando atualização desta lista.
+const COLUMNS: Column[] = TICKET_STATUSES.map((id) => ({ id, label: COLUMN_LABELS[id] }));
 
 interface Props {
   tickets: Ticket[];
