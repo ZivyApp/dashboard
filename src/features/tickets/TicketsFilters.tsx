@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
 import { useTicketsView, type ViewMode } from "./viewModeStore";
-import type { TicketStatus, TicketPriority } from "./types";
+import type { TicketStatus, TicketPriority } from "@/types/ticket";
 import styles from "./TicketsFilters.module.css";
 
 export type StatusValue = TicketStatus | "all";
@@ -49,7 +49,7 @@ const VIEW_OPTIONS: { value: ViewMode; label: string }[] = [
 
 function countFor(counts: Counts, status: StatusValue): number {
   if (status === "all") return counts.all;
-  return counts[status];
+  return counts[status] ?? 0;
 }
 
 export function TicketsFilters({ value, counts, onChange }: Props) {
@@ -71,15 +71,14 @@ export function TicketsFilters({ value, counts, onChange }: Props) {
         />
       </label>
 
-      <div className={styles.seg} role="tablist" aria-label="Filtrar por status">
+      <div className={styles.seg} role="group" aria-label="Filtrar por status">
         {STATUS_OPTIONS.map((opt) => {
           const active = value.status === opt.value;
           return (
             <button
               key={opt.value}
               type="button"
-              role="tab"
-              aria-selected={active}
+              aria-pressed={active}
               className={active ? styles.segActive : ""}
               onClick={() => {
                 onChange({ ...value, status: opt.value });
@@ -108,7 +107,7 @@ export function TicketsFilters({ value, counts, onChange }: Props) {
 
       <div
         className={`${styles.seg} ${styles.viewToggle}`}
-        role="tablist"
+        role="group"
         aria-label="Modo de visualização"
       >
         {VIEW_OPTIONS.map((opt) => {
@@ -117,8 +116,7 @@ export function TicketsFilters({ value, counts, onChange }: Props) {
             <button
               key={opt.value}
               type="button"
-              role="tab"
-              aria-selected={active}
+              aria-pressed={active}
               className={active ? styles.segActive : ""}
               onClick={() => {
                 setMode(opt.value);

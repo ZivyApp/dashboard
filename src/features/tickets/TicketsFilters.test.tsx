@@ -21,18 +21,24 @@ describe("TicketsFilters", () => {
     render(<TicketsFilters value={baseValue} counts={baseCounts} onChange={() => {}} />);
 
     expect(screen.getByRole("textbox", { name: /buscar chamados/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /todos \(10\)/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /abertos \(5\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /todos \(10\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /abertos \(5\)/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/filtrar por prioridade/i)).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /tabela/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /kanban/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /tabela/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /kanban/i })).toBeInTheDocument();
+  });
+
+  it("status seg expõe role=group", () => {
+    render(<TicketsFilters value={baseValue} counts={baseCounts} onChange={() => {}} />);
+    expect(screen.getByRole("group", { name: /filtrar por status/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /modo de visualização/i })).toBeInTheDocument();
   });
 
   it("click em status emite onChange", async () => {
     const onChange = vi.fn();
     render(<TicketsFilters value={baseValue} counts={baseCounts} onChange={onChange} />);
 
-    await userEvent.click(screen.getByRole("tab", { name: /em andamento/i }));
+    await userEvent.click(screen.getByRole("button", { name: /em andamento/i }));
     expect(onChange).toHaveBeenCalledWith({ ...baseValue, status: "in_progress" });
   });
 
@@ -47,11 +53,11 @@ describe("TicketsFilters", () => {
   it("click em view-toggle escreve no store", async () => {
     render(<TicketsFilters value={baseValue} counts={baseCounts} onChange={() => {}} />);
 
-    await userEvent.click(screen.getByRole("tab", { name: /kanban/i }));
+    await userEvent.click(screen.getByRole("button", { name: /kanban/i }));
     expect(useTicketsView.getState().mode).toBe("kanban");
   });
 
-  it("aria-selected reflete status atual", () => {
+  it("aria-pressed reflete status atual", () => {
     render(
       <TicketsFilters
         value={{ ...baseValue, status: "open" }}
@@ -59,9 +65,23 @@ describe("TicketsFilters", () => {
         onChange={() => {}}
       />,
     );
-    expect(screen.getByRole("tab", { name: /abertos \(5\)/i })).toHaveAttribute(
-      "aria-selected",
+    expect(screen.getByRole("button", { name: /abertos \(5\)/i })).toHaveAttribute(
+      "aria-pressed",
       "true",
+    );
+    expect(screen.getByRole("button", { name: /todos \(10\)/i })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("aria-pressed reflete view mode atual", () => {
+    useTicketsView.setState({ mode: "cards" });
+    render(<TicketsFilters value={baseValue} counts={baseCounts} onChange={() => {}} />);
+    expect(screen.getByRole("button", { name: /cards/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /tabela/i })).toHaveAttribute(
+      "aria-pressed",
+      "false",
     );
   });
 });
