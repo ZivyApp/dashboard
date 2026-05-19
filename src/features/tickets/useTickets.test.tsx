@@ -29,61 +29,77 @@ afterEach(() => {
 });
 
 describe("useTickets", () => {
-  it("dispara 2 calls em paralelo (open + in_progress) e mescla resultado", async () => {
-    mockGet.mockImplementation((_path: string, opts: { params: { query: { status: string } } }) => {
-      const status = opts.params.query.status;
-      if (status === "open") {
-        return Promise.resolve({
-          data: [
-            {
-              id: "a",
-              protocol: "TKT-1",
-              title: "x",
-              status: "open",
-              priority: "high",
-              updated_at: "2026-05-14T00:00:00Z",
-            },
-          ],
-          error: undefined,
-        });
-      }
-      return Promise.resolve({
-        data: [
-          {
-            id: "b",
-            protocol: "TKT-2",
-            title: "y",
-            status: "in_progress",
-            priority: "low",
-            updated_at: "2026-05-14T00:00:00Z",
-          },
-        ],
-        error: undefined,
-      });
+  it("dispara 1 call sem filtro de status e devolve todos os tickets", async () => {
+    mockGet.mockResolvedValue({
+      data: [
+        {
+          id: "a",
+          protocol: "TKT-1",
+          title: "x",
+          status: "open",
+          priority: "high",
+          updated_at: "2026-05-14T00:00:00Z",
+        },
+        {
+          id: "b",
+          protocol: "TKT-2",
+          title: "y",
+          status: "resolved",
+          priority: "low",
+          updated_at: "2026-05-14T00:00:00Z",
+        },
+        {
+          id: "c",
+          protocol: "TKT-3",
+          title: "z",
+          status: "closed",
+          priority: "medium",
+          updated_at: "2026-05-14T00:00:00Z",
+        },
+      ],
+      error: undefined,
     });
 
     const qc = mkClient();
     const { result } = renderHook(() => useTickets("condo-1"), { wrapper: wrapper(qc) });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(mockGet).toHaveBeenCalledTimes(2);
-    expect(result.current.data?.map((t) => t.id).sort()).toEqual(["a", "b"]);
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    expect(mockGet).toHaveBeenCalledWith("/tickets", { params: { query: {} } });
+    expect(result.current.data?.map((t) => t.id).sort()).toEqual(["a", "b", "c"]);
   });
 
-  it("retorna erro se uma das duas chamadas falhar", async () => {
-    mockGet.mockImplementation((_path: string, opts: { params: { query: { status: string } } }) => {
-      if (opts.params.query.status === "open") {
-        return Promise.resolve({ data: undefined, error: { message: "boom" } });
-      }
-      return Promise.resolve({ data: [], error: undefined });
+  it("filtra payloads incompletos via isCompleteTicket", async () => {
+    mockGet.mockResolvedValue({
+      data: [
+        {
+          id: "a",
+          protocol: "TKT-1",
+          title: "x",
+          status: "open",
+          priority: "high",
+          updated_at: "2026-05-14T00:00:00Z",
+        },
+        { id: "b" }, // payload incompleto — deve sumir
+      ],
+      error: undefined,
     });
+
+    const qc = mkClient();
+    const { result } = renderHook(() => useTickets("condo-1"), { wrapper: wrapper(qc) });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.map((t) => t.id)).toEqual(["a"]);
+  });
+
+  it("retorna erro quando a chamada falha", async () => {
+    mockGet.mockResolvedValue({ data: undefined, error: { message: "boom" } });
 
     const qc = mkClient();
     const { result } = renderHook(() => useTickets("condo-1"), { wrapper: wrapper(qc) });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 
-  it("emite console.warn quando lista total > 200", async () => {
+  it("emite console.warn quando lista > 200", async () => {
     const big = Array.from({ length: 201 }, (_, i) => ({
       id: `t${i}`,
       protocol: `TKT-${i}`,

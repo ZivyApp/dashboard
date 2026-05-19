@@ -1,12 +1,8 @@
-import { useCallback, useEffect } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import type { Ticket } from "@/types/ticket";
-import { isTicketStatus, isTicketPriority, type TicketStatus } from "@/types/ticket";
-
-// Duas queries paralelas porque GET /tickets aceita apenas um `status` por chamada.
-// Quando Core suportar CSV (ex.: `status=open,in_progress`), trocar por um useQuery único.
-const ACTIVE_STATUSES: TicketStatus[] = ["open", "in_progress"];
+import { isTicketStatus, isTicketPriority } from "@/types/ticket";
 
 function isCompleteTicket(t: unknown): t is Ticket {
   if (typeof t !== "object" || t === null) return false;
@@ -21,48 +17,36 @@ function isCompleteTicket(t: unknown): t is Ticket {
   );
 }
 
-async function fetchByStatus(status: TicketStatus): Promise<Ticket[]> {
-  const { data, error } = await api.GET("/tickets", {
-    params: { query: { status } },
-  });
+async function fetchAllTickets(): Promise<Ticket[]> {
+  const { data, error } = await api.GET("/tickets", { params: { query: {} } });
   if (error) {
-    throw new Error(`TicketsService.fetchByStatus(${status}): falha em GET /tickets`, {
-      cause: error,
-    });
+    throw new Error("TicketsService.fetchAll: falha em GET /tickets", { cause: error });
   }
   return (data ?? []).filter(isCompleteTicket);
 }
 
 export function useTickets(condoId: string) {
-  const queries = useQueries({
-    queries: ACTIVE_STATUSES.map((status) => ({
-      queryKey: ["tickets", condoId, status] as const,
-      queryFn: () => fetchByStatus(status),
-      refetchInterval: 30_000,
-      refetchOnWindowFocus: true,
-      staleTime: 10_000,
-    })),
+  const query = useQuery({
+    queryKey: ["tickets", condoId] as const,
+    queryFn: fetchAllTickets,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 10_000,
   });
 
-  const isPending = queries.some((q) => q.isPending);
-  const isFetching = queries.some((q) => q.isFetching);
-  const isError = queries.some((q) => q.isError);
-  const error = queries.find((q) => q.error)?.error;
-  const isSuccess = queries.every((q) => q.isSuccess);
-
-  const data = isSuccess ? queries.flatMap((q) => q.data ?? []) : undefined;
-
   useEffect(() => {
-    if (data && data.length > 200) {
-      console.warn(`Tickets: ${data.length} tickets ativos. Considerar paginação no Core.`);
+    if (query.data && query.data.length > 200) {
+      console.warn(`Tickets: ${query.data.length} tickets. Considerar paginação no Core.`);
     }
-  }, [data]);
+  }, [query.data]);
 
-  const refetch = useCallback(() => {
-    queries.forEach((q) => {
-      void q.refetch();
-    });
-  }, [queries]);
-
-  return { data, isPending, isFetching, isError, isSuccess, error, refetch };
+  return {
+    data: query.data,
+    isPending: query.isPending,
+    isFetching: query.isFetching,
+    isError: query.isError,
+    isSuccess: query.isSuccess,
+    error: query.error,
+    refetch: query.refetch,
+  };
 }
