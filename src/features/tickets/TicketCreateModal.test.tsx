@@ -1,0 +1,116 @@
+import { describe, expect, it, vi, afterEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import type { Resident } from "@/types/resident";
+
+const { mockUseResidents, mockUseCreateTicket } = vi.hoisted(() => ({
+  mockUseResidents: vi.fn(),
+  mockUseCreateTicket: vi.fn(),
+}));
+vi.mock("@/features/residents/useResidents", () => ({ useResidents: mockUseResidents }));
+vi.mock("./useCreateTicket", () => ({ useCreateTicket: mockUseCreateTicket }));
+
+import { TicketCreateModal } from "./TicketCreateModal";
+
+const RESIDENTS: Resident[] = [
+  { id: "r1", name: "Ana", status: "APPROVED" },
+  { id: "r2", name: "Beto", status: "PENDING" },
+];
+
+function setup(overrides?: {
+  create?: ReturnType<typeof vi.fn>;
+  fieldErrors?: Record<string, string>;
+  generalError?: string | null;
+  residentsLoading?: boolean;
+  residentsError?: boolean;
+  isPending?: boolean;
+}) {
+  const create = overrides?.create ?? vi.fn();
+  mockUseResidents.mockReturnValue({
+    residents: overrides?.residentsLoading || overrides?.residentsError ? undefined : RESIDENTS,
+    isPending: overrides?.residentsLoading ?? false,
+    isError: overrides?.residentsError ?? false,
+  });
+  mockUseCreateTicket.mockReturnValue({
+    create,
+    isPending: overrides?.isPending ?? false,
+    fieldErrors: overrides?.fieldErrors ?? {},
+    generalError: overrides?.generalError ?? null,
+  });
+  const onClose = vi.fn();
+  render(<TicketCreateModal condoId="c1" onClose={onClose} />);
+  return { create, onClose };
+}
+
+function fillValidForm() {
+  fireEvent.change(screen.getByLabelText(/título/i), { target: { value: "Vazamento" } });
+  fireEvent.change(screen.getByLabelText(/morador/i), { target: { value: "r1" } });
+  fireEvent.change(screen.getByLabelText(/prioridade/i), { target: { value: "high" } });
+  fireEvent.change(screen.getByLabelText(/localização/i), { target: { value: "Garagem" } });
+}
+
+afterEach(() => {
+  mockUseResidents.mockReset();
+  mockUseCreateTicket.mockReset();
+  vi.restoreAllMocks();
+});
+
+describe("TicketCreateModal", () => {
+  it("mostra só moradores não-PENDING no picker", () => {
+    setup();
+    const select = screen.getByLabelText(/morador/i);
+    expect(select).toHaveTextContent("Ana");
+    expect(select).not.toHaveTextContent("Beto");
+  });
+
+  it("'Criar' começa desabilitado e habilita quando o form fica válido", () => {
+    setup();
+    const submit = screen.getByRole("button", { name: /criar/i });
+    expect(submit).toBeDisabled();
+    fillValidForm();
+    expect(submit).toBeEnabled();
+  });
+
+  it("submit chama create com o payload e onSuccess", () => {
+    const { create } = setup();
+    fillValidForm();
+    fireEvent.click(screen.getByRole("button", { name: /criar/i }));
+    expect(create).toHaveBeenCalledOnce();
+    const lastCall = create.mock.lastCall;
+    expect(lastCall?.[0]).toEqual({
+      title: "Vazamento",
+      resident_id: "r1",
+      priority: "high",
+      location: "common_area",
+      location_ref: "Garagem",
+    });
+    expect(lastCall?.[1]).toHaveProperty("onSuccess", expect.any(Function));
+  });
+
+  it("exibe erro de campo vindo de fieldErrors", () => {
+    setup({ fieldErrors: { title: "obrigatório" } });
+    expect(screen.getByText("obrigatório")).toBeInTheDocument();
+  });
+
+  it("exibe banner geral quando generalError sem fieldErrors", () => {
+    setup({ generalError: "Falha ao criar chamado (HTTP 500)" });
+    expect(screen.getByRole("alert")).toHaveTextContent("HTTP 500");
+  });
+
+  it("'Cancelar' chama onClose", () => {
+    const { onClose } = setup();
+    fireEvent.click(screen.getByRole("button", { name: /cancelar/i }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("desabilita e mostra 'Criando…' enquanto isPending", () => {
+    setup({ isPending: true });
+    expect(screen.getByRole("button", { name: /criando/i })).toBeDisabled();
+  });
+
+  it("select de morador fica desabilitado e exibe erro quando residents falha", () => {
+    setup({ residentsError: true });
+    const select = screen.getByLabelText(/morador/i);
+    expect(select).toBeDisabled();
+    expect(select).toHaveTextContent(/erro ao carregar/i);
+  });
+});

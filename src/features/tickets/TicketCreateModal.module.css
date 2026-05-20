@@ -1,0 +1,58 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--fg-secondary);
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--fg-primary);
+  font: inherit;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.locationRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--space-3);
+}
+
+.banner {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--danger-soft-bg);
+  color: var(--danger-soft-fg);
+  font-size: var(--fs-sm);
+}
+
+.err {
+  color: var(--danger-soft-fg);
+  font-size: var(--fs-xs);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
