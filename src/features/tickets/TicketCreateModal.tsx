@@ -118,6 +118,7 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
             onChange={(e) => {
               setPriority(e.target.value as "" | TicketPriority);
             }}
+            aria-describedby={fieldErrors.priority ? "err-priority" : undefined}
           >
             <option value="">Selecione</option>
             {PRIORITY_OPTIONS.map((o) => (
@@ -126,6 +127,11 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
               </option>
             ))}
           </select>
+          {fieldErrors.priority ? (
+            <small id="err-priority" className={styles.err}>
+              {fieldErrors.priority}
+            </small>
+          ) : null}
         </label>
 
         <div className={styles.locationRow}>
@@ -154,7 +160,13 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
               onChange={(e) => {
                 setLocationRef(e.target.value);
               }}
+              aria-describedby={fieldErrors.location_ref ? "err-location" : undefined}
             />
+            {fieldErrors.location_ref ? (
+              <small id="err-location" className={styles.err}>
+                {fieldErrors.location_ref}
+              </small>
+            ) : null}
           </label>
         </div>
 

@@ -122,4 +122,53 @@ describe("useCreateTicket", () => {
     await waitFor(() => expect(result.current.generalError).toContain("500"));
     expect(result.current.fieldErrors).toEqual({});
   });
+
+  it("400 genérico { message } vira generalError, não fieldErrors órfão", async () => {
+    mockPost.mockResolvedValue({
+      data: undefined,
+      error: { message: "Dados inválidos" },
+      response: { status: 400 },
+    });
+    const qc = mkClient();
+    const { result } = renderHook(() => useCreateTicket("c1"), { wrapper: wrapper(qc) });
+    act(() => {
+      result.current.create(VALID_INPUT);
+    });
+    await waitFor(() => expect(result.current.generalError).toBe("Dados inválidos"));
+    expect(result.current.fieldErrors).toEqual({});
+  });
+
+  it("400 misto: campo conhecido inline, chave desconhecida no banner", async () => {
+    mockPost.mockResolvedValue({
+      data: undefined,
+      error: { title: "obrigatório", detail: "contexto extra" },
+      response: { status: 400 },
+    });
+    const qc = mkClient();
+    const { result } = renderHook(() => useCreateTicket("c1"), { wrapper: wrapper(qc) });
+    act(() => {
+      result.current.create(VALID_INPUT);
+    });
+    await waitFor(() => expect(result.current.fieldErrors).toEqual({ title: "obrigatório" }));
+    expect(result.current.generalError).toBe("contexto extra");
+  });
+
+  it("403 expõe mensagem de permissão em generalError", async () => {
+    mockPost.mockResolvedValue({
+      data: undefined,
+      error: { message: "forbidden" },
+      response: { status: 403 },
+    });
+    const qc = mkClient();
+    const { result } = renderHook(() => useCreateTicket("c1"), { wrapper: wrapper(qc) });
+    act(() => {
+      result.current.create(VALID_INPUT);
+    });
+    await waitFor(() =>
+      expect(result.current.generalError).toBe(
+        "Sem permissão para criar chamados neste condomínio.",
+      ),
+    );
+    expect(result.current.fieldErrors).toEqual({});
+  });
 });

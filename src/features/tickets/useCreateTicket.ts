@@ -35,6 +35,14 @@ function isFieldErrorMap(v: unknown): v is Record<string, string> {
   return values.every((x) => typeof x === "string");
 }
 
+/**
+ * Chaves de erro 400 que o TicketCreateModal sabe exibir inline (têm slot de
+ * `<small id="err-…">`). Erros 400 em qualquer outra chave — incluindo o corpo
+ * genérico `{ message: "…" }` que o Core usa para "Dados inválidos" — não têm
+ * onde aparecer inline; são dobrados em `generalError` para não sumirem da UI.
+ */
+const INLINE_FIELD_KEYS: readonly string[] = ["title", "resident_id", "priority", "location_ref"];
+
 function messageForStatus(status: number, fieldErrors: Record<string, string>): string {
   if (status === 403) return "Sem permissão para criar chamados neste condomínio.";
   const first = Object.values(fieldErrors)[0];
@@ -70,9 +78,20 @@ export function useCreateTicket(condoId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tickets", condoId] }),
   });
 
-  const fieldErrors = m.error instanceof CreateTicketError ? m.error.fieldErrors : {};
+  const rawErrors = m.error instanceof CreateTicketError ? m.error.fieldErrors : {};
+  const fieldErrors: Record<string, string> = {};
+  const orphanMessages: string[] = [];
+  for (const [key, msg] of Object.entries(rawErrors)) {
+    if (INLINE_FIELD_KEYS.includes(key)) fieldErrors[key] = msg;
+    else orphanMessages.push(msg);
+  }
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const generalError = m.error && !hasFieldErrors ? m.error.message : null;
+  const generalError =
+    orphanMessages.length > 0
+      ? orphanMessages.join(" ")
+      : m.error && !hasFieldErrors
+        ? m.error.message
+        : null;
 
   return {
     create: (input: CreateTicketInput, opts?: { onSuccess?: () => void }) => m.mutate(input, opts),
