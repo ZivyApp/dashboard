@@ -24,17 +24,15 @@ export class CreateTicketError extends Error {
 }
 
 /**
- * Determines if `v` is a validation field-error map (400 response body),
- * e.g. `{ title: "obrigatório" }`. Objects that contain only a generic
- * `message` key are treated as non-field errors and excluded.
+ * Determines if `v` is a validation field-error map, e.g. `{ title: "obrigatório" }`.
+ * HTTP status (not body shape) is the real discriminator — only call this when
+ * `response.status === 400`.
  */
 function isFieldErrorMap(v: unknown): v is Record<string, string> {
   if (typeof v !== "object" || v === null) return false;
-  const keys = Object.keys(v);
-  if (keys.length === 0) return false;
-  // A single `message` key is a generic error envelope, not a field map.
-  if (keys.length === 1 && keys[0] === "message") return false;
-  return Object.values(v).every((x) => typeof x === "string");
+  const values = Object.values(v);
+  if (values.length === 0) return false;
+  return values.every((x) => typeof x === "string");
 }
 
 function messageForStatus(status: number, fieldErrors: Record<string, string>): string {
@@ -61,7 +59,7 @@ export function useCreateTicket(condoId: string) {
     mutationFn: async (input) => {
       const { data, error, response } = await api.POST("/tickets", { body: toRequest(input) });
       if (error || !data) {
-        const fieldErrors = isFieldErrorMap(error) ? error : {};
+        const fieldErrors = response.status === 400 && isFieldErrorMap(error) ? error : {};
         throw new CreateTicketError(response.status, fieldErrors);
       }
       if (!isCompleteTicket(data)) {
@@ -73,7 +71,8 @@ export function useCreateTicket(condoId: string) {
   });
 
   const fieldErrors = m.error instanceof CreateTicketError ? m.error.fieldErrors : {};
-  const generalError = m.error ? m.error.message : null;
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+  const generalError = m.error && !hasFieldErrors ? m.error.message : null;
 
   return {
     create: (input: CreateTicketInput, opts?: { onSuccess?: () => void }) => m.mutate(input, opts),
