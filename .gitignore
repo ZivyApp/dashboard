@@ -20,3 +20,4 @@ build/*.d.ts
 .vercel
 .worktrees
 .superpowers/
+.tanstack

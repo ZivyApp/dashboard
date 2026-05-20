@@ -4,7 +4,7 @@ import { Download, Plus } from "lucide-react";
 import { Button } from "@/ui/Button/Button";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { EmptyState } from "@/ui/AppShell/EmptyState";
-import { useMyCondos } from "@/features/condo/useMyCondos";
+import { useCondoRole } from "@/features/condo/useCondoRole";
 import { isAtLeast } from "@/features/condo/roleHierarchy";
 import { useTickets } from "./useTickets";
 import { useTicketsView } from "./viewModeStore";
@@ -33,8 +33,7 @@ export function TicketsPage({ condoId }: Props) {
   const { data, isPending, isError, refetch } = useTickets(condoId);
   const mode = useTicketsView((s) => s.mode);
   const { exportTickets, isLoading: isExporting, error: exportError } = useExportTickets(condoId);
-  const myCondos = useMyCondos();
-  const role = myCondos.data?.find((c) => c.condoId === condoId)?.role;
+  const role = useCondoRole(condoId);
   const canExport = role !== undefined && isAtLeast(role, "manager");
   const canCreate = role !== undefined && isAtLeast(role, "staff");
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTERS);

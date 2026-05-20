@@ -26,3 +26,21 @@ export interface Ticket {
   created_at?: string;
   updated_at: string;
 }
+
+/**
+ * Type guard para o payload da API gerada (`openapi-typescript` marca tudo
+ * opcional). Valida cada campo obrigatório individualmente — usar com
+ * `filter(isCompleteTicket)` em listas ou `throw` descritivo em singular.
+ */
+export function isCompleteTicket(t: unknown): t is Ticket {
+  if (typeof t !== "object" || t === null) return false;
+  const o = t as Record<string, unknown>;
+  return (
+    typeof o.id === "string" &&
+    typeof o.protocol === "string" &&
+    typeof o.title === "string" &&
+    typeof o.updated_at === "string" &&
+    isTicketStatus(o.status) &&
+    isTicketPriority(o.priority)
+  );
+}

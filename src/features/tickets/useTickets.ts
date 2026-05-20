@@ -2,20 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import type { Ticket } from "@/types/ticket";
-import { isTicketStatus, isTicketPriority } from "@/types/ticket";
-
-function isCompleteTicket(t: unknown): t is Ticket {
-  if (typeof t !== "object" || t === null) return false;
-  const o = t as Record<string, unknown>;
-  return (
-    typeof o.id === "string" &&
-    typeof o.protocol === "string" &&
-    typeof o.title === "string" &&
-    typeof o.updated_at === "string" &&
-    isTicketStatus(o.status) &&
-    isTicketPriority(o.priority)
-  );
-}
+import { isCompleteTicket } from "@/types/ticket";
 
 async function fetchAllTickets(): Promise<Ticket[]> {
   const { data, error } = await api.GET("/tickets", { params: { query: {} } });
