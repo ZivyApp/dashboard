@@ -8,7 +8,6 @@ import type { ReactNode } from "react";
 const { mockGet } = vi.hoisted(() => ({ mockGet: vi.fn() }));
 vi.mock("@/api/client", () => ({
   api: { GET: mockGet },
-  configureApiAuth: vi.fn(),
 }));
 
 import { useTicket } from "./useTicket";

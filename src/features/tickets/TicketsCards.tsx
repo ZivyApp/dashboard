@@ -1,15 +1,15 @@
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
 import { PriorityChip } from "@/ui/PriorityChip/PriorityChip";
-import type { Ticket } from "./types";
-import { formatRelTime } from "./formatRelTime";
-import styles from "./TicketCards.module.css";
+import type { Ticket } from "@/types/ticket";
+import { formatRelTime } from "@/lib/formatRelTime";
+import styles from "./TicketsCards.module.css";
 
-interface TicketCardsProps {
+interface TicketsCardsProps {
   tickets: Ticket[];
   onPick: (ticketId: string) => void;
 }
 
-export function TicketCards({ tickets, onPick }: TicketCardsProps) {
+export function TicketsCards({ tickets, onPick }: TicketsCardsProps) {
   return (
     <div className={styles.list}>
       {tickets.map((t) => (
