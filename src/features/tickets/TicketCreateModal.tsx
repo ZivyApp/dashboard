@@ -69,6 +69,7 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
           <span>Título *</span>
           <input
             type="text"
+            required
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
@@ -85,6 +86,7 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
         <label className={styles.field}>
           <span>Morador *</span>
           <select
+            required
             value={residentId}
             disabled={residentsLoading || residentsError}
             onChange={(e) => {
@@ -111,6 +113,7 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
         <label className={styles.field}>
           <span>Prioridade *</span>
           <select
+            required
             value={priority}
             onChange={(e) => {
               setPriority(e.target.value as "" | TicketPriority);
@@ -145,6 +148,7 @@ export function TicketCreateModal({ condoId, onClose }: Props) {
             <span>Localização *</span>
             <input
               type="text"
+              required
               placeholder="ex.: Elevador B, Apto 101"
               value={locationRef}
               onChange={(e) => {

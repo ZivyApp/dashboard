@@ -21,16 +21,18 @@ function setup(overrides?: {
   fieldErrors?: Record<string, string>;
   generalError?: string | null;
   residentsLoading?: boolean;
+  residentsError?: boolean;
+  isPending?: boolean;
 }) {
   const create = overrides?.create ?? vi.fn();
   mockUseResidents.mockReturnValue({
-    residents: overrides?.residentsLoading ? undefined : RESIDENTS,
+    residents: overrides?.residentsLoading || overrides?.residentsError ? undefined : RESIDENTS,
     isPending: overrides?.residentsLoading ?? false,
-    isError: false,
+    isError: overrides?.residentsError ?? false,
   });
   mockUseCreateTicket.mockReturnValue({
     create,
-    isPending: false,
+    isPending: overrides?.isPending ?? false,
     fieldErrors: overrides?.fieldErrors ?? {},
     generalError: overrides?.generalError ?? null,
   });
@@ -73,19 +75,15 @@ describe("TicketCreateModal", () => {
     fillValidForm();
     fireEvent.click(screen.getByRole("button", { name: /criar/i }));
     expect(create).toHaveBeenCalledOnce();
-    // Verificar primeiro arg (payload)
-    const firstArg: unknown = create.mock.lastCall?.[0];
-    expect(firstArg).toEqual({
+    const lastCall = create.mock.lastCall;
+    expect(lastCall?.[0]).toEqual({
       title: "Vazamento",
       resident_id: "r1",
       priority: "high",
       location: "common_area",
       location_ref: "Garagem",
     });
-    // Verificar segundo arg tem onSuccess como função
-    const secondArg: unknown = create.mock.lastCall?.[1];
-    const opts = secondArg as Record<string, unknown>;
-    expect(typeof opts["onSuccess"]).toBe("function");
+    expect(lastCall?.[1]).toHaveProperty("onSuccess", expect.any(Function));
   });
 
   it("exibe erro de campo vindo de fieldErrors", () => {
@@ -102,5 +100,17 @@ describe("TicketCreateModal", () => {
     const { onClose } = setup();
     fireEvent.click(screen.getByRole("button", { name: /cancelar/i }));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("desabilita e mostra 'Criando…' enquanto isPending", () => {
+    setup({ isPending: true });
+    expect(screen.getByRole("button", { name: /criando/i })).toBeDisabled();
+  });
+
+  it("select de morador fica desabilitado e exibe erro quando residents falha", () => {
+    setup({ residentsError: true });
+    const select = screen.getByLabelText(/morador/i);
+    expect(select).toBeDisabled();
+    expect(select).toHaveTextContent(/erro ao carregar/i);
   });
 });
