@@ -1,5 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Inbox, Ticket, CheckCircle2, Settings, Building2, Home, Trees } from "lucide-react";
+import {
+  Inbox,
+  Ticket,
+  CheckCircle2,
+  Settings,
+  Building2,
+  Home,
+  Trees,
+  LayoutDashboard,
+} from "lucide-react";
 import type { Scope } from "@/features/scope/useScope";
 import { isAtLeast, type Role } from "@/features/condo/roleHierarchy";
 import { SidebarGroup } from "./SidebarGroup";
@@ -58,9 +67,13 @@ export function Sidebar({
   const showApprovals = canApprovals(scope, currentRole, aggregateRoles);
   const showStructure = canStructure(scope, currentRole);
 
+  // Visão geral (/) é sempre cross-condo; serve de "home" em qualquer scope.
+  const visaoGeral: Item = { to: "/", label: "Visão geral", icon: LayoutDashboard };
+
   const operacao: Item[] =
     scope.kind === "condo"
       ? [
+          visaoGeral,
           {
             to: "/c/$condoId/inbox",
             params: { condoId: scope.condoId },
@@ -93,6 +106,7 @@ export function Sidebar({
           },
         ]
       : [
+          visaoGeral,
           {
             to: "/inbox",
             label: "Inbox",

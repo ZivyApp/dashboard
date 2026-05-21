@@ -36,6 +36,30 @@ describe("Sidebar", () => {
     expect(screen.getByText("Inbox")).toBeInTheDocument();
   });
 
+  it("mostra 'Visão geral' apontando para / em ambos os scopes", () => {
+    const { unmount } = render(
+      <Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />,
+    );
+    expect(screen.getByText("Visão geral").closest("a")).toHaveAttribute("href", "/");
+    unmount();
+
+    render(<Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />);
+    expect(screen.getByText("Visão geral").closest("a")).toHaveAttribute("href", "/");
+  });
+
+  it("marca 'Visão geral' como active só quando pathname é exatamente /", () => {
+    mockPathname.current = "/";
+    const { unmount } = render(
+      <Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />,
+    );
+    expect(screen.getByText("Visão geral").closest("a, button")?.className).toContain("active");
+    unmount();
+
+    mockPathname.current = "/inbox";
+    render(<Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />);
+    expect(screen.getByText("Visão geral").closest("a, button")?.className).not.toContain("active");
+  });
+
   it("omite ESTRUTURA quando scope é 'all'", () => {
     render(<Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />);
     expect(screen.queryByText(/Estrutura/i)).not.toBeInTheDocument();
