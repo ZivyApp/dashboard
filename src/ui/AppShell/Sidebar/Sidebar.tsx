@@ -68,12 +68,12 @@ export function Sidebar({
   const showStructure = canStructure(scope, currentRole);
 
   // Visão geral (/) é sempre cross-condo; serve de "home" em qualquer scope.
-  const visaoGeral: Item = { to: "/", label: "Visão geral", icon: LayoutDashboard };
+  const overview: Item = { to: "/", label: "Visão geral", icon: LayoutDashboard };
 
   const operacao: Item[] =
     scope.kind === "condo"
       ? [
-          visaoGeral,
+          overview,
           {
             to: "/c/$condoId/inbox",
             params: { condoId: scope.condoId },
@@ -106,7 +106,7 @@ export function Sidebar({
           },
         ]
       : [
-          visaoGeral,
+          overview,
           {
             to: "/inbox",
             label: "Inbox",
