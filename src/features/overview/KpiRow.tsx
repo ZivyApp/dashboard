@@ -26,7 +26,7 @@ export function KpiRow({ stats }: Props) {
       <div className={styles.kpi}>
         <div className={styles.label}>Urgentes ativos</div>
         <div className={`${styles.num} ${styles.urgent ?? ""}`}>{stats.urgent}</div>
-        <div className={styles.sub}>prioridade alta em aberto</div>
+        <div className={styles.sub}>prioridade alta em aberto ou andamento</div>
       </div>
     </div>
   );

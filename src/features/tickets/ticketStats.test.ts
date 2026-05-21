@@ -26,13 +26,15 @@ describe("ticketStats", () => {
     expect(stats).toMatchObject({ open: 2, inProgress: 1, resolved: 1 });
   });
 
-  it("urgent = priority high e status != closed", () => {
+  it("urgent = priority high e status open ou in_progress (não resolved/closed)", () => {
     const stats = ticketStats([
       mk({ priority: "high", status: "open" }),
+      mk({ priority: "high", status: "in_progress" }),
+      mk({ priority: "high", status: "resolved" }), // não conta — já resolvido
       mk({ priority: "high", status: "closed" }), // não conta
-      mk({ priority: "medium", status: "open" }), // não conta
+      mk({ priority: "medium", status: "open" }), // não conta — não é high
     ]);
-    expect(stats.urgent).toBe(1);
+    expect(stats.urgent).toBe(2);
   });
 
   it("lista vazia → zeros", () => {
