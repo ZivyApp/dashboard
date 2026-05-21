@@ -1,0 +1,120 @@
+.card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition:
+    box-shadow var(--duration-base) var(--easing-standard),
+    transform var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--brand);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+  color: var(--brand);
+  display: grid;
+  place-items: center;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-base);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-primary);
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.statNum {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-primary);
+  line-height: var(--lh-tight);
+}
+
+.statLab {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-tertiary);
+  font-weight: var(--fw-medium);
+}
+
+.statUrgent .statNum {
+  color: var(--status-urgent-fg);
+}
+
+.progress {
+  height: 5px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-pill);
+  margin-top: var(--space-3);
+  overflow: hidden;
+  display: flex;
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+}
+
+.pOpen {
+  background: var(--info-fg);
+}
+
+.pProg {
+  background: var(--status-onhold-fg);
+}
+
+.pRes {
+  background: var(--success);
+}
