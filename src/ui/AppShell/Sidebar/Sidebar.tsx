@@ -52,6 +52,8 @@ interface Item {
   label: string;
   icon: typeof Inbox;
   badge?: number;
+  /** Match de rota índice: ativo só no pathname exato, não por prefixo. */
+  exact?: boolean;
 }
 
 export function Sidebar({
@@ -67,8 +69,18 @@ export function Sidebar({
   const showApprovals = canApprovals(scope, currentRole, aggregateRoles);
   const showStructure = canStructure(scope, currentRole);
 
-  // Visão geral (/) é sempre cross-condo; serve de "home" em qualquer scope.
-  const overview: Item = { to: "/", label: "Visão geral", icon: LayoutDashboard };
+  // Visão geral: cross-condo (/) em scope "all"; overview do próprio condo
+  // (/c/$condoId) em scope "condo". `exact` evita marcar ativo nas sub-rotas.
+  const overview: Item =
+    scope.kind === "condo"
+      ? {
+          to: "/c/$condoId",
+          params: { condoId: scope.condoId },
+          label: "Visão geral",
+          icon: LayoutDashboard,
+          exact: true,
+        }
+      : { to: "/", label: "Visão geral", icon: LayoutDashboard, exact: true };
 
   const operacao: Item[] =
     scope.kind === "condo"
@@ -151,7 +163,7 @@ export function Sidebar({
       : [];
 
   function renderItem(item: Item) {
-    const active = matchesActive(location.pathname, item.to, item.params);
+    const active = matchesActive(location.pathname, item.to, item.params, item.exact);
     const linkProps = { to: item.to, params: item.params } as unknown as Parameters<typeof Link>[0];
     return (
       <Link
@@ -183,12 +195,21 @@ export function Sidebar({
   );
 }
 
-function matchesActive(pathname: string, to: string, params?: Record<string, string>): boolean {
+function matchesActive(
+  pathname: string,
+  to: string,
+  params?: Record<string, string>,
+  exact?: boolean,
+): boolean {
   let expected = to;
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       expected = expected.replace(`$${key}`, value);
     }
+  }
+  if (exact) {
+    const norm = (s: string) => (s.length > 1 ? s.replace(/\/$/, "") : s);
+    return norm(pathname) === norm(expected);
   }
   return pathname === expected || pathname.startsWith(expected + "/");
 }
