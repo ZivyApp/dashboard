@@ -91,4 +91,36 @@ describe("useTicketsScoped", () => {
     const { result } = renderHook(() => useTicketsScoped(), { wrapper: wrapper(mkClient()) });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
+
+  it("falha parcial: mantém os tickets dos condos que resolveram e marca isError", async () => {
+    mockUseMyCondos.mockReturnValue({ data: CONDOS });
+    mockGet.mockImplementation((_path: string, opts: { headers: Record<string, string> }) => {
+      const condo = opts.headers["X-Condo-ID"];
+      if (condo === "c2") {
+        return Promise.resolve({ data: undefined, error: { message: "boom" } });
+      }
+      return Promise.resolve({
+        data: [
+          {
+            id: `${condo}-t1`,
+            protocol: "TKT-1",
+            title: "x",
+            status: "open",
+            priority: "high",
+            updated_at: "2026-05-20T00:00:00Z",
+          },
+        ],
+        error: undefined,
+      });
+    });
+
+    const { result } = renderHook(() => useTicketsScoped(), { wrapper: wrapper(mkClient()) });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+
+    // c1 resolveu → mantém seus tickets; c2 falhou → lista vazia, mas o condo permanece.
+    expect(result.current.byCondo.map((c) => c.condo.condoId)).toEqual(["c1", "c2"]);
+    expect(result.current.byCondo[0]?.tickets.map((t) => t.id)).toEqual(["c1-t1"]);
+    expect(result.current.byCondo[1]?.tickets).toEqual([]);
+  });
 });

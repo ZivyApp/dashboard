@@ -8,7 +8,7 @@ import { useTickets } from "@/features/tickets/useTickets";
 import { ticketStats } from "@/features/tickets/ticketStats";
 import { KpiRow } from "./KpiRow";
 import { RecentActivityTable, type RecentRow } from "./RecentActivityTable";
-import styles from "./OverviewPage.module.css";
+import styles from "./overviewLayout.module.css";
 
 interface Props {
   condoId: string;

@@ -10,7 +10,7 @@ import { ticketStats } from "@/features/tickets/ticketStats";
 import { KpiRow } from "./KpiRow";
 import { CondoCard } from "./CondoCard";
 import { RecentActivityTable, type RecentRow } from "./RecentActivityTable";
-import styles from "./OverviewPage.module.css";
+import styles from "./overviewLayout.module.css";
 
 export function OverviewPage() {
   const navigate = useNavigate();
