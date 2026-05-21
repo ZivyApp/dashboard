@@ -1,5 +1,5 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { useMatches, useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { Check, ChevronDown, Globe } from "lucide-react";
 import { useMyCondos } from "./useMyCondos";
 import { isAtLeast } from "./roleHierarchy";
@@ -7,46 +7,19 @@ import styles from "./CondoSwitcher.module.css";
 
 export function CondoSwitcher() {
   const navigate = useNavigate();
-  const matches = useMatches();
   const params = useParams({ strict: false });
   const { data, isPending, error } = useMyCondos();
 
-  const leafRouteId = matches.at(-1)?.routeId ?? "";
-  // Extract the last path segment from routeId.
-  // e.g. "/_app/c/$condoId/inbox" → "inbox"
-  // Deep nested routes like "/_app/c/$condoId/inbox/thread/$threadId" → "$threadId"
-  // which falls through to the default "inbox" — acceptable behavior.
-  const subPath = leafRouteId.split("/").pop() ?? "inbox";
   const activeCondoId = params.condoId;
 
+  // Trocar de escopo sempre cai na Visão geral do destino (cross-condo em `/`,
+  // por-condo em `/c/$condoId`), não na sub-página atual.
   function handleSelectAll() {
-    switch (subPath) {
-      case "tickets":
-        void navigate({ to: "/tickets" });
-        return;
-      case "approvals":
-        void navigate({ to: "/approvals" });
-        return;
-      default:
-        void navigate({ to: "/inbox" });
-    }
+    void navigate({ to: "/" });
   }
 
   function handleSelect(newId: string) {
-    const p = { condoId: newId };
-    switch (subPath) {
-      case "tickets":
-        void navigate({ to: "/c/$condoId/tickets", params: p });
-        return;
-      case "approvals":
-        void navigate({ to: "/c/$condoId/approvals", params: p });
-        return;
-      case "settings":
-        void navigate({ to: "/c/$condoId/settings", params: p });
-        return;
-      default:
-        void navigate({ to: "/c/$condoId/inbox", params: p });
-    }
+    void navigate({ to: "/c/$condoId", params: { condoId: newId } });
   }
 
   if (isPending) {

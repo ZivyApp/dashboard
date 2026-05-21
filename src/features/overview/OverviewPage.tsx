@@ -39,7 +39,7 @@ export function OverviewPage() {
 
   function focusCondo(condoId: string) {
     setLastSelected(condoId);
-    void navigate({ to: "/c/$condoId/inbox", params: { condoId } });
+    void navigate({ to: "/c/$condoId", params: { condoId } });
   }
 
   function pickTicket(condoId: string, ticketId: string) {

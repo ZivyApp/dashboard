@@ -132,30 +132,7 @@ describe("CondoSwitcher", () => {
     expect(inactiveItem).not.toHaveAttribute("aria-current", "true");
   });
 
-  it("navigates to /c/$condoId/inbox when selecting different condo from inbox", async () => {
-    const user = userEvent.setup();
-    mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
-    mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
-
-    render(<CondoSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
-    const bravoItem = screen
-      .getAllByRole("menuitem")
-      .find((el) => el.textContent?.includes("Residencial Bravo"));
-    if (!bravoItem) throw new Error("Residencial Bravo item not found");
-    await user.click(bravoItem);
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/c/$condoId/inbox",
-        params: { condoId: "condo-2" },
-      });
-    });
-  });
-
-  it("preserves tickets sub-route when switching condo", async () => {
+  it("selecionar um condo navega para a visão geral dele (/c/$condoId), independente da página atual", async () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
@@ -172,53 +149,7 @@ describe("CondoSwitcher", () => {
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/c/$condoId/tickets",
-        params: { condoId: "condo-2" },
-      });
-    });
-  });
-
-  it("preserves approvals sub-route when switching condo", async () => {
-    const user = userEvent.setup();
-    mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
-    mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/approvals" }]);
-
-    render(<CondoSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
-    const bravoItem = screen
-      .getAllByRole("menuitem")
-      .find((el) => el.textContent?.includes("Residencial Bravo"));
-    if (!bravoItem) throw new Error("Residencial Bravo item not found");
-    await user.click(bravoItem);
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/c/$condoId/approvals",
-        params: { condoId: "condo-2" },
-      });
-    });
-  });
-
-  it("preserves settings sub-route when switching condo", async () => {
-    const user = userEvent.setup();
-    mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
-    mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/settings" }]);
-
-    render(<CondoSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
-    const bravoItem = screen
-      .getAllByRole("menuitem")
-      .find((el) => el.textContent?.includes("Residencial Bravo"));
-    if (!bravoItem) throw new Error("Residencial Bravo item not found");
-    await user.click(bravoItem);
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/c/$condoId/settings",
+        to: "/c/$condoId",
         params: { condoId: "condo-2" },
       });
     });
@@ -237,23 +168,7 @@ describe("CondoSwitcher", () => {
     expect(screen.getByText("Todos os condomínios")).toBeInTheDocument();
   });
 
-  it("seleciona 'Todos' navega para /inbox quando rota atual é inbox", async () => {
-    const user = userEvent.setup();
-    mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
-    mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/inbox" }]);
-
-    render(<CondoSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
-    await user.click(screen.getByText("Todos os condomínios"));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ to: "/inbox" });
-    });
-  });
-
-  it("seleciona 'Todos' navega para /tickets quando rota atual é tickets", async () => {
+  it("seleciona 'Todos' navega para a visão geral cross-condo (/)", async () => {
     const user = userEvent.setup();
     mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
     mockUseParams.mockReturnValue({ condoId: "condo-1" });
@@ -265,23 +180,7 @@ describe("CondoSwitcher", () => {
     await user.click(screen.getByText("Todos os condomínios"));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ to: "/tickets" });
-    });
-  });
-
-  it("seleciona 'Todos' navega para /approvals quando rota atual é approvals", async () => {
-    const user = userEvent.setup();
-    mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
-    mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/approvals" }]);
-
-    render(<CondoSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
-    await user.click(screen.getByText("Todos os condomínios"));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ to: "/approvals" });
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
     });
   });
 
@@ -323,28 +222,5 @@ describe("CondoSwitcher", () => {
     await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
 
     expect(screen.getByText("Todos os condomínios")).toBeInTheDocument();
-  });
-
-  it("defaults to inbox sub-route when pathname doesn't match known sub-routes", async () => {
-    const user = userEvent.setup();
-    mockUseMyCondos.mockReturnValue({ data: CONDOS, isPending: false, error: null });
-    mockUseParams.mockReturnValue({ condoId: "condo-1" });
-    mockUseMatches.mockReturnValue([{ routeId: "/_app/c/$condoId/unknown-page" }]);
-
-    render(<CondoSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: /Edifício Aurora/i }));
-    const bravoItem = screen
-      .getAllByRole("menuitem")
-      .find((el) => el.textContent?.includes("Residencial Bravo"));
-    if (!bravoItem) throw new Error("Residencial Bravo item not found");
-    await user.click(bravoItem);
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: "/c/$condoId/inbox",
-        params: { condoId: "condo-2" },
-      });
-    });
   });
 });

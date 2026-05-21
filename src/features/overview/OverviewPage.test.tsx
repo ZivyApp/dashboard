@@ -71,7 +71,7 @@ describe("OverviewPage", () => {
     expect(screen.queryByText("Condomínios")).not.toBeInTheDocument();
   });
 
-  it("clique no condo card foca e navega para /c/<id>/inbox", () => {
+  it("clique no condo card foca e navega para a visão geral do condo /c/<id>", () => {
     const byCondo: CondoTickets[] = [
       { condo: condo("c1", "Solar"), tickets: [] },
       { condo: condo("c2", "Vista"), tickets: [] },
@@ -83,7 +83,7 @@ describe("OverviewPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /vista/i }));
     expect(mockSetLastSelected).toHaveBeenCalledWith("c2");
     expect(mockNavigate).toHaveBeenCalledWith({
-      to: "/c/$condoId/inbox",
+      to: "/c/$condoId",
       params: { condoId: "c2" },
     });
   });
