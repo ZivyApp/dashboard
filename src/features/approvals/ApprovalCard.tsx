@@ -2,7 +2,7 @@ import { Check, X } from "lucide-react";
 import { Avatar } from "@/ui/Avatar/Avatar";
 import { Button } from "@/ui/Button/Button";
 import { formatRelTime } from "@/lib/formatRelTime";
-import { maskPhone } from "@/lib/maskPhone";
+import { formatPhone } from "@/lib/formatPhone";
 import type { PendingResident } from "./pendingResident";
 import styles from "./ApprovalCard.module.css";
 
@@ -21,7 +21,7 @@ export function ApprovalCard({ resident, onApprove, onReject, busy = false }: Ap
         <div className={styles.name}>{resident.name}</div>
         <div className={styles.meta}>
           <span>{resident.condoName}</span>
-          <span className={styles.phone}>{maskPhone(resident.phone)}</span>
+          <span className={styles.phone}>{formatPhone(resident.phone)}</span>
           <span className={styles.pending}>Pendente {formatRelTime(resident.createdAt)}</span>
         </div>
       </div>

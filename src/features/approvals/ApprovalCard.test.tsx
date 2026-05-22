@@ -14,11 +14,11 @@ const RESIDENT: PendingResident = {
 };
 
 describe("ApprovalCard", () => {
-  it("mostra nome, condomínio e telefone mascarado", () => {
+  it("mostra nome, condomínio e telefone completo (sem máscara)", () => {
     render(<ApprovalCard resident={RESIDENT} onApprove={vi.fn()} onReject={vi.fn()} />);
     expect(screen.getByText("Lucas Ferreira")).toBeInTheDocument();
     expect(screen.getByText("Residencial Jardins")).toBeInTheDocument();
-    expect(screen.getByText("+55 11 9****-4312")).toBeInTheDocument();
+    expect(screen.getByText("+55 11 99999-4312")).toBeInTheDocument();
   });
 
   it("dispara onApprove e onReject", async () => {
