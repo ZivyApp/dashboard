@@ -1,0 +1,86 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--fg-primary);
+}
+
+.sub {
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--fg-tertiary);
+  max-width: 60ch;
+}
+
+.sub code {
+  background: var(--bg-muted);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.approvedBadge {
+  flex: 0 0 auto;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--ticket-status-resolved-bg);
+  color: var(--ticket-status-resolved-fg);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.count {
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-3) var(--space-4) 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--info-bg);
+  color: var(--info-fg);
+  font-size: var(--fs-xs);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.empty {
+  padding: var(--space-8);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--fg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
