@@ -64,6 +64,14 @@ describe("ApprovalsPage", () => {
     await waitFor(() => expect(screen.getByText(/1 aprovado nesta sessão/i)).toBeInTheDocument());
   });
 
+  it("mostra mensagem de erro quando isError", () => {
+    mockUseScope.mockReturnValue({ kind: "all" });
+    mockUsePending.mockReturnValue({ residents: [], isPending: false, isError: true });
+    render(<ApprovalsPage />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByText(/não foi possível carregar/i)).toBeInTheDocument();
+  });
+
   it("rejeitar abre confirm; confirmar chama a mutation", async () => {
     mockUseScope.mockReturnValue({ kind: "all" });
     mockUsePending.mockReturnValue({ residents: [R], isPending: false, isError: false });

@@ -13,8 +13,8 @@ import styles from "./ApprovalsPage.module.css";
 export function ApprovalsPage() {
   const scope = useScope();
   const { residents, isPending, isError } = usePendingResidents(scope);
-  const { approve } = useApproveResident();
-  const { reject } = useRejectResident();
+  const { approve, isPending: approving } = useApproveResident();
+  const { reject, isPending: rejecting } = useRejectResident();
 
   const [toReject, setToReject] = useState<PendingResident | null>(null);
   const [approvedCount, setApprovedCount] = useState(0);
@@ -48,7 +48,9 @@ export function ApprovalsPage() {
       {isPending ? (
         <Spinner />
       ) : isError ? (
-        <div className={styles.empty}>Não foi possível carregar as aprovações.</div>
+        <div role="alert" className={styles.empty}>
+          Não foi possível carregar as aprovações.
+        </div>
       ) : residents.length === 0 ? (
         <div className={styles.empty}>
           {approvedCount > 0
@@ -58,7 +60,7 @@ export function ApprovalsPage() {
       ) : (
         <section className={styles.card}>
           <div className={styles.cardHeader}>
-            <h3>Moradores PENDING</h3>
+            <h2 className={styles.sectionTitle}>Moradores PENDING</h2>
             <span className={styles.count}>
               {residents.length} aguardando · confirme a identidade antes de aprovar
             </span>
@@ -77,6 +79,7 @@ export function ApprovalsPage() {
                 resident={r}
                 onApprove={() => handleApprove(r)}
                 onReject={() => setToReject(r)}
+                busy={approving || rejecting}
               />
             ))}
           </div>
@@ -87,6 +90,7 @@ export function ApprovalsPage() {
         resident={toReject}
         onCancel={() => setToReject(null)}
         onConfirm={handleConfirmReject}
+        busy={rejecting}
       />
     </>
   );
