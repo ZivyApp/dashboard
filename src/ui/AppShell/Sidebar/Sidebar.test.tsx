@@ -36,6 +36,44 @@ describe("Sidebar", () => {
     expect(screen.getByText("Inbox")).toBeInTheDocument();
   });
 
+  it("'Visão geral' aponta para / no scope all e para /c/<id> no scope condo", () => {
+    const { unmount } = render(
+      <Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />,
+    );
+    expect(screen.getByText("Visão geral").closest("a")).toHaveAttribute("href", "/");
+    unmount();
+
+    render(<Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />);
+    expect(screen.getByText("Visão geral").closest("a")).toHaveAttribute("href", "/c/c1");
+  });
+
+  it("marca 'Visão geral' (all) como active só quando pathname é exatamente /", () => {
+    mockPathname.current = "/";
+    const { unmount } = render(
+      <Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />,
+    );
+    expect(screen.getByText("Visão geral").closest("a, button")?.className).toContain("active");
+    unmount();
+
+    mockPathname.current = "/inbox";
+    render(<Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />);
+    expect(screen.getByText("Visão geral").closest("a, button")?.className).not.toContain("active");
+  });
+
+  it("'Visão geral' (condo) ativo em /c/<id> mas não nas sub-rotas do condo", () => {
+    mockPathname.current = "/c/c1";
+    const { unmount } = render(
+      <Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />,
+    );
+    expect(screen.getByText("Visão geral").closest("a, button")?.className).toContain("active");
+    unmount();
+
+    mockPathname.current = "/c/c1/inbox";
+    render(<Sidebar scope={{ kind: "condo", condoId: "c1" }} scopeTitle="Cond Y" />);
+    expect(screen.getByText("Visão geral").closest("a, button")?.className).not.toContain("active");
+    mockPathname.current = "/inbox";
+  });
+
   it("omite ESTRUTURA quando scope é 'all'", () => {
     render(<Sidebar scope={{ kind: "all" }} scopeTitle="Todos os condomínios" />);
     expect(screen.queryByText(/Estrutura/i)).not.toBeInTheDocument();

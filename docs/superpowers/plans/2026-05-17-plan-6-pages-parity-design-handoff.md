@@ -1501,6 +1501,7 @@ src/features/approvals/
 4. "Descrição" em bloco muted.
 5. "Timeline" — lista de `TicketEvent[]` do Core (`status_changed | assigned | comment_added`), com dot temático por tipo, autor + ação + relTime + corpo (quando comment). Item `created` UI-only no topo derivado de `ticket.created_at`.
 6. "Composer" — textarea + footer com botão "Publicar" (disabled quando vazio). **Sem aviso de "Telegram"**: `service.AddComment` (ver `core/internal/app/ticket_service.go:210`) apenas persiste o evento `comment_added`, não dispara `NotificationSender`. As notificações Telegram saem em `CreateTicket` (linha 116) e `Assign` (linha 205), não em comentários.
+7. **Repontar o clique de ticket da Overview (decisão 2026-05-22).** Hoje a Overview (Slice 6.3) navega o clique em "Atividade recente" para `/c/$condoId/inbox/$ticketId`, abrindo o `TicketDetailModal` sobre o `ActivityFeed` — escolha pragmática enquanto `tickets/$ticketId` era stub. Nesta Slice, trocar o `to` em `pickTicket` **nas duas overviews** (`src/features/overview/OverviewPage.tsx` e `CondoOverviewPage.tsx`) para `/c/$condoId/tickets/$ticketId`, o lar canônico do ticket. **Motivo:** o modal-sobre-inbox só faz sentido mental dentro do inbox (triagem do feed); da overview a intenção é "trabalhar no ticket", e o `handleClose` atual do modal volta para `/c/$condoId/inbox`, deixando quem veio da overview preso no inbox em vez de voltar à origem. A page-level já tem close → `/c/<id>/tickets` (item 2), resolvendo o caminho de volta. Atualizar os testes das overviews (`OverviewPage.test.tsx`, `CondoOverviewPage.test.tsx`) que asseguram o `mockNavigate` para a rota antiga.
 
 **Endpoints Core (todos existem em `develop`):**
 
@@ -1540,6 +1541,7 @@ src/app/routes/_app/c/$condoId/
 - Composer publica comentário (body `{ text }`) → aparece evento `comment_added` com `payload.text` na timeline.
 - Composer envia comentário e limpa textarea após sucesso.
 - Modal antigo (Plan 4) removido.
+- Clique em "Atividade recente" nas duas overviews navega para `/c/<id>/tickets/<ticketId>` (não mais `/inbox/<ticketId>`); fechar a página volta para `/c/<id>/tickets`.
 - Lint/typecheck/test/build verdes.
 
 **Tamanho estimado:** ~1000–1500 linhas de bite-sized tasks. Grande.

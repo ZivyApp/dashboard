@@ -45,4 +45,14 @@ describe("applyAuthHeaders", () => {
     expect(req.headers.get("Authorization")).toBe("Bearer t");
     expect(req.headers.get("X-Condo-ID")).toBe("c");
   });
+
+  it("não sobrescreve X-Condo-ID já presente na request (fan-out cross-condo)", async () => {
+    const req = buildRequest();
+    req.headers.set("X-Condo-ID", "explicit-condo");
+    const out = await applyAuthHeaders(req, {
+      getAccessToken: () => Promise.resolve("tok"),
+      getActiveCondoId: () => "active-condo",
+    });
+    expect(out.headers.get("X-Condo-ID")).toBe("explicit-condo");
+  });
 });

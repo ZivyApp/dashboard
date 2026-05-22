@@ -20,6 +20,8 @@ export async function applyAuthHeaders(request: Request, g: AuthGetters): Promis
   const token = await g.getAccessToken();
   if (token) request.headers.set("Authorization", `Bearer ${token}`);
   const condoId = g.getActiveCondoId();
-  if (condoId) request.headers.set("X-Condo-ID", condoId);
+  if (condoId && !request.headers.has("X-Condo-ID")) {
+    request.headers.set("X-Condo-ID", condoId);
+  }
   return request;
 }

@@ -140,16 +140,15 @@ Projeto Vercel: `zivy-dashboard` (org `adams-alves-projects`)
 
 ## Estado atual do projeto
 
-Plans 2, 3, 4 e 5 mergeados em `develop`. `main` segue Plan 2 (release pendente).
+Snapshot de alto nível do que existe hoje. O histórico detalhado "por plan" **não** vive aqui — a fonte de verdade é `docs/superpowers/plans/` (planos commitados) + git history + PRs.
 
-Conteúdo entregue:
+- **Auth e shell**: login (Supabase + bridge), AppShell (Topbar com logo→`/`, condo switcher, search, role badge, theme toggle, user menu; Sidebar agrupada Operação/Estrutura scope-aware), guards de role via `beforeLoad` (`requireRole`/`requireRoleAny`).
+- **Escopo multi-tenant**: `useScope` (`condo | all`); escopo via header global `X-Condo-ID` (ver convenções). Landing roteado por contagem de condos (1 → `/c/$id`; >1 com manager → `/` cross-condo).
+- **Tickets / Inbox**: `StatusBadge`/`PriorityChip`/`Modal`, hooks `useTickets`/`useTicket`, página `/c/$condoId/inbox` + detalhe modal; `ActivityRepository` (adapter local com fixtures + HTTP gated por `VITE_ACTIVITY_REPOSITORY`, fixtures fora do bundle prod).
+- **Overview**: `/` cross-condo (KPIs agregados via fan-out, grid de condos) e `/c/$condoId/` por condo; `ticketStats` puro.
+- **Infra**: design tokens + theme store, API client `openapi-fetch` + tipos gerados, TanStack Router/Query, Storybook, PWA, CI, deploy Vercel.
 
-- **Plan 2**: design tokens, theme store (light/dark/system), `ui/Button`, API client `openapi-fetch` + tipos gerados, Supabase + bridge auth, TanStack Router + Query, Storybook, PWA, CI, deploy Vercel.
-- **Plan 3**: login screen, layout shell (header/sidebar), condo switcher com `condoId` na URL, guards de role.
-- **Plan 4 (inbox MVP)**: tokens semânticos de status/prioridade, `StatusBadge`, `PriorityChip`, `Modal` (Radix Dialog), hooks `useInboxTickets` (polling 30s) e `useTicket`, página `/c/$condoId/inbox` (lista + filtros + segmented + search), rota filha `inbox/$ticketId` em apresentação modal (read-only).
-- **Plan 5 (redesign shell + activity feed)**: paleta WhatsApp Green, Topbar nova (logo, condo switcher com "Todos", search ⌘K, role badge, theme toggle, user menu), Sidebar agrupada (Operação/Estrutura) com badge de unread, `useScope` (`condo | all`), `ActivityRepository` (interface + adapter local com fixtures + adapter HTTP gated por `VITE_ACTIVITY_REPOSITORY`), `ActivityFeed` plugado em `/inbox` (cross-condo) e `/c/$id/inbox`, role guards completos (`requireRole`/`requireRoleAny` em `_app/{inbox,tickets,approvals}` cross e `_app/c/$id/structure/*`).
-
-Próximo: release `develop → main` quando smoke geral passar; cleanup do `InboxPage` antigo (Plan 4) se confirmado obsoleto.
+`develop` é a linha ativa; `main` recebe releases. Para "o que entrou e por quê", ver os PRs e os planos em `docs/superpowers/plans/`.
 
 ## Padrões e convenções (lições de code review)
 

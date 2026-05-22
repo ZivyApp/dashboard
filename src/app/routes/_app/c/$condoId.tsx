@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_app/c/$condoId")({
       }
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw redirect({
-        to: "/c/$condoId/inbox",
+        to: "/c/$condoId",
         params: { condoId: fallback.condoId },
       });
     }
