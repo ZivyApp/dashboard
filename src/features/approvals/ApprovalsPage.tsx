@@ -13,8 +13,8 @@ import styles from "./ApprovalsPage.module.css";
 export function ApprovalsPage() {
   const scope = useScope();
   const { residents, isPending, isError } = usePendingResidents(scope);
-  const { approve, isPending: approving } = useApproveResident();
-  const { reject, isPending: rejecting } = useRejectResident();
+  const { approve, pendingId: approvingId } = useApproveResident();
+  const { reject, pendingId: rejectingId } = useRejectResident();
 
   const [toReject, setToReject] = useState<PendingResident | null>(null);
   const [approvedCount, setApprovedCount] = useState(0);
@@ -79,7 +79,7 @@ export function ApprovalsPage() {
                 resident={r}
                 onApprove={() => handleApprove(r)}
                 onReject={() => setToReject(r)}
-                busy={approving || rejecting}
+                busy={r.id === approvingId || r.id === rejectingId}
               />
             ))}
           </div>
@@ -90,7 +90,7 @@ export function ApprovalsPage() {
         resident={toReject}
         onCancel={() => setToReject(null)}
         onConfirm={handleConfirmReject}
-        busy={rejecting}
+        busy={toReject !== null && toReject.id === rejectingId}
       />
     </>
   );

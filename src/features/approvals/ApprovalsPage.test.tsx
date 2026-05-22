@@ -3,18 +3,29 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { PendingResident } from "./pendingResident";
 
-const { mockUsePending, mockApprove, mockReject, mockUseScope } = vi.hoisted(() => ({
-  mockUsePending: vi.fn(),
-  mockApprove: vi.fn(),
-  mockReject: vi.fn(),
-  mockUseScope: vi.fn(),
-}));
+const { mockUsePending, mockApprove, mockReject, mockUseScope, approveState, rejectState } =
+  vi.hoisted(() => ({
+    mockUsePending: vi.fn(),
+    mockApprove: vi.fn(),
+    mockReject: vi.fn(),
+    mockUseScope: vi.fn(),
+    approveState: { pendingId: undefined as string | undefined },
+    rejectState: { pendingId: undefined as string | undefined },
+  }));
 vi.mock("./usePendingResidents", () => ({ usePendingResidents: mockUsePending }));
 vi.mock("./useApproveResident", () => ({
-  useApproveResident: () => ({ approve: mockApprove, isPending: false, isError: false }),
+  useApproveResident: () => ({
+    approve: mockApprove,
+    pendingId: approveState.pendingId,
+    isError: false,
+  }),
 }));
 vi.mock("./useRejectResident", () => ({
-  useRejectResident: () => ({ reject: mockReject, isPending: false, isError: false }),
+  useRejectResident: () => ({
+    reject: mockReject,
+    pendingId: rejectState.pendingId,
+    isError: false,
+  }),
 }));
 vi.mock("@/features/scope/useScope", () => ({ useScope: mockUseScope }));
 
@@ -31,6 +42,8 @@ const R: PendingResident = {
 
 afterEach(() => {
   vi.clearAllMocks();
+  approveState.pendingId = undefined;
+  rejectState.pendingId = undefined;
 });
 
 describe("ApprovalsPage", () => {
@@ -104,5 +117,18 @@ describe("ApprovalsPage", () => {
     rerender(<ApprovalsPage />);
 
     expect(screen.getByText(/tudo aprovado/i)).toBeInTheDocument();
+  });
+
+  it("busy é por-linha: só o card em aprovação desabilita", () => {
+    mockUseScope.mockReturnValue({ kind: "all" });
+    const R2: PendingResident = { ...R, id: "r2", name: "Ana Lima" };
+    mockUsePending.mockReturnValue({ residents: [R, R2], isPending: false, isError: false });
+    approveState.pendingId = "r1"; // r1 em voo
+
+    render(<ApprovalsPage />);
+
+    const approveButtons = screen.getAllByRole("button", { name: /aprovar/i });
+    expect(approveButtons[0]).toBeDisabled(); // r1
+    expect(approveButtons[1]).toBeEnabled(); // r2 segue acionável
   });
 });

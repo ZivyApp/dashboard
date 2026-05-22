@@ -27,9 +27,12 @@ export function usePendingResidents(scope: Scope): PendingResidentsResult {
   const { data: condos } = useMyCondos();
   const all = condos ?? [];
 
+  // Em ambos os scopes só consultamos condos onde o usuário é manager+: `GET
+  // /residents` retorna 403 abaixo disso. No per-condo o `beforeLoad` já barra,
+  // mas filtrar aqui também é defesa em profundidade e mantém os dois ramos simétricos.
   const targets =
     scope.kind === "condo"
-      ? all.filter((c) => c.condoId === scope.condoId)
+      ? all.filter((c) => c.condoId === scope.condoId && isAtLeast(c.role, "manager"))
       : all.filter((c) => isAtLeast(c.role, "manager"));
 
   const results = useQueries({

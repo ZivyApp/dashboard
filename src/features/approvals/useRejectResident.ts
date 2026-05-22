@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { ResidentActionInput } from "./useApproveResident";
+import type { ResidentActionInput } from "./pendingResident";
 
 export function useRejectResident() {
   const qc = useQueryClient();
@@ -22,7 +22,8 @@ export function useRejectResident() {
   return {
     reject: (input: ResidentActionInput, opts?: { onSuccess?: () => void }) =>
       m.mutate(input, opts),
-    isPending: m.isPending,
+    // id em voo (não um booleano global): só o card/dialog alvo desabilita.
+    pendingId: m.isPending ? m.variables?.id : undefined,
     isError: m.isError,
   };
 }

@@ -72,6 +72,26 @@ describe("usePendingResidents", () => {
     expect(result.current.residents[0]).toMatchObject({ condoId: "c1", condoName: "Solar" });
   });
 
+  it("scope=all: achata residents de múltiplos condos manager+", async () => {
+    const TWO_MANAGERS: CondoMembership[] = [
+      { condoId: "c1", condoName: "Solar", condoSlug: "solar", role: "manager" },
+      { condoId: "c3", condoName: "Mar", condoSlug: "mar", role: "manager" },
+    ];
+    mockUseMyCondos.mockReturnValue({ data: TWO_MANAGERS });
+    mockGet.mockImplementation((_p: string, opts: { headers: Record<string, string> }) =>
+      Promise.resolve({ data: [residentRow(opts.headers["X-Condo-ID"]!, "r1")], error: undefined }),
+    );
+
+    const { result } = renderHook(() => usePendingResidents({ kind: "all" }), {
+      wrapper: wrapper(mkClient()),
+    });
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+
+    expect(mockGet).toHaveBeenCalledTimes(2);
+    expect(result.current.residents).toHaveLength(2);
+    expect(result.current.residents.map((r) => r.condoId).sort()).toEqual(["c1", "c3"]);
+  });
+
   it("propaga isError quando uma query falha", async () => {
     mockUseMyCondos.mockReturnValue({ data: CONDOS });
     mockGet.mockResolvedValue({ data: undefined, error: { message: "boom" } });

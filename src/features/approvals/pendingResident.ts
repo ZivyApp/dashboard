@@ -8,6 +8,16 @@ export interface PendingResident {
   createdAt?: string;
 }
 
+/**
+ * Input das mutations approve/reject. O `condoId` (do próprio resident) define o
+ * header `X-Condo-ID` da request — importa em cross-condo, onde o condo do
+ * resident difere do condo ativo.
+ */
+export interface ResidentActionInput {
+  id: string;
+  condoId: string;
+}
+
 type RawResident = {
   id?: string | undefined;
   name?: string | undefined;

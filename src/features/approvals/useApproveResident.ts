@@ -1,10 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
-
-export interface ResidentActionInput {
-  id: string;
-  condoId: string;
-}
+import type { ResidentActionInput } from "./pendingResident";
 
 export function useApproveResident() {
   const qc = useQueryClient();
@@ -26,7 +22,9 @@ export function useApproveResident() {
   return {
     approve: (input: ResidentActionInput, opts?: { onSuccess?: () => void }) =>
       m.mutate(input, opts),
-    isPending: m.isPending,
+    // id em voo (não um booleano global) para o card alvo desabilitar sozinho —
+    // o gestor segue agindo nos demais durante uma aprovação.
+    pendingId: m.isPending ? m.variables?.id : undefined,
     isError: m.isError,
   };
 }
