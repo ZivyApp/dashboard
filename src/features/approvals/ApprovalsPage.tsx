@@ -34,7 +34,7 @@ export function ApprovalsPage() {
         <div>
           <h1 className={styles.title}>Aprovações pendentes</h1>
           <p className={styles.sub}>
-            Moradores que se cadastraram via bot Telegram com status <code>PENDING</code>,
+            Moradores que se cadastraram via bot Telegram e estão <strong>pendentes</strong>,
             aguardando confirmação do gestor.
           </p>
         </div>
@@ -60,7 +60,7 @@ export function ApprovalsPage() {
       ) : (
         <section className={styles.card}>
           <div className={styles.cardHeader}>
-            <h2 className={styles.sectionTitle}>Moradores PENDING</h2>
+            <h2 className={styles.sectionTitle}>Moradores pendentes</h2>
             <span className={styles.count}>
               {residents.length} aguardando · confirme a identidade antes de aprovar
             </span>
@@ -68,7 +68,7 @@ export function ApprovalsPage() {
           <div className={styles.banner}>
             <ShieldCheck size={14} />
             <span>
-              Aprovar muda o status para <strong>ACTIVE</strong> e libera o morador para abrir
+              Aprovar muda o status para <strong>ativo</strong> e libera o morador para abrir
               chamados.
             </span>
           </div>

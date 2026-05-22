@@ -20,7 +20,7 @@ export function RejectConfirmDialog({
   return (
     <Modal open onClose={onCancel} title={`Rejeitar ${resident.name}?`}>
       <p>
-        O morador será removido do sistema (status <strong>INACTIVE</strong>). Ele não poderá abrir
+        O morador será removido do sistema (status <strong>inativo</strong>). Ele não poderá abrir
         chamados e precisará refazer o onboarding caso queira se cadastrar novamente.
       </p>
       <div className={styles.actions}>

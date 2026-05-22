@@ -19,14 +19,6 @@
   max-width: 60ch;
 }
 
-.sub code {
-  background: var(--bg-muted);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-}
-
 .approvedBadge {
   flex: 0 0 auto;
   padding: var(--space-1) var(--space-3);
