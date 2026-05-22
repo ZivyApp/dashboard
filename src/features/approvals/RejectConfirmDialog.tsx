@@ -1,6 +1,7 @@
 import { Button } from "@/ui/Button/Button";
 import { Modal } from "@/ui/Modal/Modal";
 import type { PendingResident } from "./pendingResident";
+import styles from "./RejectConfirmDialog.module.css";
 
 interface RejectConfirmDialogProps {
   resident: PendingResident | null;
@@ -22,14 +23,7 @@ export function RejectConfirmDialog({
         O morador será removido do sistema (status <strong>INACTIVE</strong>). Ele não poderá abrir
         chamados e precisará refazer o onboarding caso queira se cadastrar novamente.
       </p>
-      <div
-        style={{
-          display: "flex",
-          gap: "var(--space-2)",
-          justifyContent: "flex-end",
-          marginTop: "var(--space-4)",
-        }}
-      >
+      <div className={styles.actions}>
         <Button variant="ghost" onClick={onCancel} disabled={busy}>
           Cancelar
         </Button>

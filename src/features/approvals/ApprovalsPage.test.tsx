@@ -88,4 +88,21 @@ describe("ApprovalsPage", () => {
     expect(firstCallArgs?.[0]).toEqual({ id: "r1", condoId: "c1" });
     expect(firstCallArgs?.[1]).toHaveProperty("onSuccess", expect.any(Function));
   });
+
+  it("estado 'tudo aprovado' após aprovar e lista esvaziar", async () => {
+    mockUseScope.mockReturnValue({ kind: "all" });
+    mockApprove.mockImplementation((_input, opts?: { onSuccess?: () => void }) =>
+      opts?.onSuccess?.(),
+    );
+    mockUsePending.mockReturnValue({ residents: [R], isPending: false, isError: false });
+
+    const { rerender } = render(<ApprovalsPage />);
+    await userEvent.click(screen.getByRole("button", { name: /aprovar/i }));
+
+    // refetch agora devolve lista vazia; approvedCount já é 1
+    mockUsePending.mockReturnValue({ residents: [], isPending: false, isError: false });
+    rerender(<ApprovalsPage />);
+
+    expect(screen.getByText(/tudo aprovado/i)).toBeInTheDocument();
+  });
 });
