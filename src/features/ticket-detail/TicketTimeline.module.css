@@ -26,31 +26,39 @@
   position: absolute;
   left: calc(-1 * var(--space-8) + 2px);
   top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
   border-radius: var(--radius-pill);
   background: var(--bg-surface);
   border: 2px solid var(--border);
+  color: var(--fg-tertiary);
 }
 
 .dotStatus {
   background: var(--brand-soft);
   border-color: var(--brand);
+  color: var(--brand);
 }
 
 .dotAssign {
   background: var(--info-bg);
   border-color: var(--info-fg);
+  color: var(--info-fg);
 }
 
 .dotSystem {
   background: var(--bg-surface);
   border-color: var(--border-strong);
+  color: var(--fg-tertiary);
 }
 
 .dotComment {
   background: var(--bg-surface);
   border-color: var(--border-strong);
+  color: var(--fg-secondary);
 }
 
 .head {

@@ -1,3 +1,4 @@
+import { AlignLeft, Calendar, Clock, History, MapPin, User } from "lucide-react";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { Button } from "@/ui/Button/Button";
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
@@ -87,18 +88,24 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
         <div className={styles.chips}>
           <StatusBadge status={data.status} />
           <PriorityChip priority={data.priority} />
-          <span className={styles.locChip}>{locationLabel(data)}</span>
+          <span className={styles.locChip}>
+            <MapPin size={12} aria-hidden="true" />
+            {locationLabel(data)}
+          </span>
         </div>
         <div className={styles.meta}>
           {data.resident_name && (
-            <span>
+            <span className={styles.metaItem}>
+              <User size={13} aria-hidden="true" />
               <span className={styles.metaLabel}>Morador:</span> {data.resident_name}
             </span>
           )}
-          <span>
+          <span className={styles.metaItem}>
+            <Calendar size={13} aria-hidden="true" />
             <span className={styles.metaLabel}>Aberto em:</span> {formatFullTime(data.created_at)}
           </span>
-          <span>
+          <span className={styles.metaItem}>
+            <Clock size={13} aria-hidden="true" />
             <span className={styles.metaLabel}>Atualizado:</span> {formatRelTime(data.updated_at)}
           </span>
         </div>
@@ -125,12 +132,18 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
       </div>
 
       <section className={styles.section}>
-        <div className={styles.sectionTitle}>Descrição</div>
+        <div className={styles.sectionTitle}>
+          <AlignLeft size={13} aria-hidden="true" />
+          Descrição
+        </div>
         <div className={styles.description}>{data.description ?? "Sem descrição."}</div>
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionTitle}>Timeline</div>
+        <div className={styles.sectionTitle}>
+          <History size={13} aria-hidden="true" />
+          Timeline
+        </div>
         <TicketTimeline events={events ?? []} ticketCreatedAt={data.created_at} />
       </section>
 

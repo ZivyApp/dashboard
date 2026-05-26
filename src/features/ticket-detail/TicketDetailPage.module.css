@@ -55,6 +55,9 @@
 }
 
 .locChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--fs-xs);
   color: var(--fg-secondary);
   padding: var(--space-1) var(--space-2);
@@ -72,9 +75,19 @@
   color: var(--fg-secondary);
 }
 
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ícone do metaItem usa a cor terciária (mesma da label) */
+.metaItem > svg {
+  color: var(--fg-tertiary);
+}
+
 .metaLabel {
   color: var(--fg-tertiary);
-  margin-right: var(--space-1);
 }
 
 .actions {
@@ -94,6 +107,9 @@
 }
 
 .sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;

@@ -1,3 +1,4 @@
+import { Circle, MessageSquare, RefreshCw, Ticket, UserCheck, type LucideIcon } from "lucide-react";
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
 import { formatRelTime } from "@/lib/formatRelTime";
 import {
@@ -27,6 +28,14 @@ const DOT_CLASS: Record<TimelineItem["kind"], string> = {
   assigned: styles.dotAssign ?? "",
   status_changed: styles.dotStatus ?? "",
   comment_added: styles.dotComment ?? "",
+};
+
+// ícone dentro da dot por kind
+const DOT_ICON: Record<TimelineItem["kind"], LucideIcon> = {
+  created: Ticket,
+  assigned: UserCheck,
+  status_changed: RefreshCw,
+  comment_added: MessageSquare,
 };
 
 function actorLabel(item: TimelineItem): string {
@@ -64,12 +73,15 @@ export function TicketTimeline({ events, ticketCreatedAt }: TicketTimelineProps)
     <div className={styles.timeline}>
       {items.map((item) => {
         const body = item.kind === "comment_added" ? commentText(item.event) : null;
+        const DotIcon = DOT_ICON[item.kind] ?? Circle;
         return (
           <div key={item.id} className={styles.item}>
             <span
               className={[styles.dot, DOT_CLASS[item.kind]].filter(Boolean).join(" ")}
               aria-hidden="true"
-            />
+            >
+              <DotIcon size={11} strokeWidth={2.5} />
+            </span>
             <div className={styles.head}>
               <span className={styles.author}>{actorLabel(item)}</span>
               <span className={styles.action}>
