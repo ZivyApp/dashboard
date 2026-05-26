@@ -1,0 +1,46 @@
+.label {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-tertiary);
+  font-weight: var(--fw-medium);
+  margin-bottom: var(--space-2);
+}
+
+.seg {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  gap: var(--space-1);
+}
+
+.segButton {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing-standard);
+}
+
+.segButton:hover:not(.active, :disabled) {
+  color: var(--fg-secondary);
+}
+
+.segButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.active {
+  background: var(--bg-surface);
+  color: var(--fg-primary);
+  box-shadow: var(--shadow-sm);
+}
