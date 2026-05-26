@@ -33,7 +33,7 @@ export function CondoOverviewPage({ condoId }: Props) {
   );
 
   function pickTicket(cId: string, ticketId: string) {
-    void navigate({ to: "/c/$condoId/inbox/$ticketId", params: { condoId: cId, ticketId } });
+    void navigate({ to: "/c/$condoId/tickets/$ticketId", params: { condoId: cId, ticketId } });
   }
 
   function goToTickets() {

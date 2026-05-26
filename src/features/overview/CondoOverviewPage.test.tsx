@@ -78,7 +78,7 @@ describe("CondoOverviewPage", () => {
     render(<CondoOverviewPage condoId="c1" />);
     fireEvent.click(screen.getByRole("button", { name: /vazamento/i }));
     expect(mockNavigate).toHaveBeenCalledWith({
-      to: "/c/$condoId/inbox/$ticketId",
+      to: "/c/$condoId/tickets/$ticketId",
       params: { condoId: "c1", ticketId: "x1" },
     });
   });
