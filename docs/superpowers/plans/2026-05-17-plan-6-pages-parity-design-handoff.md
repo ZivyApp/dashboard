@@ -62,15 +62,15 @@ Estas convenções vêm do CLAUDE.md e das lições dos Plans 2–5. **Releitura
 
 ## Master roadmap
 
-| Slice | Tema                                               | Tamanho | Branch                             | Status    |
-| ----- | -------------------------------------------------- | ------- | ---------------------------------- | --------- |
-| 6.1   | Inbox header — botão Aprovações                    | XS      | `feature/plan-6-1-inbox-header`    | Detalhada |
-| 6.2   | Tickets page (table/cards/kanban)                  | L       | `feature/plan-6-2-tickets-page`    | Detalhada |
-| 6.2.1 | "Novo chamado" dialog (`POST /tickets`)            | S       | `feature/plan-6-2-1-ticket-create` | Roadmap   |
-| 6.3   | Overview `/` index (KPIs + condo grid + atividade) | M       | `feature/plan-6-3-overview`        | Roadmap   |
-| 6.4   | Approvals page (lista PENDING)                     | M       | `feature/plan-6-4-approvals`       | Roadmap   |
-| 6.5   | Ticket detail page (timeline + composer)           | M-L     | `feature/plan-6-5-ticket-detail`   | Roadmap   |
-| 6.6   | CRUD estrutura (Blocos/Unidades/Áreas)             | L       | `feature/plan-6-6-structure-crud`  | Roadmap   |
+| Slice | Tema                                               | Tamanho | Branch                             | Status                                             |
+| ----- | -------------------------------------------------- | ------- | ---------------------------------- | -------------------------------------------------- |
+| 6.1   | Inbox header — botão Aprovações                    | XS      | `feature/plan-6-1-inbox-header`    | Detalhada                                          |
+| 6.2   | Tickets page (table/cards/kanban)                  | L       | `feature/plan-6-2-tickets-page`    | Detalhada                                          |
+| 6.2.1 | "Novo chamado" dialog (`POST /tickets`)            | S       | `feature/plan-6-2-1-ticket-create` | Roadmap                                            |
+| 6.3   | Overview `/` index (KPIs + condo grid + atividade) | M       | `feature/plan-6-3-overview`        | Roadmap                                            |
+| 6.4   | Approvals page (lista PENDING)                     | M       | `feature/plan-6-4-approvals`       | Roadmap                                            |
+| 6.5   | Ticket detail page (timeline + composer)           | M-L     | `feature/plan-6-5-ticket-detail`   | Detalhada (`2026-05-23-plan-6-5-ticket-detail.md`) |
+| 6.6   | CRUD estrutura (Blocos/Unidades/Áreas)             | L       | `feature/plan-6-6-structure-crud`  | Roadmap                                            |
 
 Após cada slice mergeada em `develop`, atualizar a **seção "Estado atual do projeto"** do `CLAUDE.md` e adicionar uma seção "Lições" se houver convenção nova descoberta no review (padrão de Plans 2–5).
 
