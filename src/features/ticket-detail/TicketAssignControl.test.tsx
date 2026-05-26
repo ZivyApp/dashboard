@@ -28,15 +28,22 @@ function setup(props: Partial<ComponentProps<typeof TicketAssignControl>> = {}) 
 }
 
 describe("TicketAssignControl", () => {
-  it("mostra 'Não atribuído' e botão Assumir quando vazio", () => {
+  it("mostra botão 'Assumir ticket' (habilitado) quando não atribuído", () => {
     setup();
-    expect(screen.getByText(/não atribuído/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeEnabled();
   });
 
-  it("resolve o responsável pelo label (email-first)", () => {
+  it("botão vira 'Atribuído a você' (desabilitado) quando o ticket é do usuário logado", () => {
+    setup({ assignedTo: "me" });
+    const btn = screen.getByRole("button", { name: /atribuído a você/i });
+    expect(btn).toBeInTheDocument();
+    expect(btn).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /assumir ticket/i })).toBeNull();
+  });
+
+  it("quando atribuído a outro, mantém 'Assumir ticket' habilitado (reassumir)", () => {
     setup({ assignedTo: "bob" });
-    expect(screen.getByText("bob@ex.com")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeEnabled();
   });
 
   it("dispara onClaim ao assumir", async () => {
