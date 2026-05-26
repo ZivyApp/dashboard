@@ -71,6 +71,9 @@
   color: var(--fg-tertiary);
 }
 
+/* O picker vive dentro do Modal (Dialog, z-index --z-modal). O conteúdo é portado
+   pro body como irmão do dialog, então precisa ficar ACIMA dele — --z-popover
+   (> --z-modal). Com --z-dropdown (< --z-modal) abria escondido atrás do dialog. */
 .pickerContent {
   min-width: 12rem;
   background-color: var(--bg-elevated);
@@ -78,7 +81,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: var(--space-2);
-  z-index: var(--z-dropdown);
+  z-index: var(--z-popover);
 }
 
 .pickerItem {
