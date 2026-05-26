@@ -23,6 +23,8 @@ export interface Ticket {
   block_name?: string;
   common_area_name?: string;
   description?: string;
+  /** user_id do manager atribuído (vazio quando não atribuído). */
+  assigned_to?: string;
   created_at?: string;
   updated_at: string;
 }

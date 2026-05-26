@@ -3,7 +3,7 @@ import { Button } from "@/ui/Button/Button";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
 import { PriorityChip } from "@/ui/PriorityChip/PriorityChip";
-import { useTicket } from "./useTicket";
+import { useTicket } from "@/features/tickets/useTicket";
 import { formatRelTime } from "@/lib/formatRelTime";
 import type { Ticket } from "@/types/ticket";
 import styles from "./TicketDetailModal.module.css";
