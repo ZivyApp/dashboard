@@ -99,7 +99,7 @@ export function TicketAssignControl({
           {isClaiming ? "Assumindo…" : isAssignedToMe ? "Atribuído a você" : "Assumir ticket"}
         </Button>
         {options.length > 0 && (
-          <DropdownMenu.Root>
+          <DropdownMenu.Root modal={false}>
             <DropdownMenu.Trigger asChild>
               <button
                 type="button"
