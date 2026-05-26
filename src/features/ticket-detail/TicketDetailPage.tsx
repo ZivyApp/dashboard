@@ -1,4 +1,3 @@
-import { X } from "lucide-react";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { Button } from "@/ui/Button/Button";
 import { StatusBadge } from "@/ui/StatusBadge/StatusBadge";
@@ -84,9 +83,6 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
             <div className={styles.proto}>{data.protocol}</div>
             <h1 className={styles.title}>{data.title}</h1>
           </div>
-          <Button variant="ghost" aria-label="Fechar chamado" onClick={() => onClose()}>
-            <X size={16} aria-hidden="true" />
-          </Button>
         </div>
         <div className={styles.chips}>
           <StatusBadge status={data.status} />

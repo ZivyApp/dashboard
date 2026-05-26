@@ -114,10 +114,17 @@ describe("TicketDetailPage", () => {
     expect(assignTo).toHaveBeenCalledWith("ana");
   });
 
-  it("fecha ao clicar no botão de fechar", async () => {
+  it("chama onClose pelo 'Voltar para chamados' no estado de erro", async () => {
     const onClose = vi.fn();
+    mockUseTicket.mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
     render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={onClose} />);
-    await userEvent.click(screen.getByRole("button", { name: /fechar/i }));
+    await userEvent.click(screen.getByRole("button", { name: /voltar para chamados/i }));
     expect(onClose).toHaveBeenCalled();
   });
 
