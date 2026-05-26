@@ -1,8 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { EmptyState } from "@/ui/AppShell/EmptyState";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { TicketDetailPage } from "@/features/ticket-detail/TicketDetailPage";
 
 export const Route = createFileRoute("/_app/c/$condoId/tickets/$ticketId")({
-  component: () => (
-    <EmptyState title="Detalhe do chamado" description="Tela completa chega na Slice 6.5." />
-  ),
+  component: TicketDetailRoute,
 });
+
+function TicketDetailRoute() {
+  const { condoId, ticketId } = Route.useParams();
+  const navigate = useNavigate();
+  return (
+    <TicketDetailPage
+      condoId={condoId}
+      ticketId={ticketId}
+      onClose={() => {
+        void navigate({ to: "/c/$condoId/tickets", params: { condoId } });
+      }}
+    />
+  );
+}
