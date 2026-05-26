@@ -38,9 +38,60 @@ describe("TicketTimeline", () => {
     expect(screen.getByText("Em andamento")).toBeInTheDocument();
   });
 
-  it("usa label por actor_type (sem fabricar nome)", () => {
+  it("usa label por actor_type quando não há managers (sem fabricar nome)", () => {
     render(<TicketTimeline events={[comment]} ticketCreatedAt={undefined} />);
     expect(screen.getByText("Gestor")).toBeInTheDocument();
+  });
+
+  it("resolve actor_id → nome real do manager (name)", () => {
+    const ev = toTicketEvent({
+      id: "e3",
+      ticket_id: "t1",
+      event_type: "assigned",
+      actor_type: "manager",
+      actor_id: "u-ana",
+      created_at: "2026-05-20T09:30:00Z",
+      payload: {},
+    }) as TicketEvent;
+    render(
+      <TicketTimeline
+        events={[ev]}
+        ticketCreatedAt={undefined}
+        managers={[
+          {
+            userId: "u-ana",
+            email: "ana@ex.com",
+            name: "Ana Silva",
+            role: "manager",
+            label: "Ana Silva",
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByText("Ana Silva")).toBeInTheDocument();
+    expect(screen.queryByText("Gestor")).toBeNull();
+  });
+
+  it("cai pro email quando o manager não tem nome", () => {
+    const ev = toTicketEvent({
+      id: "e4",
+      ticket_id: "t1",
+      event_type: "assigned",
+      actor_type: "manager",
+      actor_id: "u-bob",
+      created_at: "2026-05-20T09:30:00Z",
+      payload: {},
+    }) as TicketEvent;
+    render(
+      <TicketTimeline
+        events={[ev]}
+        ticketCreatedAt={undefined}
+        managers={[
+          { userId: "u-bob", email: "bob@ex.com", name: "", role: "staff", label: "bob@ex.com" },
+        ]}
+      />,
+    );
+    expect(screen.getByText("bob@ex.com")).toBeInTheDocument();
   });
 
   it("empty state quando não há nada", () => {

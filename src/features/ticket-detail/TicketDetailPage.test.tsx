@@ -107,10 +107,8 @@ describe("TicketDetailPage", () => {
       ],
     });
     render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: /atribuir a outro/i }),
-      "ana",
-    );
+    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
     // confirma no diálogo antes de efetivar
     await userEvent.click(screen.getByRole("button", { name: /^atribuir$/i }));
     expect(assignTo).toHaveBeenCalledWith("ana");

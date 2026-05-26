@@ -153,7 +153,11 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
           <History size={13} aria-hidden="true" />
           Timeline
         </div>
-        <TicketTimeline events={events ?? []} ticketCreatedAt={data.created_at} />
+        <TicketTimeline
+          events={events ?? []}
+          ticketCreatedAt={data.created_at}
+          managers={managers ?? []}
+        />
       </section>
 
       {canManage && (

@@ -16,6 +16,7 @@ const events = [
     ticket_id: "t1",
     event_type: "assigned",
     actor_type: "manager",
+    actor_id: "u-ana",
     created_at: "2026-05-20T09:05:00Z",
     payload: {},
   }),
@@ -36,5 +37,17 @@ const meta: Meta<typeof TicketTimeline> = {
 export default meta;
 type Story = StoryObj<typeof TicketTimeline>;
 
-export const Default: Story = { args: { events, ticketCreatedAt: "2026-05-20T08:00:00Z" } };
+const managers = [
+  {
+    userId: "u-ana",
+    email: "ana@ex.com",
+    name: "Ana Silva",
+    role: "manager" as const,
+    label: "Ana Silva",
+  },
+];
+
+export const Default: Story = {
+  args: { events, ticketCreatedAt: "2026-05-20T08:00:00Z", managers },
+};
 export const Empty: Story = { args: { events: [], ticketCreatedAt: undefined } };
