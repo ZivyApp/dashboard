@@ -111,6 +111,8 @@ describe("TicketDetailPage", () => {
       screen.getByRole("combobox", { name: /atribuir a outro/i }),
       "ana",
     );
+    // confirma no diálogo antes de efetivar
+    await userEvent.click(screen.getByRole("button", { name: /^atribuir$/i }));
     expect(assignTo).toHaveBeenCalledWith("ana");
   });
 

@@ -16,6 +16,9 @@ interface TicketAssignControlProps {
   onAssignTo: (userId: string) => void;
 }
 
+// Ação pendente de confirmação no diálogo: assumir (self) ou atribuir a outro.
+type PendingAction = { type: "claim" } | { type: "assign"; userId: string; label: string };
+
 export function TicketAssignControl({
   assignedTo,
   managers,
@@ -30,8 +33,9 @@ export function TicketAssignControl({
   const isAssignedToMe = !!assignedTo && assignedTo === currentUserId;
   const isAssignedToOther = !!assignedTo && assignedTo !== currentUserId;
 
-  // Reassumir tira o chamado de outro gestor — pede confirmação antes de efetivar.
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  // Reatribuir (assumir de outro ou escolher no picker) tira/troca o responsável —
+  // pede confirmação antes de efetivar.
+  const [pending, setPending] = useState<PendingAction | null>(null);
   const currentResponsible = assignedTo
     ? (managers.find((m) => m.userId === assignedTo)?.label ?? "outro gestor")
     : "";
@@ -42,16 +46,26 @@ export function TicketAssignControl({
   // Clique em "Assumir": órfão → assume direto; de outro gestor → confirma primeiro.
   function handleClaimClick() {
     if (isAssignedToOther) {
-      setConfirmOpen(true);
+      setPending({ type: "claim" });
       return;
     }
     onClaim();
   }
 
-  function confirmClaim() {
-    setConfirmOpen(false);
-    onClaim();
+  // Seleção no picker sempre confirma — é uma reatribuição explícita a outra pessoa.
+  function handlePick(userId: string) {
+    const label = options.find((m) => m.userId === userId)?.label ?? userId;
+    setPending({ type: "assign", userId, label });
   }
+
+  function confirmPending() {
+    if (!pending) return;
+    if (pending.type === "claim") onClaim();
+    else onAssignTo(pending.userId);
+    setPending(null);
+  }
+
+  const isBusy = isClaiming || isAssigning;
 
   // Modo leitura (viewer): sem botões — o nome do responsável só aparece aqui.
   if (!canManage) {
@@ -90,7 +104,7 @@ export function TicketAssignControl({
             value=""
             disabled={isAssigning}
             onChange={(e) => {
-              if (e.target.value) onAssignTo(e.target.value);
+              if (e.target.value) handlePick(e.target.value);
             }}
           >
             <option value="" disabled>
@@ -105,19 +119,44 @@ export function TicketAssignControl({
         )}
       </div>
 
-      <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Assumir chamado">
+      <Modal
+        open={pending !== null}
+        onClose={() => setPending(null)}
+        title={pending?.type === "assign" ? "Atribuir chamado" : "Assumir chamado"}
+      >
         <div className={styles.confirm}>
           <p className={styles.confirmText}>
-            Este chamado está atribuído a <strong>{currentResponsible}</strong>. Ao assumir, você
-            passa a ser o responsável e <strong>{currentResponsible}</strong> deixa de estar
-            atribuído.
+            {pending?.type === "assign" ? (
+              currentResponsible ? (
+                <>
+                  Este chamado está atribuído a <strong>{currentResponsible}</strong>. Atribuir a{" "}
+                  <strong>{pending.label}</strong>?
+                </>
+              ) : (
+                <>
+                  Atribuir este chamado a <strong>{pending.label}</strong>?
+                </>
+              )
+            ) : (
+              <>
+                Este chamado está atribuído a <strong>{currentResponsible}</strong>. Ao assumir,
+                você passa a ser o responsável e <strong>{currentResponsible}</strong> deixa de
+                estar atribuído.
+              </>
+            )}
           </p>
           <div className={styles.confirmActions}>
-            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
+            <Button variant="secondary" onClick={() => setPending(null)}>
               Cancelar
             </Button>
-            <Button disabled={isClaiming} onClick={() => confirmClaim()}>
-              {isClaiming ? "Assumindo…" : "Assumir mesmo assim"}
+            <Button disabled={isBusy} onClick={() => confirmPending()}>
+              {pending?.type === "assign"
+                ? isAssigning
+                  ? "Atribuindo…"
+                  : "Atribuir"
+                : isClaiming
+                  ? "Assumindo…"
+                  : "Assumir mesmo assim"}
             </Button>
           </div>
         </div>
