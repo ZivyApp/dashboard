@@ -26,13 +26,15 @@ const meta: Meta<typeof TicketAssignControl> = {
 export default meta;
 type Story = StoryObj<typeof TicketAssignControl>;
 
-export const Default: Story = {};
+export const NaoAtribuido: Story = {};
+
+export const ComResponsavel: Story = { args: { assignedTo: "ana" } };
 
 // Contexto real: o controle vive no topo de uma TicketDetailPage alta dentro de
-// um Modal (Dialog). O picker "Atribuir a outro" abre SOBRE o corpo do dialog —
-// guarda a regressão de z-index (o conteúdo do dropdown precisa ficar acima do
-// modal, senão abre escondido atrás dele).
+// um Modal (Dialog). O dropdown abre SOBRE o corpo do dialog — guarda a regressão
+// de z-index (o conteúdo precisa ficar acima do modal, senão abre escondido atrás).
 export const DentroDoModal: Story = {
+  args: { assignedTo: "bob" },
   render: (args) => (
     <Modal open size="lg" title="Detalhe do chamado" onClose={() => {}}>
       <TicketAssignControl {...args} />

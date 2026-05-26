@@ -1,8 +1,10 @@
 import { useState } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, UserPlus } from "lucide-react";
+import { Avatar } from "@/ui/Avatar/Avatar";
 import { Button } from "@/ui/Button/Button";
 import { Modal } from "@/ui/Modal/Modal";
+import { roleLabel } from "@/features/condo/roleHierarchy";
 import type { CondoManager } from "./useCondoManagers";
 import styles from "./TicketAssignControl.module.css";
 
@@ -17,7 +19,7 @@ interface TicketAssignControlProps {
   onAssignTo: (userId: string) => void;
 }
 
-// Ação pendente de confirmação no diálogo: assumir (self) ou atribuir a outro.
+// Ação pendente de confirmação: assumir (self) ou atribuir a outro.
 type PendingAction = { type: "claim" } | { type: "assign"; userId: string; label: string };
 
 export function TicketAssignControl({
@@ -30,33 +32,29 @@ export function TicketAssignControl({
   onClaim,
   onAssignTo,
 }: TicketAssignControlProps) {
-  // `assigned_to` pode vir "" (não atribuído) — truthiness cobre "" e undefined.
-  const isAssignedToMe = !!assignedTo && assignedTo === currentUserId;
-  const isAssignedToOther = !!assignedTo && assignedTo !== currentUserId;
-
-  // Reatribuir (assumir de outro ou escolher no picker) tira/troca o responsável —
-  // pede confirmação antes de efetivar.
   const [pending, setPending] = useState<PendingAction | null>(null);
-  const currentResponsible = assignedTo
-    ? (managers.find((m) => m.userId === assignedTo)?.label ?? "outro gestor")
-    : "";
 
-  // Picker: exclui o próprio usuário e o responsável atual.
-  const options = managers.filter((m) => m.userId !== currentUserId && m.userId !== assignedTo);
+  // `assigned_to` pode vir "" (não atribuído) — truthiness cobre "" e undefined.
+  const assignedManager = assignedTo ? managers.find((m) => m.userId === assignedTo) : undefined;
+  const currentLabel = assignedTo ? (assignedManager?.label ?? "Atribuído") : "";
+  const isBusy = isClaiming || isAssigning;
 
-  // Clique em "Assumir": órfão → assume direto; de outro gestor → confirma primeiro.
-  function handleClaimClick() {
-    if (isAssignedToOther) {
-      setPending({ type: "claim" });
+  // Escolha de alguém na lista. Sem responsável → efetiva direto (nada a tirar).
+  // Com responsável → confirma (reatribuição). Escolher o atual é no-op.
+  function selectManager(userId: string) {
+    if (userId === assignedTo) return;
+    const isSelf = userId === currentUserId;
+    if (!assignedTo) {
+      if (isSelf) onClaim();
+      else onAssignTo(userId);
       return;
     }
-    onClaim();
-  }
-
-  // Seleção no picker sempre confirma — é uma reatribuição explícita a outra pessoa.
-  function handlePick(userId: string) {
-    const label = options.find((m) => m.userId === userId)?.label ?? userId;
-    setPending({ type: "assign", userId, label });
+    if (isSelf) {
+      setPending({ type: "claim" });
+    } else {
+      const label = managers.find((m) => m.userId === userId)?.label ?? userId;
+      setPending({ type: "assign", userId, label });
+    }
   }
 
   function confirmPending() {
@@ -66,16 +64,24 @@ export function TicketAssignControl({
     setPending(null);
   }
 
-  const isBusy = isClaiming || isAssigning;
-
-  // Modo leitura (viewer): sem botões — o nome do responsável só aparece aqui.
+  // Modo leitura (viewer): só exibe o responsável, sem dropdown.
   if (!canManage) {
-    const current = assignedTo ? managers.find((m) => m.userId === assignedTo) : undefined;
-    const responsavel = assignedTo ? (current?.label ?? "Atribuído") : "Não atribuído";
     return (
       <div className={styles.control}>
         <div className={styles.label}>Responsável</div>
-        <div className={styles.current}>{responsavel}</div>
+        {assignedTo ? (
+          <div className={styles.person}>
+            <Avatar name={currentLabel} colorKey={assignedTo} />
+            <div className={styles.personText}>
+              <span className={styles.personName}>{currentLabel}</span>
+              {assignedManager && (
+                <span className={styles.personRole}>{roleLabel(assignedManager.role)}</span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.unassigned}>Não atribuído</div>
+        )}
       </div>
     );
   }
@@ -83,52 +89,59 @@ export function TicketAssignControl({
   return (
     <div className={styles.control}>
       <div className={styles.label}>Responsável</div>
-      <div className={styles.actions}>
-        {/* O próprio botão carrega o estado: "Atribuído a você" quando o ticket
-            já é do usuário logado (sem ação); senão, "Assumir ticket". */}
-        <Button
-          variant="secondary"
-          disabled={isClaiming || isAssignedToMe}
-          onClick={() => handleClaimClick()}
-        >
-          {isAssignedToMe ? (
-            <Check size={14} aria-hidden="true" />
-          ) : (
-            <UserPlus size={14} aria-hidden="true" />
-          )}
-          {isClaiming ? "Assumindo…" : isAssignedToMe ? "Atribuído a você" : "Assumir ticket"}
-        </Button>
-        {options.length > 0 && (
-          <DropdownMenu.Root modal={false}>
-            <DropdownMenu.Trigger asChild>
-              <button
-                type="button"
-                className={styles.picker}
-                disabled={isAssigning}
-                aria-label="Atribuir a outro manager"
-              >
-                <span className={styles.pickerLabel}>
-                  {isAssigning ? "Atribuindo…" : "Atribuir a outro…"}
-                </span>
-                <ChevronDown size={14} aria-hidden="true" className={styles.pickerChevron} />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content className={styles.pickerContent} align="start" sideOffset={8}>
-                {options.map((m) => (
+      <DropdownMenu.Root modal={false}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className={styles.trigger}
+            disabled={isBusy}
+            aria-label="Responsável pelo chamado"
+          >
+            {assignedTo ? (
+              <Avatar name={currentLabel} colorKey={assignedTo} />
+            ) : (
+              <span className={styles.triggerIcon} aria-hidden="true">
+                <UserPlus size={16} />
+              </span>
+            )}
+            <span className={styles.triggerName}>
+              {isBusy ? "Atribuindo…" : assignedTo ? currentLabel : "Não atribuído"}
+            </span>
+            <ChevronDown size={16} aria-hidden="true" className={styles.triggerChevron} />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content className={styles.menu} align="start" sideOffset={6}>
+            {managers.length === 0 ? (
+              <div className={styles.menuEmpty}>Nenhum gestor disponível</div>
+            ) : (
+              managers.map((m) => {
+                const isActive = m.userId === assignedTo;
+                return (
                   <DropdownMenu.Item
                     key={m.userId}
-                    className={styles.pickerItem}
-                    onSelect={() => handlePick(m.userId)}
+                    className={styles.menuItem}
+                    aria-current={isActive ? "true" : undefined}
+                    onSelect={() => selectManager(m.userId)}
                   >
-                    {m.label}
+                    <Avatar name={m.label} colorKey={m.userId} />
+                    <div className={styles.menuText}>
+                      <span className={styles.menuName}>
+                        {m.label}
+                        {m.userId === currentUserId ? " (você)" : ""}
+                      </span>
+                      <span className={styles.menuRole}>{roleLabel(m.role)}</span>
+                    </div>
+                    {isActive && (
+                      <Check size={16} aria-hidden="true" className={styles.menuCheck} />
+                    )}
                   </DropdownMenu.Item>
-                ))}
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        )}
-      </div>
+                );
+              })
+            )}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
 
       <Modal
         open={pending !== null}
@@ -138,21 +151,15 @@ export function TicketAssignControl({
         <div className={styles.confirm}>
           <p className={styles.confirmText}>
             {pending?.type === "assign" ? (
-              currentResponsible ? (
-                <>
-                  Este chamado está atribuído a <strong>{currentResponsible}</strong>. Atribuir a{" "}
-                  <strong>{pending.label}</strong>?
-                </>
-              ) : (
-                <>
-                  Atribuir este chamado a <strong>{pending.label}</strong>?
-                </>
-              )
+              <>
+                Este chamado está atribuído a <strong>{currentLabel}</strong>. Atribuir a{" "}
+                <strong>{pending.label}</strong>?
+              </>
             ) : (
               <>
-                Este chamado está atribuído a <strong>{currentResponsible}</strong>. Ao assumir,
-                você passa a ser o responsável e <strong>{currentResponsible}</strong> deixa de
-                estar atribuído.
+                Este chamado está atribuído a <strong>{currentLabel}</strong>. Ao assumir, você
+                passa a ser o responsável e <strong>{currentLabel}</strong> deixa de estar
+                atribuído.
               </>
             )}
           </p>

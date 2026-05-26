@@ -78,7 +78,7 @@ describe("TicketDetailPage", () => {
     expect(screen.getByRole("heading", { name: "Vazamento na garagem" })).toBeInTheDocument();
     expect(screen.getByText("TKT-2026-0001")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /mudar status/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /responsável pelo chamado/i })).toBeInTheDocument();
     expect(screen.getByRole("textbox")).toBeInTheDocument();
   });
 
@@ -107,10 +107,9 @@ describe("TicketDetailPage", () => {
       ],
     });
     render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
-    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    // Ticket sem responsável → escolher na lista atribui direto (sem confirmação).
+    await userEvent.click(screen.getByRole("button", { name: /responsável pelo chamado/i }));
     await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
-    // confirma no diálogo antes de efetivar
-    await userEvent.click(screen.getByRole("button", { name: /^atribuir$/i }));
     expect(assignTo).toHaveBeenCalledWith("ana");
   });
 

@@ -27,107 +27,102 @@ function setup(props: Partial<ComponentProps<typeof TicketAssignControl>> = {}) 
   );
 }
 
+const trigger = () => screen.getByRole("button", { name: /responsável pelo chamado/i });
+
 describe("TicketAssignControl", () => {
-  it("mostra botão 'Assumir ticket' (habilitado) quando não atribuído", () => {
+  it("trigger mostra 'Não atribuído' quando não há responsável", () => {
     setup();
-    expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeEnabled();
+    expect(trigger()).toHaveTextContent("Não atribuído");
   });
 
-  it("botão vira 'Atribuído a você' (desabilitado) quando o ticket é do usuário logado", () => {
-    setup({ assignedTo: "me" });
-    const btn = screen.getByRole("button", { name: /atribuído a você/i });
-    expect(btn).toBeInTheDocument();
-    expect(btn).toBeDisabled();
-    expect(screen.queryByRole("button", { name: /assumir ticket/i })).toBeNull();
+  it("trigger mostra o nome do responsável atual", () => {
+    setup({ assignedTo: "ana" });
+    expect(trigger()).toHaveTextContent("Ana");
   });
 
-  it("quando atribuído a outro, mantém 'Assumir ticket' habilitado (reassumir)", () => {
-    setup({ assignedTo: "bob" });
-    expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeEnabled();
+  it("lista todos os gestores com cargo em pt-BR", async () => {
+    setup();
+    await userEvent.click(trigger());
+    const items = screen.getAllByRole("menuitem");
+    expect(items).toHaveLength(3);
+    expect(screen.getAllByText("Síndico").length).toBeGreaterThan(0);
+    expect(screen.getByText("Zelador")).toBeInTheDocument();
   });
 
-  it("assume direto (sem confirmação) quando o ticket não tem responsável", async () => {
+  it("sem responsável, escolher a si mesmo assume direto (sem confirmação)", async () => {
     const onClaim = vi.fn();
     setup({ onClaim });
-    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
-    expect(onClaim).toHaveBeenCalled();
-    expect(screen.queryByRole("dialog")).toBeNull();
-  });
-
-  it("ao reassumir de outro gestor, abre diálogo de confirmação (sem chamar onClaim ainda)", async () => {
-    const onClaim = vi.fn();
-    setup({ assignedTo: "bob", onClaim });
-    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
-    expect(onClaim).not.toHaveBeenCalled();
-    const dialog = screen.getByRole("dialog");
-    expect(dialog).toBeInTheDocument();
-    // mostra de quem o chamado está sendo tirado (label do responsável atual)
-    expect(screen.getAllByText("bob@ex.com").length).toBeGreaterThan(0);
-  });
-
-  it("confirmar no diálogo dispara onClaim e fecha", async () => {
-    const onClaim = vi.fn();
-    setup({ assignedTo: "bob", onClaim });
-    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
-    await userEvent.click(screen.getByRole("button", { name: /assumir mesmo assim/i }));
+    await userEvent.click(trigger());
+    await userEvent.click(screen.getByRole("menuitem", { name: /eu \(você\)/i }));
     expect(onClaim).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("cancelar no diálogo não dispara onClaim", async () => {
-    const onClaim = vi.fn();
-    setup({ assignedTo: "bob", onClaim });
-    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
-    await userEvent.click(screen.getByRole("button", { name: /cancelar/i }));
-    expect(onClaim).not.toHaveBeenCalled();
+  it("sem responsável, escolher outro atribui direto (sem confirmação)", async () => {
+    const onAssignTo = vi.fn();
+    setup({ onAssignTo });
+    await userEvent.click(trigger());
+    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
+    expect(onAssignTo).toHaveBeenCalledWith("ana");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("o picker exclui o próprio usuário e o responsável atual", async () => {
-    setup({ assignedTo: "ana" });
-    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
-    const items = screen.getAllByRole("menuitem");
-    const labels = items.map((i) => i.textContent ?? "");
-    expect(labels).not.toContain("Eu"); // próprio
-    expect(labels).not.toContain("Ana"); // já responsável
-    expect(labels.some((l) => l.includes("bob@ex.com"))).toBe(true);
-  });
-
-  it("escolher no picker abre confirmação (sem chamar onAssignTo ainda)", async () => {
+  it("com responsável, escolher outro abre confirmação e só atribui ao confirmar", async () => {
     const onAssignTo = vi.fn();
-    setup({ onAssignTo });
-    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    setup({ assignedTo: "bob", onAssignTo });
+    await userEvent.click(trigger());
     await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
     expect(onAssignTo).not.toHaveBeenCalled();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    // mostra a quem está sendo atribuído (label do escolhido)
-    expect(screen.getAllByText("Ana").length).toBeGreaterThan(0);
-  });
-
-  it("confirmar a atribuição dispara onAssignTo e fecha", async () => {
-    const onAssignTo = vi.fn();
-    setup({ onAssignTo });
-    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
-    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
+    // mostra de quem está sendo tirado (responsável atual)
+    expect(screen.getAllByText("bob@ex.com").length).toBeGreaterThan(0);
     await userEvent.click(screen.getByRole("button", { name: /^atribuir$/i }));
     expect(onAssignTo).toHaveBeenCalledWith("ana");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("cancelar a atribuição não dispara onAssignTo", async () => {
+  it("com responsável de outro, escolher a si mesmo abre confirmação de assumir", async () => {
+    const onClaim = vi.fn();
+    setup({ assignedTo: "bob", onClaim });
+    await userEvent.click(trigger());
+    await userEvent.click(screen.getByRole("menuitem", { name: /eu \(você\)/i }));
+    expect(onClaim).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /assumir mesmo assim/i }));
+    expect(onClaim).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("escolher o responsável atual é no-op", async () => {
     const onAssignTo = vi.fn();
-    setup({ onAssignTo });
-    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    const onClaim = vi.fn();
+    setup({ assignedTo: "ana", onAssignTo, onClaim });
+    await userEvent.click(trigger());
+    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
+    expect(onAssignTo).not.toHaveBeenCalled();
+    expect(onClaim).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("cancelar a confirmação não dispara ação", async () => {
+    const onAssignTo = vi.fn();
+    setup({ assignedTo: "bob", onAssignTo });
+    await userEvent.click(trigger());
     await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
     await userEvent.click(screen.getByRole("button", { name: /cancelar/i }));
     expect(onAssignTo).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("esconde controles de escrita quando não pode gerenciar (mas mostra responsável)", () => {
+  it("modo leitura mostra nome + cargo, sem dropdown", () => {
     setup({ canManage: false, assignedTo: "ana" });
     expect(screen.getByText("Ana")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /assumir ticket/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /atribuir a outro manager/i })).toBeNull();
+    expect(screen.getByText("Síndico")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /responsável pelo chamado/i })).toBeNull();
+  });
+
+  it("modo leitura sem responsável mostra 'Não atribuído'", () => {
+    setup({ canManage: false, assignedTo: undefined });
+    expect(screen.getByText("Não atribuído")).toBeInTheDocument();
   });
 });

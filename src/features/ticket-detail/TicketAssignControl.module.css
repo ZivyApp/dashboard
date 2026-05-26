@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  min-width: 220px;
+  min-width: 240px;
 }
 
 .label {
@@ -13,28 +13,41 @@
   font-weight: var(--fw-medium);
 }
 
-.current {
-  font-size: var(--fs-sm);
-  color: var(--fg-primary);
-  font-weight: var(--fw-medium);
-}
-
-.actions {
+/* Responsável em modo leitura (viewer) */
+.person {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
-  align-items: stretch;
 }
 
-/* Botão "Assumir" e select "Atribuir a outro" dividem a largura igualmente. */
-.actions > button,
-.actions > .picker {
-  flex: 1 1 0;
+.personText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.picker {
+.personName {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--fg-primary);
+}
+
+.personRole {
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+}
+
+.unassigned {
+  font-size: var(--fs-sm);
+  color: var(--fg-tertiary);
+}
+
+/* Trigger do dropdown — espelha o CondoSwitcher (avatar + nome + chevron) */
+.trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  width: 100%;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -49,33 +62,45 @@
     border-color var(--duration-fast) var(--easing-standard);
 }
 
-.picker:hover:not(:disabled) {
+.trigger:hover:not(:disabled) {
   background-color: var(--bg-muted);
   border-color: var(--border-strong);
 }
 
-.picker:disabled {
+.trigger:disabled {
   cursor: not-allowed;
   color: var(--fg-disabled);
 }
 
-.pickerLabel {
+.triggerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-pill);
+  background: var(--bg-muted);
+  color: var(--fg-tertiary);
+}
+
+.triggerName {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
 }
 
-.pickerChevron {
+.triggerChevron {
   flex-shrink: 0;
   color: var(--fg-tertiary);
 }
 
-/* O picker vive dentro do Modal (Dialog, z-index --z-modal). O conteúdo é portado
-   pro body como irmão do dialog, então precisa ficar ACIMA dele — --z-popover
-   (> --z-modal). Com --z-dropdown (< --z-modal) abria escondido atrás do dialog. */
-.pickerContent {
-  min-width: 12rem;
+/* Conteúdo do dropdown. z-index --z-popover: o conteúdo é portado pro body como
+   irmão do Modal (Dialog, --z-modal) e precisa ficar acima dele. */
+.menu {
+  min-width: 16rem;
   background-color: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -84,21 +109,53 @@
   z-index: var(--z-popover);
 }
 
-.pickerItem {
+.menuItem {
   display: flex;
   align-items: center;
+  gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  font-size: var(--fs-sm);
-  color: var(--fg-primary);
   cursor: pointer;
   outline: none;
 }
 
-.pickerItem[data-highlighted] {
+.menuItem[data-highlighted] {
   background-color: var(--bg-muted);
 }
 
+.menuText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.menuName {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--fg-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuRole {
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+}
+
+.menuCheck {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--brand);
+}
+
+.menuEmpty {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--fg-tertiary);
+}
+
+/* Diálogo de confirmação */
 .confirm {
   display: flex;
   flex-direction: column;
