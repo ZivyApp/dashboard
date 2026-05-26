@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, UserPlus } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Check, ChevronDown, UserPlus } from "lucide-react";
 import { Button } from "@/ui/Button/Button";
 import { Modal } from "@/ui/Modal/Modal";
 import type { CondoManager } from "./useCondoManagers";
@@ -98,24 +99,34 @@ export function TicketAssignControl({
           {isClaiming ? "Assumindo…" : isAssignedToMe ? "Atribuído a você" : "Assumir ticket"}
         </Button>
         {options.length > 0 && (
-          <select
-            className={styles.picker}
-            aria-label="Atribuir a outro manager"
-            value=""
-            disabled={isAssigning}
-            onChange={(e) => {
-              if (e.target.value) handlePick(e.target.value);
-            }}
-          >
-            <option value="" disabled>
-              {isAssigning ? "Atribuindo…" : "Atribuir a outro…"}
-            </option>
-            {options.map((m) => (
-              <option key={m.userId} value={m.userId}>
-                {m.label}
-              </option>
-            ))}
-          </select>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                type="button"
+                className={styles.picker}
+                disabled={isAssigning}
+                aria-label="Atribuir a outro manager"
+              >
+                <span className={styles.pickerLabel}>
+                  {isAssigning ? "Atribuindo…" : "Atribuir a outro…"}
+                </span>
+                <ChevronDown size={14} aria-hidden="true" className={styles.pickerChevron} />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content className={styles.pickerContent} align="start" sideOffset={8}>
+                {options.map((m) => (
+                  <DropdownMenu.Item
+                    key={m.userId}
+                    className={styles.pickerItem}
+                    onSelect={() => handlePick(m.userId)}
+                  >
+                    {m.label}
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         )}
       </div>
 

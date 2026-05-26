@@ -83,24 +83,21 @@ describe("TicketAssignControl", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("o picker exclui o próprio usuário e o responsável atual", () => {
+  it("o picker exclui o próprio usuário e o responsável atual", async () => {
     setup({ assignedTo: "ana" });
-    const select = screen.getByRole("combobox", { name: /atribuir a outro/i });
-    const optionValues = Array.from(select.querySelectorAll("option")).map((o) =>
-      o.getAttribute("value"),
-    );
-    expect(optionValues).not.toContain("me"); // próprio
-    expect(optionValues).not.toContain("ana"); // já responsável
-    expect(optionValues).toContain("bob");
+    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    const items = screen.getAllByRole("menuitem");
+    const labels = items.map((i) => i.textContent ?? "");
+    expect(labels).not.toContain("Eu"); // próprio
+    expect(labels).not.toContain("Ana"); // já responsável
+    expect(labels.some((l) => l.includes("bob@ex.com"))).toBe(true);
   });
 
   it("escolher no picker abre confirmação (sem chamar onAssignTo ainda)", async () => {
     const onAssignTo = vi.fn();
     setup({ onAssignTo });
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: /atribuir a outro/i }),
-      "ana",
-    );
+    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
     expect(onAssignTo).not.toHaveBeenCalled();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     // mostra a quem está sendo atribuído (label do escolhido)
@@ -110,10 +107,8 @@ describe("TicketAssignControl", () => {
   it("confirmar a atribuição dispara onAssignTo e fecha", async () => {
     const onAssignTo = vi.fn();
     setup({ onAssignTo });
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: /atribuir a outro/i }),
-      "ana",
-    );
+    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
     await userEvent.click(screen.getByRole("button", { name: /^atribuir$/i }));
     expect(onAssignTo).toHaveBeenCalledWith("ana");
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -122,10 +117,8 @@ describe("TicketAssignControl", () => {
   it("cancelar a atribuição não dispara onAssignTo", async () => {
     const onAssignTo = vi.fn();
     setup({ onAssignTo });
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: /atribuir a outro/i }),
-      "ana",
-    );
+    await userEvent.click(screen.getByRole("button", { name: /atribuir a outro manager/i }));
+    await userEvent.click(screen.getByRole("menuitem", { name: /ana/i }));
     await userEvent.click(screen.getByRole("button", { name: /cancelar/i }));
     expect(onAssignTo).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -135,6 +128,6 @@ describe("TicketAssignControl", () => {
     setup({ canManage: false, assignedTo: "ana" });
     expect(screen.getByText("Ana")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /assumir ticket/i })).toBeNull();
-    expect(screen.queryByRole("combobox", { name: /atribuir a outro/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /atribuir a outro manager/i })).toBeNull();
   });
 });

@@ -32,6 +32,9 @@
 }
 
 .picker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -49,6 +52,48 @@
 .picker:hover:not(:disabled) {
   background-color: var(--bg-muted);
   border-color: var(--border-strong);
+}
+
+.picker:disabled {
+  cursor: not-allowed;
+  color: var(--fg-disabled);
+}
+
+.pickerLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerChevron {
+  flex-shrink: 0;
+  color: var(--fg-tertiary);
+}
+
+.pickerContent {
+  min-width: 12rem;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2);
+  z-index: var(--z-dropdown);
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  color: var(--fg-primary);
+  cursor: pointer;
+  outline: none;
+}
+
+.pickerItem[data-highlighted] {
+  background-color: var(--bg-muted);
 }
 
 .confirm {
