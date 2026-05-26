@@ -95,6 +95,14 @@
   }
 }
 
+/* Variante larga (size="lg") — só em telas grandes; abaixo de 768px o dialog
+   ocupa a tela cheia (regra abaixo). */
+@media (width >= 768px) {
+  .lg {
+    width: min(900px, calc(100% - var(--space-4) * 2));
+  }
+}
+
 @media (width < 768px) {
   .dialog {
     top: 0;

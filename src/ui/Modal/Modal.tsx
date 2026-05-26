@@ -3,14 +3,24 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import styles from "./Modal.module.css";
 
+type ModalSize = "md" | "lg";
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /** Largura do dialog em telas grandes. `md` (640px, padrão) ou `lg` (mais largo). */
+  size?: ModalSize;
 }
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+const sizeClass: Record<ModalSize, string> = {
+  md: "",
+  lg: styles.lg ?? "",
+};
+
+export function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
+  const dialogClass = [styles.dialog, sizeClass[size]].filter(Boolean).join(" ");
   return (
     <Dialog.Root
       open={open}
@@ -20,7 +30,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.dialog} aria-describedby={undefined}>
+        <Dialog.Content className={dialogClass} aria-describedby={undefined}>
           <div className={styles.header}>
             <Dialog.Title className={styles.title}>{title}</Dialog.Title>
             <Dialog.Close asChild>

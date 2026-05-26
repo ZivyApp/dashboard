@@ -13,7 +13,7 @@ function TicketDetailRoute() {
     void navigate({ to: "/c/$condoId/tickets", params: { condoId } });
   };
   return (
-    <Modal open title="Detalhe do chamado" onClose={close}>
+    <Modal open size="lg" title="Detalhe do chamado" onClose={close}>
       <TicketDetailPage condoId={condoId} ticketId={ticketId} onClose={close} />
     </Modal>
   );
