@@ -70,12 +70,12 @@ export function TicketTimeline({ events, ticketCreatedAt }: TicketTimelineProps)
     return <div className={styles.empty}>Sem eventos ainda.</div>;
   }
   return (
-    <div className={styles.timeline}>
+    <ol className={styles.timeline}>
       {items.map((item) => {
         const body = item.kind === "comment_added" ? commentText(item.event) : null;
         const DotIcon = DOT_ICON[item.kind] ?? Circle;
         return (
-          <div key={item.id} className={styles.item}>
+          <li key={item.id} className={styles.item}>
             <span
               className={[styles.dot, DOT_CLASS[item.kind]].filter(Boolean).join(" ")}
               aria-hidden="true"
@@ -90,9 +90,9 @@ export function TicketTimeline({ events, ticketCreatedAt }: TicketTimelineProps)
               <span className={styles.time}>{formatRelTime(item.at)}</span>
             </div>
             {body && <div className={styles.body}>{body}</div>}
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }

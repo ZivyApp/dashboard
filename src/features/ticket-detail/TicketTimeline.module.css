@@ -1,6 +1,8 @@
 .timeline {
   position: relative;
-  padding-left: var(--space-8);
+  margin: 0;
+  padding: 0 0 0 var(--space-8);
+  list-style: none;
 }
 
 .timeline::before {

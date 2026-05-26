@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Check, UserPlus } from "lucide-react";
 import { Button } from "@/ui/Button/Button";
+import { Modal } from "@/ui/Modal/Modal";
 import type { CondoManager } from "./useCondoManagers";
 import styles from "./TicketAssignControl.module.css";
 
@@ -24,10 +26,32 @@ export function TicketAssignControl({
   onClaim,
   onAssignTo,
 }: TicketAssignControlProps) {
-  const isAssignedToMe = assignedTo !== undefined && assignedTo === currentUserId;
+  // `assigned_to` pode vir "" (não atribuído) — truthiness cobre "" e undefined.
+  const isAssignedToMe = !!assignedTo && assignedTo === currentUserId;
+  const isAssignedToOther = !!assignedTo && assignedTo !== currentUserId;
+
+  // Reassumir tira o chamado de outro gestor — pede confirmação antes de efetivar.
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const currentResponsible = assignedTo
+    ? (managers.find((m) => m.userId === assignedTo)?.label ?? "outro gestor")
+    : "";
 
   // Picker: exclui o próprio usuário e o responsável atual.
   const options = managers.filter((m) => m.userId !== currentUserId && m.userId !== assignedTo);
+
+  // Clique em "Assumir": órfão → assume direto; de outro gestor → confirma primeiro.
+  function handleClaimClick() {
+    if (isAssignedToOther) {
+      setConfirmOpen(true);
+      return;
+    }
+    onClaim();
+  }
+
+  function confirmClaim() {
+    setConfirmOpen(false);
+    onClaim();
+  }
 
   // Modo leitura (viewer): sem botões — o nome do responsável só aparece aqui.
   if (!canManage) {
@@ -50,7 +74,7 @@ export function TicketAssignControl({
         <Button
           variant="secondary"
           disabled={isClaiming || isAssignedToMe}
-          onClick={() => onClaim()}
+          onClick={() => handleClaimClick()}
         >
           {isAssignedToMe ? (
             <Check size={14} aria-hidden="true" />
@@ -80,6 +104,24 @@ export function TicketAssignControl({
           </select>
         )}
       </div>
+
+      <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Assumir chamado">
+        <div className={styles.confirm}>
+          <p className={styles.confirmText}>
+            Este chamado está atribuído a <strong>{currentResponsible}</strong>. Ao assumir, você
+            passa a ser o responsável e <strong>{currentResponsible}</strong> deixa de estar
+            atribuído.
+          </p>
+          <div className={styles.confirmActions}>
+            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
+              Cancelar
+            </Button>
+            <Button disabled={isClaiming} onClick={() => confirmClaim()}>
+              {isClaiming ? "Assumindo…" : "Assumir mesmo assim"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

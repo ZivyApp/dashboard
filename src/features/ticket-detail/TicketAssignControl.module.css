@@ -44,3 +44,22 @@
   line-height: var(--lh-normal);
   cursor: pointer;
 }
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--fg-secondary);
+  line-height: var(--lh-relaxed);
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}

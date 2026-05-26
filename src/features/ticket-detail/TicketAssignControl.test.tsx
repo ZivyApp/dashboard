@@ -46,11 +46,41 @@ describe("TicketAssignControl", () => {
     expect(screen.getByRole("button", { name: /assumir ticket/i })).toBeEnabled();
   });
 
-  it("dispara onClaim ao assumir", async () => {
+  it("assume direto (sem confirmação) quando o ticket não tem responsável", async () => {
     const onClaim = vi.fn();
     setup({ onClaim });
     await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
     expect(onClaim).toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("ao reassumir de outro gestor, abre diálogo de confirmação (sem chamar onClaim ainda)", async () => {
+    const onClaim = vi.fn();
+    setup({ assignedTo: "bob", onClaim });
+    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
+    expect(onClaim).not.toHaveBeenCalled();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    // mostra de quem o chamado está sendo tirado (label do responsável atual)
+    expect(screen.getAllByText("bob@ex.com").length).toBeGreaterThan(0);
+  });
+
+  it("confirmar no diálogo dispara onClaim e fecha", async () => {
+    const onClaim = vi.fn();
+    setup({ assignedTo: "bob", onClaim });
+    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
+    await userEvent.click(screen.getByRole("button", { name: /assumir mesmo assim/i }));
+    expect(onClaim).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("cancelar no diálogo não dispara onClaim", async () => {
+    const onClaim = vi.fn();
+    setup({ assignedTo: "bob", onClaim });
+    await userEvent.click(screen.getByRole("button", { name: /assumir ticket/i }));
+    await userEvent.click(screen.getByRole("button", { name: /cancelar/i }));
+    expect(onClaim).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("o picker exclui o próprio usuário e o responsável atual", () => {
