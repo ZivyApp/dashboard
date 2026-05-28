@@ -22,6 +22,7 @@ export function useUpdateStatus(ticketId: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
       void qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
+      void qc.invalidateQueries({ queryKey: ["tickets"] });
     },
   });
 

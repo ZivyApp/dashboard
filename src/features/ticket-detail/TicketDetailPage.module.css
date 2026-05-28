@@ -101,6 +101,17 @@
   border-radius: var(--radius-lg);
 }
 
+/* Status ocupa o dobro do espaço do bloco de responsável dentro de .actions.
+   flex-basis 0 faz a proporção 2:1 valer pela razão de flex-grow; com
+   flex-wrap, cada slot mantém um mínimo antes de empilhar em telas estreitas. */
+.statusSlot {
+  flex: 2 1 320px;
+}
+
+.assignSlot {
+  flex: 1 1 240px;
+}
+
 /* Ocupa a linha inteira do bloco .actions (flex-wrap) ou empilha abaixo do
    composer (.section é coluna). role="alert" anuncia a falha. */
 .writeError {

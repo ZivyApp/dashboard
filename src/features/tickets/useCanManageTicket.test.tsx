@@ -14,6 +14,11 @@ describe("useCanManageTicket", () => {
     const { result } = renderHook(() => useCanManageTicket("c1"));
     expect(result.current).toBe(true);
   });
+  it("true quando role no condo é staff (limite inferior do gate)", () => {
+    mockUseMyCondos.mockReturnValue({ data: [{ condoId: "c1", role: "staff" }] });
+    const { result } = renderHook(() => useCanManageTicket("c1"));
+    expect(result.current).toBe(true);
+  });
   it("false quando role no condo é viewer", () => {
     mockUseMyCondos.mockReturnValue({ data: [{ condoId: "c1", role: "viewer" }] });
     const { result } = renderHook(() => useCanManageTicket("c1"));

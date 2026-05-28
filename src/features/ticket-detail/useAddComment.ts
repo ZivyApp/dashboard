@@ -3,7 +3,6 @@ import { api } from "@/api/client";
 
 export function useAddComment(ticketId: string) {
   const qc = useQueryClient();
-  // POST /tickets/{id}/comments body { text } (campo `text`, não `note`).
   // service.AddComment só persiste o evento — NÃO dispara notificação Telegram.
   const m = useMutation<void, Error, string>({
     mutationFn: async (text) => {

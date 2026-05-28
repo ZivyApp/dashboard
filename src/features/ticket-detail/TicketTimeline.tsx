@@ -98,7 +98,9 @@ export function TicketTimeline({ events, ticketCreatedAt, managers = [] }: Ticke
               <span className={styles.action}>
                 <ActionText item={item} />
               </span>
-              <span className={styles.time}>{formatRelTime(item.at)}</span>
+              <time className={styles.time} dateTime={item.at}>
+                {formatRelTime(item.at)}
+              </time>
             </div>
             {body && <div className={styles.body}>{body}</div>}
           </li>

@@ -16,7 +16,7 @@ const LABELS: Record<TicketStatus, string> = {
 
 export function TicketStatusControl({ status, onChange, disabled }: TicketStatusControlProps) {
   return (
-    <div>
+    <div className={styles.control}>
       <div className={styles.label}>Mudar status</div>
       <div className={styles.seg} role="group" aria-label="Mudar status do chamado">
         {TICKET_STATUSES.map((s) => {

@@ -36,6 +36,7 @@ describe("useClaimTicket", () => {
     await waitFor(() => {
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ["ticket", "t1"] });
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ["ticket-events", "t1"] });
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["tickets"] });
     });
   });
 

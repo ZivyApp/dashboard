@@ -61,7 +61,7 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
   if (isError || !data) {
     return (
       <div className={styles.center}>
-        <h3>Não conseguimos abrir esse chamado</h3>
+        <h2>Não conseguimos abrir esse chamado</h2>
         <p>Pode ter sido removido ou você não tem acesso a ele.</p>
         <div className={styles.errorActions}>
           <Button variant="secondary" onClick={() => onClose()}>
@@ -86,7 +86,7 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
         <div className={styles.headTop}>
           <div>
             <div className={styles.proto}>{data.protocol}</div>
-            <h1 className={styles.title}>{data.title}</h1>
+            <h2 className={styles.title}>{data.title}</h2>
           </div>
         </div>
         <div className={styles.chips}>
@@ -117,22 +117,26 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
 
       <div className={styles.actions}>
         {canManage && (
-          <TicketStatusControl
-            status={data.status}
-            onChange={(s) => updateStatus(s)}
-            disabled={pendingStatus !== undefined}
-          />
+          <div className={styles.statusSlot}>
+            <TicketStatusControl
+              status={data.status}
+              onChange={(s) => updateStatus(s)}
+              disabled={pendingStatus !== undefined}
+            />
+          </div>
         )}
-        <TicketAssignControl
-          assignedTo={data.assigned_to}
-          managers={managers ?? []}
-          currentUserId={currentUserId}
-          canManage={canManage}
-          isClaiming={claiming}
-          isAssigning={assigning}
-          onClaim={() => claim()}
-          onAssignTo={(userId) => assignTo(userId)}
-        />
+        <div className={styles.assignSlot}>
+          <TicketAssignControl
+            assignedTo={data.assigned_to}
+            managers={managers ?? []}
+            currentUserId={currentUserId}
+            canManage={canManage}
+            isClaiming={claiming}
+            isAssigning={assigning}
+            onClaim={() => claim()}
+            onAssignTo={(userId) => assignTo(userId)}
+          />
+        </div>
         {writeError && (
           <p className={styles.writeError} role="alert">
             Não foi possível salvar a alteração. Tente novamente.

@@ -18,6 +18,11 @@ body,
 }
 
 html {
+  /* 125% sobe a base do rem de 16 → 20px sem fixar valor absoluto,
+     preservando a preferência de fonte do navegador (ex.: usuário que
+     configurou "Muito grande" para acessibilidade ainda recebe o boost). */
+
+  /* font-size: 125%; */
   color-scheme: light dark;
 }
 
