@@ -12,7 +12,7 @@
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "1.13.0"
+    "version": "1.15.0"
   },
   "paths": {
     "/blocks": {
@@ -969,6 +969,83 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/condos/{id}/managers": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Lista os membros (manager/staff) do condo com email/nome resolvidos. Para atribuição de tickets.",
+        "tags": ["Managers"],
+        "summary": "Listar managers/staff do condo",
+        "parameters": [
+          {
+            "description": "UUID do Condo",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/internal_adapters_http.CondoManagerResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Condo não corresponde ao ativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno",
             "content": {
               "application/json": {
                 "schema": {
@@ -1945,6 +2022,91 @@
         }
       }
     },
+    "/tickets/{id}/assign-to": {
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Atribui o ticket ao assignee_id (membro staff+ do condo). Distinto de /assign (auto).",
+        "tags": ["Tickets"],
+        "summary": "Atribuir ticket a outro manager/staff",
+        "parameters": [
+          {
+            "description": "UUID do Ticket",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/internal_adapters_http.AssignToRequest"
+              }
+            }
+          },
+          "description": "ID do assignee",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/internal_adapters_http.TicketResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID/assignee inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ticket não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tickets/{id}/comments": {
       "post": {
         "security": [
@@ -2493,6 +2655,14 @@
           }
         }
       },
+      "internal_adapters_http.AssignToRequest": {
+        "type": "object",
+        "properties": {
+          "assignee_id": {
+            "type": "string"
+          }
+        }
+      },
       "internal_adapters_http.BlockResponse": {
         "type": "object",
         "properties": {
@@ -2535,6 +2705,23 @@
             "type": "string"
           },
           "updated_at": {
+            "type": "string"
+          }
+        }
+      },
+      "internal_adapters_http.CondoManagerResponse": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "user_id": {
             "type": "string"
           }
         }

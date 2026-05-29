@@ -1,6 +1,14 @@
 export const TICKET_STATUSES = ["open", "in_progress", "resolved", "closed"] as const;
 export type TicketStatus = (typeof TICKET_STATUSES)[number];
 
+/** Rótulo pt-BR de cada status — fonte única consumida por badge, segmented e toasts. */
+export const STATUS_LABELS: Record<TicketStatus, string> = {
+  open: "Aberto",
+  in_progress: "Em andamento",
+  resolved: "Resolvido",
+  closed: "Fechado",
+};
+
 export const TICKET_PRIORITIES = ["low", "medium", "high"] as const;
 export type TicketPriority = (typeof TICKET_PRIORITIES)[number];
 
@@ -23,6 +31,8 @@ export interface Ticket {
   block_name?: string;
   common_area_name?: string;
   description?: string;
+  /** user_id do manager atribuído (vazio quando não atribuído). */
+  assigned_to?: string;
   created_at?: string;
   updated_at: string;
 }

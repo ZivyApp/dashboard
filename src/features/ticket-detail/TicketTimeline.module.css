@@ -1,0 +1,112 @@
+.timeline {
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 var(--space-8);
+  list-style: none;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--border);
+}
+
+.item {
+  position: relative;
+  padding-bottom: var(--space-5);
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.dot {
+  position: absolute;
+  left: calc(-1 * var(--space-8) + 2px);
+  top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  color: var(--fg-tertiary);
+}
+
+.dotStatus {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.dotAssign {
+  background: var(--info-bg);
+  border-color: var(--info-fg);
+  color: var(--info-fg);
+}
+
+.dotSystem {
+  background: var(--bg-surface);
+  border-color: var(--border-strong);
+  color: var(--fg-tertiary);
+}
+
+.dotComment {
+  background: var(--bg-surface);
+  border-color: var(--border-strong);
+  color: var(--fg-secondary);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+}
+
+.author {
+  font-weight: var(--fw-semibold);
+  color: var(--fg-primary);
+}
+
+.action {
+  color: var(--fg-secondary);
+}
+
+.statusAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.time {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--fg-tertiary);
+  font-family: var(--font-mono);
+}
+
+.body {
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--fg-secondary);
+  padding: var(--space-3);
+  background: var(--bg-muted);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  line-height: var(--lh-relaxed);
+}
+
+.empty {
+  font-size: var(--fs-sm);
+  color: var(--fg-tertiary);
+  padding: var(--space-4) 0;
+}

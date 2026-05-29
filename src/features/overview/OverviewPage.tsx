@@ -44,7 +44,7 @@ export function OverviewPage() {
 
   function pickTicket(condoId: string, ticketId: string) {
     setLastSelected(condoId);
-    void navigate({ to: "/c/$condoId/inbox/$ticketId", params: { condoId, ticketId } });
+    void navigate({ to: "/c/$condoId/tickets/$ticketId", params: { condoId, ticketId } });
   }
 
   function goToTickets() {

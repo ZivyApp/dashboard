@@ -1,20 +1,12 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { TicketDetailModal } from "@/features/inbox/TicketDetailModal";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_app/c/$condoId/inbox/$ticketId")({
-  component: TicketDetailRoute,
-});
-
-function TicketDetailRoute() {
-  const { condoId, ticketId } = Route.useParams();
-  const navigate = useNavigate();
-
-  const handleClose = () => {
-    void navigate({
-      to: "/c/$condoId/inbox",
-      params: { condoId },
+  beforeLoad: ({ params }) => {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw redirect({
+      to: "/c/$condoId/tickets/$ticketId",
+      params: { condoId: params.condoId, ticketId: params.ticketId },
+      replace: true,
     });
-  };
-
-  return <TicketDetailModal ticketId={ticketId} onClose={handleClose} />;
-}
+  },
+});

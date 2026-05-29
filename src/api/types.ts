@@ -889,6 +889,81 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/condos/{id}/managers": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Listar managers/staff do condo
+     * @description Lista os membros (manager/staff) do condo com email/nome resolvidos. Para atribuição de tickets.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description UUID do Condo */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["internal_adapters_http.CondoManagerResponse"][];
+          };
+        };
+        /** @description ID inválido */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Condo não corresponde ao ativo */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Erro interno */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/health": {
     parameters: {
       query?: never;
@@ -1818,6 +1893,86 @@ export interface paths {
     };
     trace?: never;
   };
+  "/tickets/{id}/assign-to": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /**
+     * Atribuir ticket a outro manager/staff
+     * @description Atribui o ticket ao assignee_id (membro staff+ do condo). Distinto de /assign (auto).
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description UUID do Ticket */
+          id: string;
+        };
+        cookie?: never;
+      };
+      /** @description ID do assignee */
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["internal_adapters_http.AssignToRequest"];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["internal_adapters_http.TicketResponse"];
+          };
+        };
+        /** @description ID/assignee inválido */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Ticket não encontrado */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+        /** @description Erro interno */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              [key: string]: string;
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
   "/tickets/{id}/comments": {
     parameters: {
       query?: never;
@@ -2317,6 +2472,9 @@ export interface components {
     "internal_adapters_http.AddCommentRequest": {
       text?: string;
     };
+    "internal_adapters_http.AssignToRequest": {
+      assignee_id?: string;
+    };
     "internal_adapters_http.BlockResponse": {
       condo_id?: string;
       created_at?: string;
@@ -2332,6 +2490,12 @@ export interface components {
       name?: string;
       type?: string;
       updated_at?: string;
+    };
+    "internal_adapters_http.CondoManagerResponse": {
+      email?: string;
+      name?: string;
+      role?: string;
+      user_id?: string;
     };
     "internal_adapters_http.CondoMeResponse": {
       condo_id?: string;

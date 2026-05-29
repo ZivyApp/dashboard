@@ -18,6 +18,11 @@ body,
 }
 
 html {
+  /* 125% sobe a base do rem de 16 → 20px sem fixar valor absoluto,
+     preservando a preferência de fonte do navegador (ex.: usuário que
+     configurou "Muito grande" para acessibilidade ainda recebe o boost). */
+
+  /* font-size: 125%; */
   color-scheme: light dark;
 }
 
@@ -55,4 +60,12 @@ html.theme-transitioning * {
 :focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
+}
+
+/* Toasts (sonner) precisam continuar clicáveis sobre um Radix Dialog modal, que
+   seta `pointer-events: none` no body. Sem isto o clique no "Desfazer" atravessa
+   pro overlay e fecha o modal em vez de desfazer. Mira só os toasts (não o <ol>
+   container) para não bloquear cliques nas áreas vazias entre eles. */
+[data-sonner-toast] {
+  pointer-events: auto;
 }
