@@ -6,7 +6,7 @@
 
 **Architecture:** Adapter `src/lib/notify.ts` sobre `sonner` isolando o call site da lib (5 métodos: `success`, `error`, `deferred`, `commitNow`, `cancel`). Estado de timers vive no escopo do módulo (`Map<id, ...>`). Hooks da ticket-detail chamam o adapter no `onSuccess`/`onError` (claim/assign/comment) ou via `deferred` (status). UI fica magra — sem `writeError`/`commentError` inline.
 
-**Tech Stack:** sonner `^2.0.7`, Vitest `^2.1.9` com `vi.useFakeTimers`, TanStack Query (mutations + `setQueryData` otimista), React 19, Zustand (theme store).
+**Tech Stack:** sonner `^2.0.7`, Vitest `^2.1.9` com `vi.useFakeTimers`, TanStack Query (mutations + invalidação), React 19 (otimismo via estado local `useState`), Zustand (theme store).
 
 **Spec:** `docs/superpowers/specs/2026-05-28-toasts-status-undo-design.md`
 
@@ -308,7 +308,7 @@ describe("notify.deferred", () => {
     expect(sonnerDismiss).toHaveBeenCalledWith("id-1");
   });
 
-  it("deferred com mesmo id cancela o anterior (chama onUndo do anterior) e agenda novo", () => {
+  it("deferred com mesmo id descarta o timer anterior SEM rodar seu onUndo e agenda novo", () => {
     vi.useFakeTimers();
     const firstUndo = vi.fn();
     const firstCommit = vi.fn();
@@ -319,7 +319,9 @@ describe("notify.deferred", () => {
       onUndo: firstUndo,
     });
     notify.deferred("id-1", "Segundo", { delayMs: 5000, onCommit: secondCommit });
-    expect(firstUndo).toHaveBeenCalledOnce();
+    // O caller já sobrescreveu o estado com a nova intenção; rodar o undo antigo
+    // clobbaria esse novo estado. Replace só re-arma o timer.
+    expect(firstUndo).not.toHaveBeenCalled();
     expect(firstCommit).not.toHaveBeenCalled();
     vi.advanceTimersByTime(5000);
     expect(secondCommit).toHaveBeenCalledOnce();
@@ -384,8 +386,11 @@ export const notify = {
     toast.error(message, payload);
   },
   deferred(id: string, message: string, opts: DeferredOpts): void {
-    // Reentrada com mesmo id: cancela anterior (chama onUndo) antes de agendar novo.
-    if (pending.has(id)) clearAndRun(id, "undo");
+    // Reentrada com mesmo id: descarta SÓ o timer anterior, sem rodar seu onUndo
+    // (o caller já trocou o estado pela nova intenção; rodar o undo antigo
+    // clobbaria essa troca). Re-arma com a nova intenção.
+    const existing = pending.get(id);
+    if (existing) clearTimeout(existing.timer);
     const timer = setTimeout(() => clearAndRun(id, "commit"), opts.delayMs);
     pending.set(id, { timer, commit: opts.onCommit, undo: opts.onUndo });
     const sonnerPayload: Record<string, unknown> = {
@@ -512,11 +517,7 @@ function wrapper(qc: QueryClient) {
     return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
   };
 }
-const mkClient = () => {
-  const qc = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-  qc.setQueryData(["ticket", "t1"], { id: "t1", status: "open" });
-  return qc;
-};
+const mkClient = () => new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 
 afterEach(() => {
   mockPatch.mockReset();
@@ -542,14 +543,15 @@ describe("useUpdateStatus", () => {
     );
   });
 
-  it("aplica status otimista no cache imediatamente", () => {
+  it("marca pendingStatus imediatamente sem tocar o cache do ticket", () => {
     const qc = mkClient();
     const { result } = renderHook(() => useUpdateStatus("t1"), { wrapper: wrapper(qc) });
 
     act(() => result.current.updateStatus("resolved"));
 
-    expect(qc.getQueryData(["ticket", "t1"])).toMatchObject({ status: "resolved" });
     expect(result.current.pendingStatus).toBe("resolved");
+    // modelo de estado local: o cache do ticket NÃO é escrito otimisticamente
+    expect(qc.getQueryData(["ticket", "t1"])).toBeUndefined();
   });
 
   it("onCommit dispara PATCH e invalida ticket/events/tickets", async () => {
@@ -575,22 +577,23 @@ describe("useUpdateStatus", () => {
     });
   });
 
-  it("onUndo restaura o status anterior no cache", () => {
+  it("onUndo limpa pendingStatus (volta a refletir data.status)", () => {
     const qc = mkClient();
     const { result } = renderHook(() => useUpdateStatus("t1"), { wrapper: wrapper(qc) });
 
     act(() => result.current.updateStatus("resolved"));
+    expect(result.current.pendingStatus).toBe("resolved");
     const onUndo = notifyDeferred.mock.calls[0]?.[2].onUndo;
     expect(onUndo).toBeTypeOf("function");
     act(() => onUndo());
 
-    expect(qc.getQueryData(["ticket", "t1"])).toMatchObject({ status: "open" });
     expect(result.current.pendingStatus).toBeUndefined();
   });
 
-  it("erro pós-commit chama notify.error com retry que re-mutaria", async () => {
+  it("erro pós-commit chama notify.error com retry e invalida ticket (rollback)", async () => {
     mockPatch.mockResolvedValue({ data: undefined, error: { message: "x" } });
     const qc = mkClient();
+    const invalidate = vi.spyOn(qc, "invalidateQueries");
     const { result } = renderHook(() => useUpdateStatus("t1"), { wrapper: wrapper(qc) });
 
     act(() => result.current.updateStatus("resolved"));
@@ -601,6 +604,8 @@ describe("useUpdateStatus", () => {
     const errArgs = notifyError.mock.calls[0];
     expect(errArgs?.[0]).toBe("Não foi possível alterar status");
     expect(errArgs?.[1]).toMatchObject({ retry: expect.any(Function) });
+    // rollback: refetch da verdade do servidor
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["ticket", "t1"] });
   });
 });
 ```
@@ -615,11 +620,11 @@ Expected: FAIL — testes esperam `updateStatus` agendar `notify.deferred`, mas 
 Substituir `src/features/ticket-detail/useUpdateStatus.ts` por:
 
 ```ts
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import { notify } from "@/lib/notify";
-import type { Ticket, TicketStatus } from "@/types/ticket";
+import type { TicketStatus } from "@/types/ticket";
 
 const LABEL: Record<TicketStatus, string> = {
   open: "Aberto",
@@ -630,6 +635,9 @@ const LABEL: Record<TicketStatus, string> = {
 
 export function useUpdateStatus(ticketId: string) {
   const qc = useQueryClient();
+  // Otimismo é estado local: nunca escrevemos no cache do ticket durante a janela.
+  // O consumidor exibe `pendingStatus ?? data.status`. Sem cache otimista não há
+  // rollback a fazer no undo (basta limpar pending) nem clobber na coalescência.
   const [pending, setPending] = useState<TicketStatus | undefined>(undefined);
 
   const m = useMutation<void, Error, TicketStatus>({
@@ -651,36 +659,27 @@ export function useUpdateStatus(ticketId: string) {
       void qc.invalidateQueries({ queryKey: ["tickets"] });
     },
     onError: (_e, vars) => {
+      // Não há otimista no cache para reverter; o refetch garante que a UI mostre
+      // a verdade do servidor (o status que não mudou). Avisa com retry.
+      void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
       notify.error("Não foi possível alterar status", {
         retry: () => m.mutate(vars),
       });
     },
   });
 
-  const updateStatus = useCallback(
-    (targetStatus: TicketStatus) => {
-      const id = `ticket-status-${ticketId}`;
-      const previous = qc.getQueryData<Ticket>(["ticket", ticketId])?.status ?? "open";
-      setPending(targetStatus);
-      qc.setQueryData<Ticket | undefined>(["ticket", ticketId], (t) =>
-        t ? { ...t, status: targetStatus } : t,
-      );
-      notify.deferred(id, `Status alterado para ${LABEL[targetStatus]}`, {
-        delayMs: 5000,
-        onCommit: () => {
-          setPending(undefined);
-          m.mutate(targetStatus);
-        },
-        onUndo: () => {
-          setPending(undefined);
-          qc.setQueryData<Ticket | undefined>(["ticket", ticketId], (t) =>
-            t ? { ...t, status: previous } : t,
-          );
-        },
-      });
-    },
-    [ticketId, qc, m],
-  );
+  // Handler de onClick — identidade não importa, sem useCallback de fachada.
+  function updateStatus(targetStatus: TicketStatus) {
+    setPending(targetStatus);
+    notify.deferred(`ticket-status-${ticketId}`, `Status alterado para ${LABEL[targetStatus]}`, {
+      delayMs: 5000,
+      onCommit: () => {
+        setPending(undefined);
+        m.mutate(targetStatus);
+      },
+      onUndo: () => setPending(undefined),
+    });
+  }
 
   return {
     updateStatus,
@@ -689,6 +688,8 @@ export function useUpdateStatus(ticketId: string) {
   };
 }
 ```
+
+> **Assimetria intencional:** ao contrário de claim/assign/comment, o commit de status **não** emite `notify.success`. O toast `deferred` ("Status alterado para X") já serviu de confirmação durante a janela de 5s, e o badge reflete o novo status — um segundo toast no commit seria ruído. Só o caminho de erro (`onError`) fala de novo, porque aí a expectativa otimista foi quebrada.
 
 - [ ] **Step 4: Rodar — devem passar**
 
@@ -1288,9 +1289,14 @@ export function TicketStatusControl({
               className={classes}
               aria-pressed={isActive}
               disabled={disabled}
-              onClick={() => onChange(s)}
+              onClick={() => {
+                // Mantém o guard original: clicar no status já ativo é no-op.
+                // Durante a janela de undo o otimista já marcou o alvo como ativo,
+                // então re-cliques no mesmo alvo não re-agendam o deferred.
+                if (!isActive) onChange(s);
+              }}
             >
-              {LABELS[s]}
+              {LABELS[s] ?? s}
             </button>
           );
         })}
@@ -1305,20 +1311,36 @@ export function TicketStatusControl({
 Run: `npx vitest run src/features/ticket-detail/TicketStatusControl.test.tsx`
 Expected: PASS (todos os testes, incluindo o novo).
 
-- [ ] **Step 7: Atualizar `TicketDetailPage` para repassar `pendingStatus`**
+- [ ] **Step 7: Repassar `pendingStatus` e exibir o status efetivo**
 
-Em `src/features/ticket-detail/TicketDetailPage.tsx`, mudar a chamada do `TicketStatusControl`:
+No modelo de estado local, o cache do ticket **não** é tocado durante a janela — o componente exibe `pendingStatus ?? data.status`. Em `src/features/ticket-detail/TicketDetailPage.tsx`:
+
+**(a)** Depois das early returns de loading/erro (onde `data` já existe garantido), antes do `return` do JSX principal, calcular o status efetivo:
+
+```tsx
+const effectiveStatus = pendingStatus ?? data.status;
+```
+
+**(b)** Trocar o `StatusBadge` do header para o status efetivo:
+
+```diff
+- <StatusBadge status={data.status} />
++ <StatusBadge status={effectiveStatus} />
+```
+
+**(c)** Atualizar o `TicketStatusControl`:
 
 ```diff
   <TicketStatusControl
-    status={data.status}
+-   status={data.status}
++   status={effectiveStatus}
     onChange={(s) => updateStatus(s)}
 -   disabled={pendingStatus !== undefined}
 +   pendingStatus={pendingStatus}
   />
 ```
 
-(Removemos `disabled` — o status pode continuar clicável durante a janela de undo para permitir trocas rápidas; `notify.deferred` faz o cancel automático.)
+(Removemos `disabled` — durante a janela de undo o status segue clicável para trocas rápidas; o `if (!isActive)` do componente evita re-agendar o mesmo alvo, e `notify.deferred` coalesce alvos diferentes. Como `status={effectiveStatus}`, o botão do alvo pendente já aparece como ativo **e** com o outline tracejado.)
 
 - [ ] **Step 8: Verificar typecheck**
 
@@ -1342,25 +1364,36 @@ git commit -m "feat(ticket-detail): estado visual pending no segmented control"
 - Modify: `src/features/ticket-detail/TicketDetailPage.module.css`
 - Modify: `src/features/ticket-detail/TicketDetailPage.test.tsx`
 
-- [ ] **Step 1: Atualizar testes — remover asserts de `role="alert"` de mutation**
+- [ ] **Step 1: Atualizar `TicketDetailPage.test.tsx`**
 
-Em `src/features/ticket-detail/TicketDetailPage.test.tsx`, **remover** quaisquer `expect(screen.getByRole("alert"))` ou `expect(screen.getByText("Não foi possível salvar..."))` que sejam de erros de mutation. Manter o `role="alert"` do estado de erro de **carregamento** do ticket (`<h2>Não conseguimos abrir esse chamado</h2>` — esse é diferente).
+O arquivo **mocka todos os hooks** (`mockUseUpdateStatus` etc.), então a página nunca chama `notify` diretamente — exceto o `commitNow` no cleanup do `useEffect`. Logo: (a) os asserts de erro inline somem, (b) adiciona-se um mock de `@/lib/notify`, (c) testa-se o `commitNow` no unmount.
 
-Se houver um teste do tipo "mostra erro inline ao falhar status", substituir por:
+**(a) Remover os 3 testes de alerta de mutation** — `"mostra alerta quando uma escrita no ticket (status/assumir/atribuir) falha"`, `"mostra alerta quando publicar comentário falha"` e `"não mostra alerta de erro quando as mutations estão ok"`. Esses dependiam do `isError` → `role="alert"` que deixa de existir. (Os testes de loading e de erro de **carregamento** do ticket — `"mostra loading"`, `"mostra erro com tentar novamente"`, `"chama onClose pelo 'Voltar para chamados'"` — permanecem.)
+
+**(b) Adicionar o mock de `@/lib/notify`** junto aos demais `vi.mock` do topo do arquivo (depois do bloco `vi.hoisted` existente):
 
 ```tsx
-it("chama notify.error quando status falha pós-commit", async () => {
-  mockPatchFail();
-  render(<TicketDetailPage {...managerProps} />);
-  await userEvent.click(screen.getByRole("button", { name: "Resolvido" }));
-  // dispara o onCommit manualmente (notify.deferred está mockado)
-  const onCommit = notifyDeferred.mock.calls[0]?.[2].onCommit;
-  await act(() => onCommit());
-  await waitFor(() => expect(notifyError).toHaveBeenCalled());
-});
+const { mockCommitNow } = vi.hoisted(() => ({ mockCommitNow: vi.fn() }));
+vi.mock("@/lib/notify", () => ({
+  notify: {
+    success: vi.fn(),
+    error: vi.fn(),
+    deferred: vi.fn(),
+    commitNow: mockCommitNow,
+    cancel: vi.fn(),
+  },
+}));
 ```
 
-(Se a estrutura de mock do arquivo de teste atual não comportar isso bem, fazer o mínimo: remover os asserts do erro inline e cobrir a integração no smoke manual do PR.)
+**(c) Adicionar o teste de cleanup** (dentro do `describe("TicketDetailPage", ...)`):
+
+```tsx
+it("no unmount, commita uma mudança de status pendente (commitNow)", () => {
+  const { unmount } = render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
+  unmount();
+  expect(mockCommitNow).toHaveBeenCalledWith("ticket-status-t1");
+});
+```
 
 - [ ] **Step 2: Rodar para checar baseline**
 
@@ -1395,7 +1428,7 @@ Em `src/features/ticket-detail/TicketDetailPage.module.css`, remover o bloco `.w
 - [ ] **Step 5: Rodar testes da página**
 
 Run: `npx vitest run src/features/ticket-detail/TicketDetailPage.test.tsx`
-Expected: PASS (asserts removidos/adaptados não buscam mais o erro inline; novo teste de `notify.error` passa).
+Expected: PASS (asserts de erro inline removidos; novo teste de `commitNow` no unmount passa).
 
 - [ ] **Step 6: Suite completa + lint + typecheck**
 
@@ -1442,7 +1475,7 @@ git push -u origin feature/plan-7-toasts-status-undo
 gh pr create --title "feat(plan-7): toasts + delay/undo na mudança de status" --body "$(cat <<'EOF'
 ## Summary
 - Adapter `src/lib/notify.ts` (sonner) com `success`, `error`, `deferred`, `commitNow`, `cancel`.
-- Padrão delay+undo de 5s em `useUpdateStatus` (otimista no cache, PATCH só após o timer).
+- Padrão delay+undo de 5s em `useUpdateStatus` (otimismo via estado local, PATCH só após o timer).
 - Toasts de sucesso/erro em `useClaimTicket`, `useAssignTo`, `useAddComment` (com retry).
 - Estado visual `.pending` no `TicketStatusControl` (outline tracejado).
 - Remove `writeError`/`commentError` inline da `TicketDetailPage`.

@@ -40,9 +40,9 @@ Esta slice resolve os dois problemas em conjunto: o **toast com Desfazer é a co
 ## Decisões de produto
 
 1. **Toast com Desfazer é a confirmação.** Modal de confirmação foi descartado: adiciona fricção desnecessária para gestor que mexe em muitos tickets/dia e gera "modal sobre modal" na `TicketDetailPage` (que já vive num Radix Dialog).
-2. **Delay 5s antes do PATCH.** Verdadeiro undo: UI otimista nos 5s, mas nem o Core nem o Telegram são tocados. Se o usuário clica Desfazer, nada vaza para o morador.
+2. **Delay 5s antes do PATCH.** Verdadeiro undo: UI otimista nos 5s, mas nem o Core nem o Telegram são tocados. Se o usuário clica Desfazer, nada vaza para o morador. **O commit bem-sucedido é silencioso** (sem `notify.success`): o toast deferred já confirmou e o badge reflete o novo status — só o caminho de erro volta a falar. Assimetria proposital frente a claim/assign/comment, que não têm janela de undo e por isso confirmam no sucesso.
 3. **Fechar o modal commita.** Cleanup no unmount chama `commitNow(id)`. O toast continua visível fora do modal (sonner portala no `body`).
-4. **Cliques rápidos coalescem.** Mesmo `id` no `notify.deferred` cancela timer anterior, roda rollback otimista do anterior, agenda o novo. Resultado: 1 mutation final.
+4. **Cliques rápidos coalescem.** Mesmo `id` no `notify.deferred` descarta **só o timer** anterior (sem rodar o `onUndo` dele) e re-arma com a nova intenção. Como o otimismo é **estado local** (`pendingStatus`), o último clique vence e Desfazer volta ao status real do servidor. Resultado: 1 mutation final, sem clobber de estado. (Rodar o undo do deferred anterior — ideia inicial — clobbaria o novo otimista; por isso o replace não o executa.)
 5. **Outras mutations: sucesso 3s, erro 6s com botão "Tentar novamente".** Sem undo (são aditivas ou idempotentes).
 6. **A confirmação de re-atribuição existente fica.** `TicketAssignControl` já tem dialog de confirmação para "atribuir a outro com responsável já definido" — dialog é para _intenção_, toast é para _resultado_. Coexistem.
 7. **`sonner` ~5KB.** Headless-friendly, `aria-live` por default, action prop nativo. Wrap num adapter para isolar o call site da lib.
@@ -71,7 +71,7 @@ export const notify = {
 ```
 
 - **Estado de timers**: `Map<string, { timer: number; commit: () => void; undo?: () => void }>` no escopo do módulo. Sobrevive a re-renders e unmounts (commit no cleanup vai do hook).
-- **`deferred(id, ...)` com `id` repetido**: chama `undo?()` do registro anterior, `clearTimeout`, registra o novo. Toast com mesmo id é atualizado no sonner (`toast(message, { id })`).
+- **`deferred(id, ...)` com `id` repetido**: faz só `clearTimeout` do registro anterior (**não** chama o `undo?()` dele — o caller já trocou o estado pela nova intenção) e registra o novo. Toast com mesmo id é atualizado no sonner (`toast(message, { id })`).
 - **`commitNow(id)`**: `clearTimeout` + `commit()` síncrono, remove do Map. Não dispara `undo`.
 - **`cancel(id)`**: `clearTimeout` + `undo?()`, remove. Não dispara `commit`.
 - **`success`/`error`**: passam direto pro `sonner.toast.success`/`sonner.toast.error`. `error.retry` vira `action: { label: "Tentar novamente", onClick: retry }`.
@@ -98,27 +98,29 @@ const theme = useThemeStore((s) => s.mode);
 
 Mobile: sonner já adapta `position` para top-center em viewport pequena (config default).
 
-### `useUpdateStatus` — fluxo delay+undo
+### `useUpdateStatus` — fluxo delay+undo (estado local, sem cache otimista)
 
-API atual (`updateStatus(status, opts?)`) passa a ser orquestradora. Novo helper interno:
+O otimismo vive em **estado local** (`pendingStatus`), nunca no cache do ticket. O consumidor exibe `pendingStatus ?? data.status`. Isso elimina rollback manual e o clobber de coalescência (ver decisão 4).
 
 ```ts
-function updateStatusDeferred(targetStatus: TicketStatus) {
-  const id = `ticket-status-${ticketId}`;
-  const previousStatus = ticket.status; // snapshot
-  // 1. otimista no cache
-  qc.setQueryData(["ticket", ticketId], (t) => ({ ...t, status: targetStatus }));
-  // 2. agenda
-  notify.deferred(id, `Status alterado para ${LABEL[targetStatus]}`, {
+const [pending, setPending] = useState<TicketStatus | undefined>(undefined);
+
+function updateStatus(targetStatus: TicketStatus) {
+  setPending(targetStatus); // otimismo local — cache intacto
+  notify.deferred(`ticket-status-${ticketId}`, `Status alterado para ${LABEL[targetStatus]}`, {
     delayMs: 5000,
-    onCommit: () => m.mutate(targetStatus),
-    onUndo: () => qc.setQueryData(["ticket", ticketId], (t) => ({ ...t, status: previousStatus })),
+    onCommit: () => {
+      setPending(undefined);
+      m.mutate(targetStatus);
+    },
+    onUndo: () => setPending(undefined),
   });
 }
 ```
 
 - `m.mutate(targetStatus)` já invalida `["ticket"]`/`["ticket-events"]`/`["tickets"]` no `onSuccess` (já feito no PR #26).
-- Erro pós-commit (PATCH falha): `m.onError` chama `notify.error("Não foi possível alterar status", { retry: () => m.mutate(targetStatus) })` e desfaz otimista.
+- Erro pós-commit (PATCH falha): `m.onError` chama `notify.error("Não foi possível alterar status", { retry: () => m.mutate(targetStatus) })` **e invalida `["ticket", id]`** para refetch da verdade do servidor. Sem cache otimista, não há rollback manual — o refetch já mostra o status que não mudou.
+- Commit bem-sucedido é silencioso (ver decisão 2).
 - Cleanup no `TicketDetailPage` (effect com cleanup que chama `notify.commitNow("ticket-status-" + ticketId)`).
 
 ### Outras 3 mutations
@@ -144,7 +146,7 @@ Recebe `pendingStatus` (já recebe via `useUpdateStatus`). Novo CSS:
 }
 ```
 
-Botão visualmente indica "ainda não consolidou no servidor". Some quando `pendingStatus === undefined`.
+Botão visualmente indica "ainda não consolidou no servidor". Some quando `pendingStatus === undefined`. O `TicketDetailPage` passa `status={effectiveStatus}` (`pendingStatus ?? data.status`), então o botão do alvo pendente aparece **ativo e** com o outline tracejado; o `StatusBadge` do header também usa `effectiveStatus`.
 
 ---
 
@@ -162,6 +164,7 @@ Botão visualmente indica "ainda não consolidou no servidor". Some quando `pend
 - `<Toaster />` em `app/providers.tsx` (1x para app inteiro).
 - `import { notify } from "@/lib/notify"` nos 4 hooks.
 - `useEffect(() => () => notify.commitNow("ticket-status-" + ticketId), [ticketId])` no `TicketDetailPage`.
+- `const effectiveStatus = pendingStatus ?? data.status` no `TicketDetailPage`, usado no `StatusBadge` do header e no `status` do `TicketStatusControl`.
 - Classe `.pending` no `TicketStatusControl.module.css`.
 
 **Não altera:**
@@ -197,7 +200,7 @@ Botão visualmente indica "ainda não consolidou no servidor". Some quando `pend
 
 Mockar `@/lib/notify` via `vi.mock` + `vi.hoisted` (mesmo padrão de `@/api/client`).
 
-- `useUpdateStatus`: agendar com `updateStatusDeferred("resolved")` chama `notify.deferred` com id correto + delayMs 5000 + setQueryData otimista; após `vi.runAllTimers()`, PATCH dispara e invalidações rodam; erro pós-commit chama `notify.error` com `retry`.
+- `useUpdateStatus`: `updateStatus("resolved")` marca `pendingStatus` e chama `notify.deferred` com id correto + delayMs 5000 (sem tocar o cache); disparar o `onCommit` capturado faz o PATCH + invalidações; `onUndo` limpa `pendingStatus`; erro pós-commit chama `notify.error` com `retry` e invalida `["ticket", id]`.
 - `useClaimTicket`/`useAssignTo`/`useAddComment`: success → `notify.success` com texto correto; error → `notify.error` com `retry` que re-mutaria.
 
 ### Componentes
@@ -218,13 +221,13 @@ Mockar `@/lib/notify` via `vi.mock` + `vi.hoisted` (mesmo padrão de `@/api/clie
 
 ## Riscos e mitigações
 
-| Risco                                                | Mitigação                                                                                     |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Timer continua após HMR → vazamento                  | Map de timers é por-módulo; HMR substitui o módulo e zera. Cleanup do hook força commit.      |
-| Usuário não percebe a janela de 5s                   | Toast tem countdown visual (sonner `duration={5000}` mostra a barra).                         |
-| `notify.deferred` chamado fora do React (test)       | Adapter é puro; testável com fake timers.                                                     |
-| Lib sonner muda API                                  | Adapter isola: todas as chamadas passam por `notify`. Trocar lib = reescrever só `notify.ts`. |
-| `commitNow` no unmount + Strict Mode (double effect) | Idempotente: `commitNow` para id ausente é no-op.                                             |
+| Risco                                                | Mitigação                                                                                                                                                                                                                                     |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Timer continua após HMR → vazamento                  | Map de timers é por-módulo; HMR substitui o módulo e zera. Cleanup do hook força commit.                                                                                                                                                      |
+| Usuário não percebe a janela de 5s                   | Toast fica visível durante toda a janela com o botão Desfazer em destaque; ao expirar, o badge consolida. (sonner **não** renderiza barra de progresso por default — a affordance é a presença do toast + Desfazer, não um countdown visual.) |
+| `notify.deferred` chamado fora do React (test)       | Adapter é puro; testável com fake timers.                                                                                                                                                                                                     |
+| Lib sonner muda API                                  | Adapter isola: todas as chamadas passam por `notify`. Trocar lib = reescrever só `notify.ts`.                                                                                                                                                 |
+| `commitNow` no unmount + Strict Mode (double effect) | Idempotente: `commitNow` para id ausente é no-op.                                                                                                                                                                                             |
 
 ---
 
