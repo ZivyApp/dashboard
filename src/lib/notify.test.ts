@@ -59,3 +59,73 @@ describe("notify.error", () => {
     expect(sonnerError.mock.calls[0]?.[1]).not.toHaveProperty("action");
   });
 });
+
+describe("notify.deferred", () => {
+  it("dispara onCommit após delayMs", () => {
+    vi.useFakeTimers();
+    const onCommit = vi.fn();
+    notify.deferred("id-1", "Aplicando", { delayMs: 5000, onCommit });
+    expect(onCommit).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(5000);
+    expect(onCommit).toHaveBeenCalledOnce();
+  });
+
+  it("registra toast no sonner com id, duration e action 'Desfazer'", () => {
+    vi.useFakeTimers();
+    notify.deferred("id-1", "Aplicando", { delayMs: 5000, onCommit: vi.fn() });
+    const actionMatcher = expect.objectContaining({ label: "Desfazer" }) as object;
+    expect(sonnerToast).toHaveBeenCalledWith(
+      "Aplicando",
+      expect.objectContaining({
+        id: "id-1",
+        duration: 5000,
+        action: actionMatcher,
+      }),
+    );
+  });
+
+  it("cancel(id) chama onUndo e bloqueia o onCommit do timer", () => {
+    vi.useFakeTimers();
+    const onCommit = vi.fn();
+    const onUndo = vi.fn();
+    notify.deferred("id-1", "Aplicando", { delayMs: 5000, onCommit, onUndo });
+    notify.cancel("id-1");
+    vi.advanceTimersByTime(5000);
+    expect(onUndo).toHaveBeenCalledOnce();
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(sonnerDismiss).toHaveBeenCalledWith("id-1");
+  });
+
+  it("commitNow(id) dispara onCommit síncrono e bloqueia o timer", () => {
+    vi.useFakeTimers();
+    const onCommit = vi.fn();
+    notify.deferred("id-1", "Aplicando", { delayMs: 5000, onCommit });
+    notify.commitNow("id-1");
+    expect(onCommit).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(5000);
+    expect(onCommit).toHaveBeenCalledOnce();
+    expect(sonnerDismiss).toHaveBeenCalledWith("id-1");
+  });
+
+  it("deferred com mesmo id descarta o timer anterior SEM rodar seu onUndo e agenda novo", () => {
+    vi.useFakeTimers();
+    const firstUndo = vi.fn();
+    const firstCommit = vi.fn();
+    const secondCommit = vi.fn();
+    notify.deferred("id-1", "Primeiro", {
+      delayMs: 5000,
+      onCommit: firstCommit,
+      onUndo: firstUndo,
+    });
+    notify.deferred("id-1", "Segundo", { delayMs: 5000, onCommit: secondCommit });
+    expect(firstUndo).not.toHaveBeenCalled();
+    expect(firstCommit).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(5000);
+    expect(secondCommit).toHaveBeenCalledOnce();
+  });
+
+  it("cancel/commitNow para id ausente é no-op (não lança)", () => {
+    expect(() => notify.cancel("nope")).not.toThrow();
+    expect(() => notify.commitNow("nope")).not.toThrow();
+  });
+});
