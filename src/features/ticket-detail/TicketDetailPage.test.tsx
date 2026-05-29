@@ -68,15 +68,11 @@ beforeEach(() => {
     refetch: vi.fn(),
   });
   mockUseTicketEvents.mockReturnValue({ data: [] });
-  mockUseUpdateStatus.mockReturnValue({
-    updateStatus: vi.fn(),
-    pendingStatus: undefined,
-    isError: false,
-  });
-  mockUseClaim.mockReturnValue({ claim: vi.fn(), isPending: false, isError: false });
-  mockUseAssignTo.mockReturnValue({ assignTo: vi.fn(), isPending: false, isError: false });
+  mockUseUpdateStatus.mockReturnValue({ updateStatus: vi.fn(), pendingStatus: undefined });
+  mockUseClaim.mockReturnValue({ claim: vi.fn(), isPending: false });
+  mockUseAssignTo.mockReturnValue({ assignTo: vi.fn(), isPending: false });
   mockUseCondoManagers.mockReturnValue({ data: [] });
-  mockUseAddComment.mockReturnValue({ addComment: vi.fn(), isPending: false, isError: false });
+  mockUseAddComment.mockReturnValue({ addComment: vi.fn(), isPending: false });
   mockUseCanManage.mockReturnValue(true);
   mockUseSession.mockImplementation((sel: (s: unknown) => unknown) =>
     sel({ session: { user: { id: "me" } } }),
@@ -102,7 +98,7 @@ describe("TicketDetailPage", () => {
 
   it("chama updateStatus ao clicar num status", async () => {
     const updateStatus = vi.fn();
-    mockUseUpdateStatus.mockReturnValue({ updateStatus, pendingStatus: undefined, isError: false });
+    mockUseUpdateStatus.mockReturnValue({ updateStatus, pendingStatus: undefined });
     render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
     await userEvent.click(screen.getByRole("button", { name: "Resolvido" }));
     expect(updateStatus).toHaveBeenCalledWith("resolved");
@@ -110,7 +106,7 @@ describe("TicketDetailPage", () => {
 
   it("atribui a outro manager pelo picker", async () => {
     const assignTo = vi.fn();
-    mockUseAssignTo.mockReturnValue({ assignTo, isPending: false, isError: false });
+    mockUseAssignTo.mockReturnValue({ assignTo, isPending: false });
     mockUseCondoManagers.mockReturnValue({
       data: [
         { userId: "me", email: "me@ex.com", name: "Eu", role: "manager", label: "Eu" },

@@ -37,8 +37,10 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
             // Toasts (sonner) são portados pro body, fora do dialog. Sem isso,
             // clicar num toast — ex. o "Desfazer" — conta como interação externa
             // e fecha o modal (e o cleanup commitaria a ação em vez de desfazê-la).
-            const target = event.detail.originalEvent.target as Element | null;
-            if (target?.closest("[data-sonner-toaster]")) event.preventDefault();
+            const target = event.detail.originalEvent.target;
+            if (target instanceof Element && target.closest("[data-sonner-toaster]")) {
+              event.preventDefault();
+            }
           }}
         >
           <div className={styles.header}>
