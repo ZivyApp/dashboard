@@ -61,3 +61,11 @@ html.theme-transitioning * {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
+
+/* Toasts (sonner) precisam continuar clicáveis sobre um Radix Dialog modal, que
+   seta `pointer-events: none` no body. Sem isto o clique no "Desfazer" atravessa
+   pro overlay e fecha o modal em vez de desfazer. Mira só os toasts (não o <ol>
+   container) para não bloquear cliques nas áreas vazias entre eles. */
+[data-sonner-toast] {
+  pointer-events: auto;
+}
