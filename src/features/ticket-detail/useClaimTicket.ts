@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
+import { notify } from "@/lib/notify";
 
 export function useClaimTicket(ticketId: string) {
   const qc = useQueryClient();
@@ -20,6 +21,12 @@ export function useClaimTicket(ticketId: string) {
       void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
       void qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
       void qc.invalidateQueries({ queryKey: ["tickets"] });
+      notify.success("Você assumiu o chamado");
+    },
+    onError: () => {
+      notify.error("Não foi possível assumir", {
+        retry: () => m.mutate(),
+      });
     },
   });
 
