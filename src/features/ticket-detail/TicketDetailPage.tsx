@@ -42,7 +42,7 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
   const currentUserId = useSessionStore((s) => s.session?.user?.id);
   const { updateStatus, pendingStatus, isError: statusError } = useUpdateStatus(ticketId);
   const { claim, isPending: claiming, isError: claimError } = useClaimTicket(ticketId);
-  const { assignTo, isPending: assigning, isError: assignError } = useAssignTo(ticketId);
+  const { assignTo, isPending: assigning, isError: assignError } = useAssignTo(ticketId, condoId);
   const { addComment, isPending: commenting, isError: commentError } = useAddComment(ticketId);
 
   // Erro de qualquer escrita no ticket (status/assumir/atribuir) — o comentário

@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
+import { notify } from "@/lib/notify";
+import type { CondoManager } from "./useCondoManagers";
 
-export function useAssignTo(ticketId: string) {
+export function useAssignTo(ticketId: string, condoId: string) {
   const qc = useQueryClient();
   const m = useMutation<void, Error, string>({
     mutationFn: async (assigneeId) => {
@@ -12,16 +14,22 @@ export function useAssignTo(ticketId: string) {
       if (error) {
         throw new Error(
           `TicketsService.assignTo(${ticketId}): falha em PATCH /tickets/{id}/assign-to`,
-          {
-            cause: error,
-          },
+          { cause: error },
         );
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, assigneeId) => {
       void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
       void qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
       void qc.invalidateQueries({ queryKey: ["tickets"] });
+      const managers = qc.getQueryData<CondoManager[]>(["condo-managers", condoId]) ?? [];
+      const target = managers.find((p) => p.userId === assigneeId);
+      notify.success(`Atribuído a ${target?.label ?? "novo responsável"}`);
+    },
+    onError: (_e, vars) => {
+      notify.error("Não foi possível atribuir", {
+        retry: () => m.mutate(vars),
+      });
     },
   });
 
