@@ -1252,7 +1252,7 @@ interface TicketStatusControlProps {
   status: TicketStatus;
   onChange: (status: TicketStatus) => void;
   disabled?: boolean;
-  pendingStatus?: TicketStatus;
+  pendingStatus?: TicketStatus | undefined;
 }
 
 const LABELS: Record<TicketStatus, string> = {
