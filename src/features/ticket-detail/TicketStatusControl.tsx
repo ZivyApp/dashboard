@@ -1,4 +1,4 @@
-import { TICKET_STATUSES, type TicketStatus } from "@/types/ticket";
+import { STATUS_LABELS, TICKET_STATUSES, type TicketStatus } from "@/types/ticket";
 import styles from "./TicketStatusControl.module.css";
 
 interface TicketStatusControlProps {
@@ -7,13 +7,6 @@ interface TicketStatusControlProps {
   disabled?: boolean;
   pendingStatus?: TicketStatus | undefined;
 }
-
-const LABELS: Record<TicketStatus, string> = {
-  open: "Aberto",
-  in_progress: "Em andamento",
-  resolved: "Resolvido",
-  closed: "Fechado",
-};
 
 export function TicketStatusControl({
   status,
@@ -46,7 +39,7 @@ export function TicketStatusControl({
                 if (!isActive) onChange(s);
               }}
             >
-              {LABELS[s] ?? s}
+              {STATUS_LABELS[s] ?? s}
             </button>
           );
         })}

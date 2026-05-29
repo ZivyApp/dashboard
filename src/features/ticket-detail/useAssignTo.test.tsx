@@ -2,12 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-
-// expect.any() é tipado como `any` pelo vitest; tipar como unknown para
-// satisfazer no-unsafe-assignment sem alterar a semântica dos matchers.
-function anyFn(): unknown {
-  return expect.any(Function);
-}
+import { anyFn } from "@/test-setup";
 
 const { mockPatch } = vi.hoisted(() => ({ mockPatch: vi.fn() }));
 vi.mock("@/api/client", () => ({ api: { PATCH: mockPatch } }));

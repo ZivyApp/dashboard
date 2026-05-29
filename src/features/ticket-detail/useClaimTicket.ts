@@ -33,6 +33,5 @@ export function useClaimTicket(ticketId: string) {
   return {
     claim: (opts?: { onSuccess?: () => void }) => m.mutate(undefined, opts),
     isPending: m.isPending,
-    isError: m.isError,
   };
 }

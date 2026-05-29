@@ -1,6 +1,14 @@
 export const TICKET_STATUSES = ["open", "in_progress", "resolved", "closed"] as const;
 export type TicketStatus = (typeof TICKET_STATUSES)[number];
 
+/** Rótulo pt-BR de cada status — fonte única consumida por badge, segmented e toasts. */
+export const STATUS_LABELS: Record<TicketStatus, string> = {
+  open: "Aberto",
+  in_progress: "Em andamento",
+  resolved: "Resolvido",
+  closed: "Fechado",
+};
+
 export const TICKET_PRIORITIES = ["low", "medium", "high"] as const;
 export type TicketPriority = (typeof TICKET_PRIORITIES)[number];
 

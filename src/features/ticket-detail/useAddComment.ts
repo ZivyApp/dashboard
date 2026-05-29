@@ -32,6 +32,5 @@ export function useAddComment(ticketId: string) {
   return {
     addComment: (text: string, opts?: { onSuccess?: () => void }) => m.mutate(text, opts),
     isPending: m.isPending,
-    isError: m.isError,
   };
 }

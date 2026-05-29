@@ -36,6 +36,5 @@ export function useAssignTo(ticketId: string, condoId: string) {
   return {
     assignTo: (assigneeId: string, opts?: { onSuccess?: () => void }) => m.mutate(assigneeId, opts),
     isPending: m.isPending,
-    isError: m.isError,
   };
 }

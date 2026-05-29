@@ -1,15 +1,8 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import { notify } from "@/lib/notify";
-import type { TicketStatus } from "@/types/ticket";
-
-const LABEL: Record<TicketStatus, string> = {
-  open: "Aberto",
-  in_progress: "Em andamento",
-  resolved: "Resolvido",
-  closed: "Fechado",
-};
+import { STATUS_LABELS, type TicketStatus } from "@/types/ticket";
 
 export function useUpdateStatus(ticketId: string) {
   const qc = useQueryClient();
@@ -18,42 +11,39 @@ export function useUpdateStatus(ticketId: string) {
   // rollback a fazer no undo (basta limpar pending) nem clobber na coalescência.
   const [pending, setPending] = useState<TicketStatus | undefined>(undefined);
 
-  const m = useMutation<void, Error, TicketStatus>({
-    mutationFn: async (status) => {
+  // Commit autossuficiente: captura `ticketId`/`qc` do render onde `updateStatus`
+  // rodou e faz PATCH + invalidação direto (sem useMutation). Assim funciona mesmo
+  // depois do unmount (commit-on-close ainda invalida o cache) e sempre mira o
+  // ticket correto, mesmo que a página já tenha trocado de `ticketId`.
+  async function commit(target: TicketStatus) {
+    let failed = false;
+    try {
       const { error } = await api.PATCH("/tickets/{id}/status", {
         params: { path: { id: ticketId } },
-        body: { status },
+        body: { status: target },
       });
-      if (error) {
-        throw new Error(
-          `TicketsService.updateStatus(${ticketId}): falha em PATCH /tickets/{id}/status`,
-          { cause: error },
-        );
-      }
-    },
-    onSuccess: () => {
+      failed = Boolean(error);
+    } catch {
+      failed = true;
+    }
+    if (failed) {
+      // Sem otimista no cache para reverter; o refetch mostra a verdade do servidor.
       void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
-      void qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
-      void qc.invalidateQueries({ queryKey: ["tickets"] });
-    },
-    onError: (_e, vars) => {
-      // Não há otimista no cache para reverter; o refetch garante que a UI mostre
-      // a verdade do servidor (o status que não mudou). Avisa com retry.
-      void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
-      notify.error("Não foi possível alterar status", {
-        retry: () => m.mutate(vars),
-      });
-    },
-  });
+      notify.error("Não foi possível alterar status", { retry: () => void commit(target) });
+      return;
+    }
+    void qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
+    void qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
+    void qc.invalidateQueries({ queryKey: ["tickets"] });
+  }
 
-  // Handler de onClick — identidade não importa, sem useCallback de fachada.
-  function updateStatus(targetStatus: TicketStatus) {
-    setPending(targetStatus);
-    notify.deferred(`ticket-status-${ticketId}`, `Status alterado para ${LABEL[targetStatus]}`, {
+  function updateStatus(target: TicketStatus) {
+    setPending(target);
+    notify.deferred(`ticket-status-${ticketId}`, `Status alterado para ${STATUS_LABELS[target]}`, {
       delayMs: 5000,
       onCommit: () => {
         setPending(undefined);
-        m.mutate(targetStatus);
+        void commit(target);
       },
       onUndo: () => setPending(undefined),
     });
@@ -62,6 +52,5 @@ export function useUpdateStatus(ticketId: string) {
   return {
     updateStatus,
     pendingStatus: pending,
-    isError: m.isError,
   };
 }
