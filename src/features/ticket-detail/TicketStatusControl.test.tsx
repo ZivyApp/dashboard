@@ -31,4 +31,10 @@ describe("TicketStatusControl", () => {
     render(<TicketStatusControl status="open" onChange={vi.fn()} disabled={true} />);
     expect(screen.getByRole("button", { name: "Resolvido" })).toBeDisabled();
   });
+
+  it("aplica classe pending no botão otimista quando pendingStatus é informado", () => {
+    render(<TicketStatusControl status="resolved" onChange={() => {}} pendingStatus="resolved" />);
+    const btn = screen.getByRole("button", { name: "Resolvido" });
+    expect(btn.className).toMatch(/pending/);
+  });
 });

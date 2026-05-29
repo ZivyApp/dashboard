@@ -57,3 +57,8 @@
   color: var(--fg-primary);
   box-shadow: var(--shadow-sm);
 }
+
+.pending {
+  outline: 2px dashed var(--brand);
+  outline-offset: -3px;
+}

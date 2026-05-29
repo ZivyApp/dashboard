@@ -80,6 +80,8 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
     );
   }
 
+  const effectiveStatus = pendingStatus ?? data.status;
+
   return (
     <article className={styles.page}>
       <header className={styles.header}>
@@ -90,7 +92,7 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
           </div>
         </div>
         <div className={styles.chips}>
-          <StatusBadge status={data.status} />
+          <StatusBadge status={effectiveStatus} />
           <PriorityChip priority={data.priority} />
           <span className={styles.locChip}>
             <MapPin size={12} aria-hidden="true" />
@@ -119,9 +121,9 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
         {canManage && (
           <div className={styles.statusSlot}>
             <TicketStatusControl
-              status={data.status}
+              status={effectiveStatus}
               onChange={(s) => updateStatus(s)}
-              disabled={pendingStatus !== undefined}
+              pendingStatus={pendingStatus}
             />
           </div>
         )}
