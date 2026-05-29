@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AlignLeft, Calendar, Clock, History, MapPin, User } from "lucide-react";
 import { Spinner } from "@/ui/Spinner/Spinner";
 import { Button } from "@/ui/Button/Button";
@@ -8,6 +9,7 @@ import { useCanManageTicket } from "@/features/tickets/useCanManageTicket";
 import { useSessionStore } from "@/stores/session";
 import { formatRelTime } from "@/lib/formatRelTime";
 import { formatFullTime } from "@/lib/formatFullTime";
+import { notify } from "@/lib/notify";
 import type { Ticket } from "@/types/ticket";
 import { useTicketEvents } from "./useTicketEvents";
 import { useUpdateStatus } from "./useUpdateStatus";
@@ -40,14 +42,19 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
   const { data: managers } = useCondoManagers(condoId);
   const canManage = useCanManageTicket(condoId);
   const currentUserId = useSessionStore((s) => s.session?.user?.id);
-  const { updateStatus, pendingStatus, isError: statusError } = useUpdateStatus(ticketId);
-  const { claim, isPending: claiming, isError: claimError } = useClaimTicket(ticketId);
-  const { assignTo, isPending: assigning, isError: assignError } = useAssignTo(ticketId, condoId);
-  const { addComment, isPending: commenting, isError: commentError } = useAddComment(ticketId);
+  const { updateStatus, pendingStatus } = useUpdateStatus(ticketId);
+  const { claim, isPending: claiming } = useClaimTicket(ticketId);
+  const { assignTo, isPending: assigning } = useAssignTo(ticketId, condoId);
+  const { addComment, isPending: commenting } = useAddComment(ticketId);
 
-  // Erro de qualquer escrita no ticket (status/assumir/atribuir) — o comentário
-  // tem feedback próprio na seção do composer.
-  const writeError = statusError || claimError || assignError;
+  // Fechar o modal/desmontar commita uma mudança de status ainda na janela de undo
+  // (commitNow é no-op se não houver pendência). Ver useUpdateStatus + notify.deferred.
+  useEffect(
+    () => () => {
+      notify.commitNow(`ticket-status-${ticketId}`);
+    },
+    [ticketId],
+  );
 
   if (isPending) {
     return (
@@ -139,11 +146,6 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
             onAssignTo={(userId) => assignTo(userId)}
           />
         </div>
-        {writeError && (
-          <p className={styles.writeError} role="alert">
-            Não foi possível salvar a alteração. Tente novamente.
-          </p>
-        )}
       </div>
 
       <section className={styles.section}>
@@ -172,11 +174,6 @@ export function TicketDetailPage({ condoId, ticketId, onClose }: TicketDetailPag
             onSubmit={(text, opts) => addComment(text, opts)}
             isPending={commenting}
           />
-          {commentError && (
-            <p className={styles.writeError} role="alert">
-              Não foi possível publicar o comentário. Tente novamente.
-            </p>
-          )}
         </section>
       )}
     </article>

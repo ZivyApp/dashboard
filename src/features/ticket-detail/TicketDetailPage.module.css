@@ -112,15 +112,6 @@
   flex: 1 1 240px;
 }
 
-/* Ocupa a linha inteira do bloco .actions (flex-wrap) ou empilha abaixo do
-   composer (.section é coluna). role="alert" anuncia a falha. */
-.writeError {
-  flex-basis: 100%;
-  margin: var(--space-2) 0 0;
-  font-size: var(--fs-sm);
-  color: var(--danger);
-}
-
 .section {
   display: flex;
   flex-direction: column;

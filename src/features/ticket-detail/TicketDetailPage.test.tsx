@@ -33,6 +33,17 @@ vi.mock("./useAddComment", () => ({ useAddComment: mockUseAddComment }));
 vi.mock("@/features/tickets/useCanManageTicket", () => ({ useCanManageTicket: mockUseCanManage }));
 vi.mock("@/stores/session", () => ({ useSessionStore: mockUseSession }));
 
+const { mockCommitNow } = vi.hoisted(() => ({ mockCommitNow: vi.fn() }));
+vi.mock("@/lib/notify", () => ({
+  notify: {
+    success: vi.fn(),
+    error: vi.fn(),
+    deferred: vi.fn(),
+    commitNow: mockCommitNow,
+    cancel: vi.fn(),
+  },
+}));
+
 import { TicketDetailPage } from "./TicketDetailPage";
 
 const TICKET = {
@@ -113,25 +124,10 @@ describe("TicketDetailPage", () => {
     expect(assignTo).toHaveBeenCalledWith("ana");
   });
 
-  it("mostra alerta quando uma escrita no ticket (status/assumir/atribuir) falha", () => {
-    mockUseUpdateStatus.mockReturnValue({
-      updateStatus: vi.fn(),
-      pendingStatus: undefined,
-      isError: true,
-    });
-    render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
-    expect(screen.getByRole("alert")).toHaveTextContent(/não foi possível salvar/i);
-  });
-
-  it("mostra alerta quando publicar comentário falha", () => {
-    mockUseAddComment.mockReturnValue({ addComment: vi.fn(), isPending: false, isError: true });
-    render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
-    expect(screen.getByRole("alert")).toHaveTextContent(/não foi possível publicar o comentário/i);
-  });
-
-  it("não mostra alerta de erro quando as mutations estão ok", () => {
-    render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
-    expect(screen.queryByRole("alert")).toBeNull();
+  it("no unmount, commita uma mudança de status pendente (commitNow)", () => {
+    const { unmount } = render(<TicketDetailPage condoId="c1" ticketId="t1" onClose={vi.fn()} />);
+    unmount();
+    expect(mockCommitNow).toHaveBeenCalledWith("ticket-status-t1");
   });
 
   it("chama onClose pelo 'Voltar para chamados' no estado de erro", async () => {
