@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
+import { notify } from "@/lib/notify";
 
 export function useAddComment(ticketId: string) {
   const qc = useQueryClient();
@@ -13,13 +14,19 @@ export function useAddComment(ticketId: string) {
       if (error) {
         throw new Error(
           `TicketsService.addComment(${ticketId}): falha em POST /tickets/{id}/comments`,
-          {
-            cause: error,
-          },
+          { cause: error },
         );
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
+      notify.success("Comentário publicado");
+    },
+    onError: (_e, vars) => {
+      notify.error("Não foi possível publicar", {
+        retry: () => m.mutate(vars),
+      });
+    },
   });
 
   return {
