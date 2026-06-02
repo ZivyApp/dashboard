@@ -24,4 +24,14 @@ describe("EmptyState", () => {
     render(<EmptyState title="Vazio" description="Nada aqui" />);
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
+
+  it("aplica o role quando passado", () => {
+    render(<EmptyState title="Erro" description="Falhou" role="alert" />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
+  it("não tem role por padrão (estado neutro)", () => {
+    render(<EmptyState title="Vazio" description="Nada aqui" />);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
 });

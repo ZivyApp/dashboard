@@ -17,9 +17,23 @@ afterEach(() => {
 });
 
 describe("RouteError", () => {
-  it("erro de conexão: copy de conexão e retry chama invalidate", async () => {
+  it("erro de conexão: copy de conexão, role alert e retry chama invalidate", async () => {
     render(<RouteError error={new TypeError("Failed to fetch")} reset={() => {}} />);
-    expect(screen.getByRole("heading", { name: "Erro de conexão" })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Sem conexão" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(mockInvalidate).toHaveBeenCalledTimes(1);
+  });
+
+  it("erro de servidor (HTTP embrulhado): copy de servidor e retry chama invalidate", async () => {
+    render(
+      <RouteError
+        error={new Error("GET /condos/me failed", { cause: { status: 500 } })}
+        reset={() => {}}
+      />,
+    );
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Erro ao carregar" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
     expect(mockInvalidate).toHaveBeenCalledTimes(1);
   });
@@ -31,6 +45,7 @@ describe("RouteError", () => {
     const reloadMock = vi.fn();
     vi.stubGlobal("location", { ...window.location, reload: reloadMock });
     render(<RouteError error={new Error("boom")} reset={() => {}} />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Algo deu errado" })).toBeInTheDocument();
     expect(consoleSpy).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalledWith(new Error("boom"));

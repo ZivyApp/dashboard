@@ -16,35 +16,52 @@ export function RouteError({ error }: ErrorComponentProps) {
     }
   }, [kind, error]);
 
-  if (kind === "connection") {
+  if (kind === "unknown") {
     return (
       <EmptyState
-        title="Erro de conexão"
-        description="Não foi possível carregar os dados. Verifique sua internet e tente novamente."
+        role="alert"
+        title="Algo deu errado"
+        description="Ocorreu um erro inesperado. Recarregue a página."
         action={
           <Button
             onClick={() => {
-              void router.invalidate();
+              window.location.reload();
             }}
           >
-            Tentar novamente
+            Recarregar
           </Button>
         }
       />
     );
   }
 
+  // connection | server → ambos recuperáveis por retry (router.invalidate());
+  // diferem só na copy: connection sugere checar a internet, server é falha de
+  // resposta HTTP (4xx/5xx), geralmente transitória.
+  const copy =
+    kind === "connection"
+      ? {
+          title: "Sem conexão",
+          description:
+            "Não foi possível carregar os dados. Verifique sua internet e tente novamente.",
+        }
+      : {
+          title: "Erro ao carregar",
+          description: "O servidor não respondeu como esperado. Tente novamente em instantes.",
+        };
+
   return (
     <EmptyState
-      title="Algo deu errado"
-      description="Ocorreu um erro inesperado. Recarregue a página."
+      role="alert"
+      title={copy.title}
+      description={copy.description}
       action={
         <Button
           onClick={() => {
-            window.location.reload();
+            void router.invalidate();
           }}
         >
-          Recarregar
+          Tentar novamente
         </Button>
       }
     />

@@ -6,13 +6,13 @@ describe("classifyRouteError", () => {
     expect(classifyRouteError(new TypeError("Failed to fetch"))).toBe("connection");
   });
 
-  it("Error embrulhado pela queryFn (com cause) → connection", () => {
+  it("Error embrulhado pela queryFn (com cause) → server", () => {
     const err = new Error("GET /condos/me failed", { cause: { status: 500 } });
-    expect(classifyRouteError(err)).toBe("connection");
+    expect(classifyRouteError(err)).toBe("server");
   });
 
-  it("outro verbo HTTP embrulhado → connection", () => {
-    expect(classifyRouteError(new Error("POST /tickets failed", { cause: {} }))).toBe("connection");
+  it("outro verbo HTTP embrulhado → server", () => {
+    expect(classifyRouteError(new Error("POST /tickets failed", { cause: {} }))).toBe("server");
   });
 
   it("Error de render genérico → unknown", () => {
@@ -25,6 +25,7 @@ describe("classifyRouteError", () => {
 
   it("valores não-Error → unknown", () => {
     expect(classifyRouteError(undefined)).toBe("unknown");
+    expect(classifyRouteError(null)).toBe("unknown");
     expect(classifyRouteError("erro string")).toBe("unknown");
   });
 });
