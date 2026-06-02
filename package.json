@@ -20,6 +20,9 @@
   "engines": {
     "node": ">=20"
   },
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
   "dependencies": {
     "@fontsource/ibm-plex-sans": "^5.2.8",
     "@radix-ui/react-dialog": "^1.1.15",
