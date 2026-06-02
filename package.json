@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "gen:api": "openapi-typescript src/api/openapi.json -o src/api/types.ts",
+    "gen:api": "openapi-typescript src/api/openapi.json -o src/api/types.ts && prettier --write src/api/types.ts",
     "sync:swagger": "bash scripts/sync-swagger.sh"
   },
   "engines": {

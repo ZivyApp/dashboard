@@ -2,11 +2,11 @@
 # Sincroniza swagger.json do Core para src/api/openapi.json e regenera tipos.
 # O Core expõe Swagger 2.x; o script converte para OpenAPI 3.x via swagger2openapi.
 # Uso:
-#   bash scripts/sync-swagger.sh                  # baixa do staging
-#   CORE_SWAGGER_URL=http://localhost:8080/swagger/doc.json bash scripts/sync-swagger.sh
+#   bash scripts/sync-swagger.sh                  # baixa do Core local (:8080)
+#   CORE_SWAGGER_URL=https://host/swagger/doc.json bash scripts/sync-swagger.sh  # outro host
 set -euo pipefail
 
-URL="${CORE_SWAGGER_URL:-https://core-production-c748.up.railway.app/swagger/doc.json}"
+URL="${CORE_SWAGGER_URL:-http://localhost:8080/swagger/doc.json}"
 RAW="src/api/openapi-v2.json"
 OUT="src/api/openapi.json"
 
