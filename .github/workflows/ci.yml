@@ -37,10 +37,9 @@ jobs:
           VITE_CORE_API_URL: https://core-production-c748.up.railway.app
         run: npm run build
 
-  swagger-drift:
-    name: Swagger drift check
+  verify-api-types:
+    name: Verify generated API types
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -51,15 +50,19 @@ jobs:
 
       - run: npm ci
 
-      - name: Sync swagger from staging
-        env:
-          CORE_SWAGGER_URL: https://core-production-c748.up.railway.app/swagger/doc.json
-        run: npm run sync:swagger
+      # Check de consistência interna (offline): src/api/types.ts deve ser
+      # exatamente a saída de `npm run gen:api` a partir do openapi.json committed.
+      # Pega o erro comum (editar openapi.json e esquecer de regerar, ou editar
+      # types.ts à mão). Drift vs o Core upstream NÃO é checado aqui — exige um
+      # Core vivo; faça localmente com `npm run sync:swagger` contra o Core local.
+      - name: Regenerate types from committed openapi.json
+        run: npm run gen:api
 
-      - name: Diff
+      - name: Fail if types.ts drifted from openapi.json
         run: |
-          if ! git diff --quiet src/api/openapi.json src/api/types.ts; then
-            echo "::warning::Swagger drift detected vs staging — rodar 'npm run sync:swagger' localmente"
+          if ! git diff --quiet src/api/types.ts; then
+            echo "::error::src/api/types.ts está fora de sync com src/api/openapi.json. Rode 'npm run gen:api' e commite o resultado."
             git diff --stat src/api/
-            exit 0
+            git diff src/api/types.ts
+            exit 1
           fi
