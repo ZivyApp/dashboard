@@ -61,7 +61,7 @@ describe("useCreateBlock", () => {
     expect(mockSuccess).not.toHaveBeenCalled();
   });
 
-  it("erro não-400 faz toast com retry", async () => {
+  it("erro não-400 faz toast com retry e NÃO expõe formError", async () => {
     mockPost.mockResolvedValue({
       data: undefined,
       error: { message: "boom" },
@@ -76,5 +76,7 @@ describe("useCreateBlock", () => {
         expect.objectContaining({ retry: anyFn() }),
       ),
     );
+    // Banner + toast duplicariam a mensagem — não-400 fica só no toast.
+    expect(result.current.formError).toBeNull();
   });
 });

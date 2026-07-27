@@ -2,6 +2,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { anyFn } from "@/test-setup";
 
 const { mockPatch, mockSuccess, mockError } = vi.hoisted(() => ({
   mockPatch: vi.fn(),
@@ -60,5 +61,23 @@ describe("useUpdateBlock", () => {
 
     await waitFor(() => expect(result.current.formError).toBe("Nome é obrigatório"));
     expect(mockError).not.toHaveBeenCalled();
+  });
+
+  it("erro não-400 faz toast com retry e NÃO expõe formError", async () => {
+    mockPatch.mockResolvedValue({
+      data: undefined,
+      error: { message: "boom" },
+      response: new Response(null, { status: 500 }),
+    });
+    const { result } = renderHook(() => useUpdateBlock("c1"), { wrapper: wrapper(mkClient()) });
+    act(() => result.current.updateBlock({ id: "b1", name: "Torre A", description: "" }));
+
+    await waitFor(() =>
+      expect(mockError).toHaveBeenCalledWith(
+        "Não foi possível atualizar o bloco",
+        expect.objectContaining({ retry: anyFn() }),
+      ),
+    );
+    expect(result.current.formError).toBeNull();
   });
 });

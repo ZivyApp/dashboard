@@ -21,12 +21,17 @@ type FormState = { mode: "create" } | { mode: "edit"; unit: Unit } | null;
 export function UnitsPage({ condoId }: UnitsPageProps) {
   const navigate = useNavigate();
   const [blockFilter, setBlockFilter] = useState<string>("all");
-  const { blocks, isPending: blocksPending, isError: blocksError } = useBlocks(condoId);
+  const {
+    blocks,
+    isPending: blocksPending,
+    isError: blocksError,
+    refetch: refetchBlocks,
+  } = useBlocks(condoId);
   const {
     units,
     isPending: unitsPending,
     isError: unitsError,
-    refetch,
+    refetch: refetchUnits,
   } = useUnits(condoId, blockFilter === "all" ? undefined : blockFilter);
   const { deleteUnit, isPending: deleting } = useDeleteUnit(condoId);
 
@@ -99,7 +104,10 @@ export function UnitsPage({ condoId }: UnitsPageProps) {
             <Button
               variant="secondary"
               onClick={() => {
-                void refetch();
+                // O erro pode vir de qualquer uma das queries — refaz as duas,
+                // senão uma query falha mantém a página presa no erro.
+                void refetchBlocks();
+                void refetchUnits();
               }}
             >
               Tentar novamente

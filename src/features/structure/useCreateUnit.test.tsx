@@ -2,6 +2,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { anyFn } from "@/test-setup";
 
 const { mockPost, mockSuccess, mockError } = vi.hoisted(() => ({
   mockPost: vi.fn(),
@@ -75,5 +76,23 @@ describe("useCreateUnit", () => {
 
     await waitFor(() => expect(result.current.formError).toBe("Número já existe neste bloco"));
     expect(mockError).not.toHaveBeenCalled();
+  });
+
+  it("erro não-400 faz toast com retry e NÃO expõe formError", async () => {
+    mockPost.mockResolvedValue({
+      data: undefined,
+      error: { message: "boom" },
+      response: new Response(null, { status: 500 }),
+    });
+    const { result } = renderHook(() => useCreateUnit("c1"), { wrapper: wrapper(mkClient()) });
+    act(() => result.current.createUnit({ blockId: "b1", number: "101" }));
+
+    await waitFor(() =>
+      expect(mockError).toHaveBeenCalledWith(
+        "Não foi possível criar a unidade",
+        expect.objectContaining({ retry: anyFn() }),
+      ),
+    );
+    expect(result.current.formError).toBeNull();
   });
 });

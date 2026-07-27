@@ -82,6 +82,28 @@ describe("UnitsPage", () => {
     expect(mockUseUnits).toHaveBeenLastCalledWith("c1", "b2");
   });
 
+  it("erro em qualquer query: 'Tentar novamente' refaz blocks E units", async () => {
+    const refetchBlocks = vi.fn();
+    const refetchUnits = vi.fn();
+    mockUseBlocks.mockReturnValue({
+      blocks: undefined,
+      isPending: false,
+      isError: true,
+      refetch: refetchBlocks,
+    });
+    mockUseUnits.mockReturnValue({
+      units: undefined,
+      isPending: false,
+      isError: false,
+      refetch: refetchUnits,
+    });
+    render(<UnitsPage condoId="c1" />);
+    await userEvent.click(screen.getByRole("button", { name: /tentar novamente/i }));
+    // Refazer só units deixaria a página presa no erro quando quem falhou foi blocks.
+    expect(refetchBlocks).toHaveBeenCalled();
+    expect(refetchUnits).toHaveBeenCalled();
+  });
+
   it("filtro sem resultado: empty state específico", () => {
     mockUseBlocks.mockReturnValue({ blocks: BLOCKS, isPending: false, isError: false });
     mockUseUnits.mockReturnValue({ units: [], isPending: false, isError: false });

@@ -42,7 +42,8 @@ export function useUpdateBlock(condoId: string) {
     updateBlock: (input: UpdateBlockInput, opts?: { onSuccess?: () => void }) =>
       m.mutate(input, opts),
     isPending: m.isPending,
-    formError: m.error instanceof StructureFormError ? m.error.message : null,
+    formError:
+      m.error instanceof StructureFormError && m.error.status === 400 ? m.error.message : null,
     isError: m.isError,
   };
 }

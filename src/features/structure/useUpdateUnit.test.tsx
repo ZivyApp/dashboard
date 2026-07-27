@@ -2,6 +2,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { anyFn } from "@/test-setup";
 
 const { mockPatch, mockSuccess, mockError } = vi.hoisted(() => ({
   mockPatch: vi.fn(),
@@ -64,5 +65,23 @@ describe("useUpdateUnit", () => {
         body: { number: "204" },
       }),
     );
+  });
+
+  it("erro não-400 faz toast com retry e NÃO expõe formError", async () => {
+    mockPatch.mockResolvedValue({
+      data: undefined,
+      error: { message: "boom" },
+      response: new Response(null, { status: 500 }),
+    });
+    const { result } = renderHook(() => useUpdateUnit("c1"), { wrapper: wrapper(mkClient()) });
+    act(() => result.current.updateUnit({ id: "u1", number: "204" }));
+
+    await waitFor(() =>
+      expect(mockError).toHaveBeenCalledWith(
+        "Não foi possível atualizar a unidade",
+        expect.objectContaining({ retry: anyFn() }),
+      ),
+    );
+    expect(result.current.formError).toBeNull();
   });
 });

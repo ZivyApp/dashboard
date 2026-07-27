@@ -50,7 +50,8 @@ export function useUpdateUnit(condoId: string) {
     updateUnit: (input: UpdateUnitInput, opts?: { onSuccess?: () => void }) =>
       m.mutate(input, opts),
     isPending: m.isPending,
-    formError: m.error instanceof StructureFormError ? m.error.message : null,
+    formError:
+      m.error instanceof StructureFormError && m.error.status === 400 ? m.error.message : null,
     isError: m.isError,
   };
 }
