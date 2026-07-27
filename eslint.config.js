@@ -19,6 +19,7 @@ export default tseslint.config(
       ".storybook/*.js",
       ".storybook/*.d.ts",
       "docs/handoff/**",
+      ".opencode/**",
     ],
   },
   js.configs.recommended,

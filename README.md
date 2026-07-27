@@ -31,7 +31,7 @@ npm run dev                      # http://localhost:5173
 
 ## Estrutura
 
-Veja [`CLAUDE.md`](./CLAUDE.md) (§Architecture + §Padrões e convenções) para o mapa de pastas e convenções vigentes. Specs históricas em `docs/superpowers/specs/` registram decisões de cada plan.
+Veja [`CLAUDE.md`](./CLAUDE.md) (§Architecture + §Padrões e convenções) para o mapa de pastas e convenções vigentes. Specs históricas em `docs/superpowers/specs/` registram decisões de cada plan. Gaps de API e proposta de próximos plans em [`docs/roadmap.md`](./docs/roadmap.md).
 
 ## Ambientes
 

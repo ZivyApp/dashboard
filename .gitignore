@@ -21,3 +21,5 @@ build/*.d.ts
 .worktrees
 .superpowers/
 .tanstack
+# Added by code-review-graph
+.code-review-graph/
